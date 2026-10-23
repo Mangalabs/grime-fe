@@ -92,14 +92,20 @@ export function AdminApp({ user, onLogout }: { user: AuthUser; onLogout: () => v
   );
 }
 
-// Signed in, but the account isn't an admin.
-export function AdminForbidden() {
+// Signed in, but the account can't open this area (admin or marketing).
+export function AdminForbidden({
+  eyebrow = "Administração",
+  message = "Sua conta não tem acesso à administração do Petricor.",
+}: {
+  eyebrow?: string;
+  message?: string;
+}) {
   return (
     <main className="admin-forbidden">
       <div>
-        <p className="eyebrow">Administração</p>
+        <p className="eyebrow">{eyebrow}</p>
         <h1>Esta área é restrita</h1>
-        <p>Sua conta não tem acesso à administração do Petricor.</p>
+        <p>{message}</p>
         <a className="button button-primary" href="/">
           Voltar ao Petricor
         </a>

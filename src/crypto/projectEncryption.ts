@@ -35,6 +35,24 @@ export async function encryptScene(projectKey: CryptoKey, plaintext: string) {
   return { ciphertext: encode(new Uint8Array(ciphertext)), iv: encode(iv) }
 }
 
+/** Binary content (an image): the 12-byte IV followed by the ciphertext. */
+export async function encryptBytes(projectKey: CryptoKey, bytes: ArrayBuffer): Promise<Uint8Array<ArrayBuffer>> {
+  const iv = crypto.getRandomValues(new Uint8Array(12))
+  const ciphertext = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, projectKey, bytes))
+  const sealed = new Uint8Array(iv.length + ciphertext.length)
+  sealed.set(iv)
+  sealed.set(ciphertext, iv.length)
+  return sealed
+}
+
+export async function decryptBytes(projectKey: CryptoKey, sealed: ArrayBuffer): Promise<ArrayBuffer> {
+  return crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: new Uint8Array(sealed, 0, 12) },
+    projectKey,
+    new Uint8Array(sealed, 12),
+  )
+}
+
 export async function unlockProjectKey(password: string, envelope: ProjectKeyEnvelope) {
   const rawProjectKey = await crypto.subtle.decrypt(
     { name: 'AES-GCM', iv: decode(envelope.passwordWrapIv) },

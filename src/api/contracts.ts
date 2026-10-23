@@ -400,6 +400,8 @@ export interface AuthUser {
   // Product tours finished or skipped; they don't start on their own again.
   completedTours: string[]
   role: 'USER' | 'ADMIN'
+  // Opens the /marketing workspace; absent on backends that predate it.
+  marketingEnabled?: boolean
 }
 
 export type InviteStatus = 'AVAILABLE' | 'USED' | 'REVOKED'
@@ -438,6 +440,7 @@ export interface AdminUser {
   wordsThisMonth: number
   monthlyWordLimit: number | null
   effectiveWordLimit: number
+  marketingEnabled: boolean
 }
 
 // Each call the platform makes to a model; same names as the usage features.
@@ -472,7 +475,7 @@ export interface AuthSession {
 }
 
 // What reads the author's text and counts against the monthly allowance.
-export type UsageFeature = 'IMPORT' | 'ARCHIVIST' | 'LINTER' | 'ARCHITECT'
+export type UsageFeature = 'IMPORT' | 'ARCHIVIST' | 'LINTER' | 'ARCHITECT' | 'MARKETING'
 
 export interface UsageSummary {
   limit: number
@@ -533,4 +536,45 @@ export interface GoogleDocSync {
   title: string
   sections: Array<{ key: string; title: string; text: string }>
   sectionMap: GoogleDocSectionLink[]
+}
+
+// The identity kit as the model drafts it (see the marketing workspace).
+export type QuoteUse = 'TAGLINE' | 'ATMOSPHERE' | 'VOICE' | 'ARTIFACT'
+
+export interface MarketingDraft {
+  essence: {
+    setting: string
+    era: string
+    place: string
+    culture: string
+    scale: 'INTIMATE' | 'PERSONAL' | 'EPIC' | null
+    pointOfView: string
+  }
+  mood: { words: string[]; temperature: 'WARM' | 'NEUTRAL' | 'COLD' | null; tempo: 'STILL' | 'FLOWING' | 'URGENT' | null; notes: string }
+  palette: Array<{ name: string; hex: string; role: 'BACKGROUND' | 'SURFACE' | 'INK' | 'ACCENT' | 'HIGHLIGHT' | 'SHADOW'; reason: string }>
+  typography: { display: string; body: string; accent: string; reason: string }
+  materials: string[]
+  light: string
+  sound: string
+  composition: string
+  motifs: Array<{ name: string; meaning: string; entityName: string }>
+  artifacts: Array<{
+    kind: 'LETTER' | 'DIARY' | 'MAP' | 'CHAT' | 'PHOTO' | 'FILE' | 'BESTIARY' | 'RECIPE' | 'TICKET' | 'NEWSPAPER' | 'OBJECT' | 'OTHER'
+    title: string
+    entityName: string
+    description: string
+    role: 'HUB' | 'INDEX' | 'DETAIL' | 'COLLECTIBLE'
+  }>
+  // Checked by the server: each is in the public scene it names.
+  quotes: Array<{ text: string; scene: number; use: QuoteUse; note: string }>
+  avoid: string[]
+  stylePrompt: string
+  sampleLine: string
+}
+
+export interface MarketingDraftRequest {
+  publicScenes: Array<{ order: number; title: string | null; text: string }>
+  restrictedScenes: Array<{ text: string }>
+  storyBible: string
+  currentIdentity: string
 }

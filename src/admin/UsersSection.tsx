@@ -47,6 +47,7 @@ export function UsersSection() {
                 <th>Último acesso</th>
                 <th>Uso do mês</th>
                 <th>Limite mensal</th>
+                <th>Marketing</th>
               </tr>
             </thead>
             <tbody>
@@ -65,6 +66,15 @@ export function UsersSection() {
                   </td>
                   <td>
                     <LimitEditor
+                      user={user}
+                      onSaved={(saved) =>
+                        setData((current) => (current ?? []).map((item) => (item.id === saved.id ? saved : item)))
+                      }
+                      onError={setError}
+                    />
+                  </td>
+                  <td>
+                    <MarketingToggle
                       user={user}
                       onSaved={(saved) =>
                         setData((current) => (current ?? []).map((item) => (item.id === saved.id ? saved : item)))
@@ -94,6 +104,42 @@ function UsageCell({ user }: { user: AdminUser }) {
         {user.wordsThisMonth.toLocaleString("pt-BR")} de {user.effectiveWordLimit.toLocaleString("pt-BR")}
       </span>
     </span>
+  );
+}
+
+// Opens the /marketing workspace to the account; off for writers and reviewers.
+function MarketingToggle({
+  user,
+  onSaved,
+  onError,
+}: {
+  user: AdminUser;
+  onSaved: (user: AdminUser) => void;
+  onError: (message: string) => void;
+}) {
+  const [isSaving, setIsSaving] = useState(false);
+
+  async function toggle() {
+    setIsSaving(true);
+    try {
+      onSaved(await admin.setMarketing(user.id, !user.marketingEnabled));
+    } catch (reason) {
+      onError(reason instanceof Error ? reason.message : "Não foi possível alterar o acesso ao marketing.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <label className="admin-toggle">
+      <input
+        checked={user.marketingEnabled}
+        disabled={isSaving}
+        type="checkbox"
+        onChange={() => void toggle()}
+      />
+      <span>{user.marketingEnabled ? "Liberado" : "Sem acesso"}</span>
+    </label>
   );
 }
 

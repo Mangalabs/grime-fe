@@ -4,13 +4,14 @@ import type { UsageFeature, UsageSummary } from '../../api/contracts'
 import { onUsageChanged } from './usageEvents'
 
 // In the order an author meets them while working on a book.
-export const usageFeatureOrder: UsageFeature[] = ['IMPORT', 'LINTER', 'ARCHIVIST', 'ARCHITECT']
+export const usageFeatureOrder: UsageFeature[] = ['IMPORT', 'LINTER', 'ARCHIVIST', 'ARCHITECT', 'MARKETING']
 
 export const usageFeatureLabels: Record<UsageFeature, string> = {
   IMPORT: 'Importador',
   LINTER: 'Revisor',
   ARCHIVIST: 'Arquivista',
   ARCHITECT: 'Arquiteto',
+  MARKETING: 'Marketing',
 }
 
 export const usageFeatureDescriptions: Record<UsageFeature, string> = {
@@ -18,6 +19,7 @@ export const usageFeatureDescriptions: Record<UsageFeature, string> = {
   LINTER: 'Lê cada cena analisada para apontar diagnósticos.',
   ARCHIVIST: 'Lê as mesmas cenas para propor fatos ao cânone.',
   ARCHITECT: 'Lê o manuscrito inteiro a cada revisão arquitetural.',
+  MARKETING: 'Lê as cenas públicas e a bíblia pública para rascunhar o kit de identidade.',
 }
 
 // From this share of the allowance on, displays warn the author.

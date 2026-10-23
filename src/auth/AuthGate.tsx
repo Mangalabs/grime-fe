@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { auth } from '../api/client'
 import type { AuthUser } from '../api/contracts'
 import App from '../App'
@@ -6,6 +6,8 @@ import { AdminApp, AdminForbidden } from '../admin/AdminApp'
 import { AuthPage } from './AuthPage'
 import { onSessionExpired, refreshSession } from './session'
 import './AuthPage.css'
+
+const MarketingApp = lazy(() => import('../marketing/MarketingApp'))
 
 type GateState =
   | { status: 'restoring' }
@@ -54,8 +56,19 @@ export function AuthGate() {
     )
   }
 
+  // Marketing has its own shell; its code loads only when it is opened.
+  if (isPath('/marketing')) {
+    return state.user.marketingEnabled ? (
+      <Suspense fallback={<div className="auth-loading" role="status">Carregando…</div>}>
+        <MarketingApp key={state.user.id} user={state.user} onLogout={() => void logout()} />
+      </Suspense>
+    ) : (
+      <AdminForbidden eyebrow="Marketing" message="O marketing não está liberado para a sua conta. Peça a um admin." />
+    )
+  }
+
   // The administration lives at /admin, in the same app and session.
-  if (isAdminPath()) {
+  if (isPath('/admin')) {
     return state.user.role === 'ADMIN' ? (
       <AdminApp key={state.user.id} user={state.user} onLogout={() => void logout()} />
     ) : (
@@ -67,6 +80,6 @@ export function AuthGate() {
   return <App key={state.user.id} user={state.user} onLogout={() => void logout()} />
 }
 
-function isAdminPath() {
-  return window.location.pathname.replace(/\/+$/, '') === '/admin'
+function isPath(path: string) {
+  return window.location.pathname.replace(/\/+$/, '') === path
 }

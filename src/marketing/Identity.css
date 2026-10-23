@@ -1,0 +1,708 @@
+/* The Identidade section of /marketing. */
+
+.mk-identity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+  gap: 20px;
+  align-items: start;
+}
+
+.mk-identity-main {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.mk-identity-aside {
+  position: sticky;
+  top: calc(var(--topbar-height) + 16px);
+}
+
+.mk-card {
+  display: grid;
+  gap: 12px;
+}
+
+.mk-card > p {
+  margin: 0;
+}
+
+.mk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.mk-field {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+
+.mk-inline {
+  display: inline-grid;
+}
+
+.mk-label {
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+}
+
+.mk-choices {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* Tags */
+
+.mk-tags {
+  display: grid;
+  gap: 4px;
+}
+
+.mk-tags-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 4px 6px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 7px;
+  background: var(--color-surface-raised);
+}
+
+.mk-tags-box input {
+  flex: 1 1 120px;
+  width: auto;
+  height: 28px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+}
+
+.mk-tags-box input:focus-visible {
+  outline: none;
+}
+
+.mk-tags-box:focus-within {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.mk-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px 2px 10px;
+  border-radius: 999px;
+  color: var(--color-accent-text-strong);
+  background: var(--color-accent-soft);
+  font-size: var(--text-small);
+}
+
+.mk-tag button {
+  padding: 0 6px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* Presets */
+
+.mk-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.mk-preset {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  text-align: left;
+}
+
+.mk-preset:hover,
+.mk-preset[aria-pressed="true"] {
+  border-color: var(--color-accent-border);
+}
+
+.mk-preset[aria-pressed="true"] {
+  background: var(--color-accent-soft);
+}
+
+.mk-preset-strip,
+.mk-tile-strip {
+  display: flex;
+  overflow: hidden;
+  height: 22px;
+  border-radius: 6px;
+}
+
+.mk-preset-strip span,
+.mk-tile-strip span {
+  flex: 1;
+}
+
+/* Palette */
+
+.mk-swatches {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mk-swatches li {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) minmax(0, 190px) 72px auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.mk-swatches code {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+input.mk-color {
+  width: 44px;
+  height: 38px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.mk-suggest {
+  display: grid;
+  gap: 8px;
+}
+
+.mk-suggest-images,
+.mk-suggest-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mk-suggest-images button {
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface-muted);
+}
+
+.mk-suggest-images img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mk-suggest-colors button {
+  display: flex;
+  align-items: end;
+  width: 72px;
+  height: 52px;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.mk-suggest-colors span {
+  padding: 1px 4px;
+  border-radius: 4px;
+  color: #222;
+  background: rgb(255 255 255 / 80%);
+  font-size: var(--text-micro);
+}
+
+/* Typography */
+
+.mk-font-row {
+  display: grid;
+  grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+  align-items: end;
+  gap: 14px;
+}
+
+.mk-font-sample {
+  margin: 0;
+  padding: 8px 12px;
+  overflow: hidden;
+  border-radius: 8px;
+  color: var(--color-text-strong);
+  background: var(--color-surface-muted);
+  font-size: 22px;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Motifs and artifacts */
+
+.mk-row-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 10px;
+  background: var(--color-surface-muted);
+}
+
+.mk-row-card > .text-button,
+.mk-row-foot .text-button {
+  justify-self: start;
+  margin: 0;
+}
+
+.mk-row-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 8px 14px;
+}
+
+/* Moodboard */
+
+.mk-moodboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.mk-mood {
+  display: grid;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+}
+
+.mk-mood-image {
+  display: grid;
+  aspect-ratio: 4 / 3;
+  place-items: center;
+  background: var(--color-bg-sunken);
+}
+
+.mk-mood-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mk-mood figcaption {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.mk-mood figcaption .text-button {
+  justify-self: start;
+  margin: 0;
+}
+
+.mk-uses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mk-uses button {
+  padding: 2px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  background: transparent;
+  font-size: var(--text-micro);
+}
+
+.mk-uses button[aria-pressed="true"] {
+  border-color: var(--color-accent-border);
+  color: var(--color-accent-text-strong);
+  background: var(--color-accent-soft);
+}
+
+/* Style tile: only the colours and letters of the book itself. */
+
+.mk-tile {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 14px;
+  overflow: hidden;
+  border-radius: 14px;
+  color: var(--tile-ink);
+  background: var(--tile-bg);
+  box-shadow: var(--shadow-sm);
+  font-family: var(--tile-body);
+}
+
+.mk-tile-hero {
+  display: grid;
+  min-height: 190px;
+  align-content: end;
+  gap: 6px;
+  padding: 18px;
+  border-radius: 10px;
+  color: var(--tile-title-ink);
+  background: linear-gradient(160deg, var(--tile-highlight), var(--tile-bg) 70%) center / cover;
+  text-shadow: 0 1px 12px rgb(0 0 0 / 35%);
+}
+
+/* On a photo the title is white over a dark fade, whatever the palette. */
+.mk-tile-hero[style*="background-image"] {
+  color: #fff;
+  box-shadow: inset 0 -120px 80px -40px rgb(0 0 0 / 60%);
+}
+
+.mk-tile-hero h3 {
+  margin: 0;
+  color: inherit;
+  font-family: var(--tile-display);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.mk-tile-setting {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.mk-tile-line {
+  margin: 0;
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.45;
+}
+
+.mk-tile-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mk-tile-words li {
+  padding: 2px 10px;
+  border: 1px solid var(--tile-accent);
+  border-radius: 999px;
+  color: var(--tile-title-ink);
+  font-size: 12px;
+}
+
+.mk-tile-object {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 4px;
+  color: var(--tile-ink);
+  background: var(--tile-surface);
+  box-shadow: 0 10px 24px -12px rgb(0 0 0 / 45%);
+  transform: rotate(-1.2deg);
+}
+
+.mk-tile-object strong {
+  font-family: var(--tile-display);
+  font-size: 19px;
+  font-weight: 400;
+}
+
+.mk-tile-object p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.mk-tile-kind {
+  color: var(--tile-accent);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mk-tile-hand {
+  color: var(--tile-accent);
+  font-family: var(--tile-hand);
+  font-size: 19px;
+}
+
+.mk-tile-object button {
+  justify-self: start;
+  min-height: 0;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--tile-surface);
+  background: var(--tile-accent);
+  font-family: var(--tile-body);
+  pointer-events: none;
+}
+
+.mk-tile-materials {
+  color: var(--tile-title-ink);
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.mk-tile-note {
+  margin: 8px 0 0;
+  text-align: center;
+}
+
+/* Book */
+
+.mk-book-cover {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.mk-image-picker {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+.mk-image-picker .text-button {
+  margin: 0;
+}
+
+.mk-image-slot {
+  display: grid;
+  width: 160px;
+  aspect-ratio: 2 / 3;
+  padding: 0;
+  overflow: hidden;
+  place-items: center;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
+  font-size: var(--text-small);
+}
+
+.mk-image-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mk-book-preview {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.mk-book-preview-cover {
+  display: grid;
+  width: 60%;
+  aspect-ratio: 2 / 3;
+  margin: 0 auto;
+  overflow: hidden;
+  place-items: center;
+  border-radius: 4px;
+  color: var(--color-text-faint);
+  background: var(--color-bg-sunken);
+  box-shadow: 0 14px 28px -14px rgb(0 0 0 / 50%);
+}
+
+.mk-book-preview-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mk-book-preview figcaption {
+  display: grid;
+  gap: 6px;
+  text-align: center;
+  justify-items: center;
+}
+
+.mk-book-preview figcaption p {
+  margin: 0;
+}
+
+.mk-book-preview strong {
+  color: var(--color-text-strong);
+  font-family: var(--font-reading);
+  font-size: 22px;
+}
+
+/* Entries of an object */
+
+.mk-entries {
+  display: grid;
+  gap: 10px;
+}
+
+.mk-entries-toggle {
+  justify-self: start;
+  margin: 0;
+  font-weight: var(--weight-semibold);
+}
+
+.mk-entry {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.mk-entries > .button {
+  justify-self: start;
+}
+
+.mk-tags-box select.mk-tags-select {
+  flex: 0 1 160px;
+  width: auto;
+  height: 28px;
+  border: 0;
+  background: transparent;
+}
+
+@media (max-width: 640px) {
+  .mk-book-cover {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Draft by the model */
+
+.mk-draft {
+  border-color: var(--color-accent-border);
+}
+
+.mk-draft-review {
+  display: grid;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.mk-draft-review > p {
+  margin: 0;
+}
+
+.mk-draft-review-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mk-draft-part {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.mk-draft-part > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.mk-draft-part p {
+  margin: 0;
+}
+
+.mk-draft-done {
+  flex: none;
+  color: var(--color-success-text);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+}
+
+.mk-draft-quote {
+  font-family: var(--font-reading);
+  font-style: italic;
+}
+
+.mk-draft-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mk-draft-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: var(--text-small);
+}
+
+.mk-draft-palette > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mk-draft-palette > span > span {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+
+@media (max-width: 1000px) {
+  .mk-identity {
+    grid-template-columns: 1fr;
+  }
+
+  .mk-identity-aside {
+    position: static;
+    order: -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .mk-swatches li {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+  }
+
+  .mk-swatches li select,
+  .mk-swatches li code {
+    grid-column: 2 / -1;
+  }
+
+  .mk-font-row {
+    grid-template-columns: 1fr;
+  }
+}

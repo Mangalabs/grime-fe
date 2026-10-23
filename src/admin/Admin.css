@@ -425,6 +425,27 @@ strong + .admin-chip {
   font-variant-numeric: tabular-nums;
 }
 
+.admin-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* App.css sizes every input like a text field; boxes and radios stay small. */
+.admin-toggle input,
+.mk-radio input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--color-accent);
+}
+
 .admin-model input {
   width: min(280px, 60vw);
   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
