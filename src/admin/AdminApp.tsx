@@ -3,13 +3,14 @@ import type { AuthUser } from "../api/contracts";
 import { AccountMenu } from "../components/AccountMenu";
 import { initialTheme } from "../features/theme";
 import { InvitesSection } from "./InvitesSection";
+import { ModelsSection } from "./ModelsSection";
 import { OverviewSection } from "./OverviewSection";
 import { UsersSection } from "./UsersSection";
 import { WaitlistSection } from "./WaitlistSection";
 import "../App.css";
 import "./Admin.css";
 
-export type AdminSection = "overview" | "waitlist" | "invites" | "users";
+export type AdminSection = "overview" | "waitlist" | "invites" | "users" | "models";
 
 // The hash keeps the section on reload and makes it linkable (/admin#convites).
 const sectionHashes: Record<AdminSection, string> = {
@@ -17,6 +18,7 @@ const sectionHashes: Record<AdminSection, string> = {
   waitlist: "lista-de-espera",
   invites: "convites",
   users: "usuarios",
+  models: "modelos",
 };
 
 const sectionLabels: Record<AdminSection, string> = {
@@ -24,6 +26,7 @@ const sectionLabels: Record<AdminSection, string> = {
   waitlist: "Lista de espera",
   invites: "Convites",
   users: "Usuários",
+  models: "Modelos",
 };
 
 function sectionFromHash(): AdminSection {
@@ -83,6 +86,7 @@ export function AdminApp({ user, onLogout }: { user: AuthUser; onLogout: () => v
         {section === "waitlist" && <WaitlistSection />}
         {section === "invites" && <InvitesSection />}
         {section === "users" && <UsersSection />}
+        {section === "models" && <ModelsSection />}
       </main>
     </div>
   );

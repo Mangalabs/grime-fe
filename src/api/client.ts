@@ -2,6 +2,7 @@ import type {
   ArchitectAnalysis,
   ArchitectReview,
   AdminInvite,
+  AdminLlmModels,
   AdminOverview,
   AdminUser,
   AdminWaitlistEntry,
@@ -14,6 +15,7 @@ import type {
   GoogleDocSync,
   GoogleHeadingLevel,
   GoogleStatus,
+  LlmTask,
   FactApprovalResult,
   CreateProjectSlot,
   CreateRelation,
@@ -202,6 +204,15 @@ export const admin = {
     request<AdminUser>(`/api/v1/admin/users/${userId}`, {
       method: 'PATCH',
       ...jsonBody({ monthlyWordLimit }),
+    }),
+
+  models: () => request<AdminLlmModels>('/api/v1/admin/models'),
+
+  // Null goes back to the server default.
+  setModel: (task: LlmTask, model: string | null) =>
+    request<AdminLlmModels>(`/api/v1/admin/models/${task}`, {
+      method: 'PUT',
+      ...jsonBody({ model }),
     }),
 }
 

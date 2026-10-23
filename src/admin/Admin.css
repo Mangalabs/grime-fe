@@ -425,6 +425,12 @@ strong + .admin-chip {
   font-variant-numeric: tabular-nums;
 }
 
+.admin-model input {
+  width: min(280px, 60vw);
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-variant-numeric: normal;
+}
+
 .admin-limit input[aria-invalid="true"] {
   border-color: var(--color-critical);
 }

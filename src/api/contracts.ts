@@ -440,6 +440,22 @@ export interface AdminUser {
   effectiveWordLimit: number
 }
 
+// Each call the platform makes to a model; same names as the usage features.
+export type LlmTask = UsageFeature
+
+export interface AdminLlmModels {
+  tasks: Array<{
+    task: LlmTask
+    model: string
+    defaultModel: string
+    // True while the task uses the server default from the env.
+    isDefault: boolean
+    updatedAt: string | null
+  }>
+  // Null when the server couldn't ask the provider for its list.
+  availableModels: string[] | null
+}
+
 export interface AdminOverview {
   users: number
   newUsersThisMonth: number
