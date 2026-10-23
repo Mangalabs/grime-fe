@@ -59,7 +59,8 @@ import {
   startSession,
 } from '../auth/session'
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
+// Without a trailing slash, so paths starting with / don't make //api/...
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
 
 export class ApiError extends Error {
   public readonly status: number
