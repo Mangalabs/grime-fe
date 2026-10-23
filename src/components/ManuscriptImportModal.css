@@ -1,0 +1,154 @@
+.import-progress {
+  display: grid;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.import-progress-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+}
+
+.import-progress-heading strong {
+  font-family: var(--font-reading);
+  font-size: var(--text-title);
+  font-variant-numeric: tabular-nums;
+}
+
+.import-bar {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+}
+
+.import-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-accent);
+  transition: width 0.4s ease;
+}
+
+/* Saving has no measurable progress: the bar moves to show it's working. */
+.import-bar.is-busy > span {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 8px,
+    color-mix(in srgb, var(--color-surface) 35%, transparent) 8px 16px
+  );
+  background-size: 22.6px 100%;
+  animation: import-stripes 0.8s linear infinite;
+}
+
+.import-bar.is-failed > span {
+  background: var(--color-critical);
+}
+
+@keyframes import-stripes {
+  to {
+    background-position: 22.6px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .import-bar > span {
+    transition: none;
+  }
+
+  .import-bar.is-busy > span {
+    animation: none;
+  }
+}
+
+.import-steps {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.import-step {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  font-size: var(--text-body);
+}
+
+.import-step-icon {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 2px solid var(--color-border-strong);
+  border-radius: 50%;
+  color: var(--color-on-accent);
+  font-size: 12px;
+  font-weight: var(--weight-bold);
+}
+
+.import-step.is-done .import-step-icon {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.import-step.is-active .import-step-icon {
+  border-color: var(--color-accent);
+  border-right-color: transparent;
+  animation: import-spin 0.9s linear infinite;
+}
+
+.import-step.is-failed .import-step-icon {
+  border-color: var(--color-critical);
+  background: var(--color-critical);
+}
+
+@keyframes import-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .import-step.is-active .import-step-icon {
+    border-right-color: var(--color-accent);
+    animation: none;
+  }
+}
+
+.import-step-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.import-step.is-waiting .import-step-text {
+  color: var(--color-text-faint);
+}
+
+.import-step.is-active .import-step-text > span {
+  font-weight: var(--weight-semibold);
+}
+
+.import-step-text small {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.import-note {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
+  font-size: var(--text-small);
+  line-height: 1.5;
+}

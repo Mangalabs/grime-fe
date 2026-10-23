@@ -1,0 +1,177 @@
+.usage-meter {
+  --usage-color: var(--color-accent);
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.usage-meter.is-warning {
+  --usage-color: var(--color-warning);
+}
+
+.usage-meter.is-exhausted {
+  --usage-color: var(--color-critical);
+}
+
+.usage-meter-figures {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--color-text-muted);
+  font-size: var(--text-ui);
+}
+
+.usage-meter-figures strong {
+  color: var(--color-text-strong);
+  font-family: var(--font-reading);
+  font-size: var(--text-title);
+  font-weight: var(--weight-medium);
+  letter-spacing: -0.02em;
+}
+
+.usage-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-bg-sunken);
+}
+
+.usage-bar > span {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: inherit;
+  background: var(--usage-color, var(--color-accent));
+}
+
+.usage-bar.is-thin {
+  height: 4px;
+}
+
+.usage-meter-caption {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.usage-meter.is-exhausted .usage-meter-caption {
+  color: var(--color-critical-text);
+  font-weight: var(--weight-semibold);
+}
+
+/* Inside the account menu: same parts, tighter. */
+.usage-meter.is-compact {
+  gap: 6px;
+  margin-top: 0;
+}
+
+.usage-meter.is-compact .usage-meter-figures strong {
+  font-family: var(--font-interface);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0;
+}
+
+.usage-meter.is-compact .usage-bar {
+  height: 6px;
+}
+
+.usage-section-title {
+  margin: 24px 0 10px;
+  color: var(--color-text-faint);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.usage-breakdown {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.usage-breakdown-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  font-size: var(--text-body);
+}
+
+.usage-breakdown-head strong {
+  color: var(--color-text-strong);
+  font-weight: var(--weight-semibold);
+}
+
+.usage-breakdown-head span {
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.usage-breakdown .usage-bar > span {
+  /* A feature that read nothing shows an empty track, not a sliver. */
+  min-width: 0;
+  background: var(--color-accent-label);
+}
+
+.usage-breakdown p {
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+
+.usage-explainer {
+  margin-top: 22px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--color-surface-muted);
+}
+
+.usage-explainer strong {
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+}
+
+.usage-explainer p {
+  margin: 4px 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: 1.55;
+}
+
+/* Account menu: the meter and its link to the details. */
+.account-usage {
+  display: grid;
+  gap: 8px;
+  padding: 10px 8px 12px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.account-usage-label {
+  margin: 0;
+  color: var(--color-text-faint);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.account-usage .text-button {
+  justify-self: start;
+  margin-right: 0;
+}
+
+/* The avatar tells the author when the allowance is running out. */
+.account-trigger.is-warning {
+  border-color: var(--color-warning);
+}
+
+.account-trigger.is-exhausted {
+  border-color: var(--color-critical);
+}

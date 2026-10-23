@@ -1,0 +1,60 @@
+.move-history-list {
+  display: grid;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.move-history-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.move-history-list li:last-child {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.move-history-main {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.move-history-scene {
+  overflow: hidden;
+  color: var(--color-text-strong);
+  font-family: var(--font-reading);
+  font-size: var(--text-body);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.move-history-meta {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.move-history-status {
+  flex: none;
+  color: var(--color-text-faint);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+}
+
+.move-history-list li.is-undone .move-history-main {
+  opacity: 0.6;
+}
+
+.move-history-list li.is-undone .move-history-scene {
+  text-decoration: line-through;
+  text-decoration-color: var(--color-text-faint);
+}
+
+.move-history-empty {
+  color: var(--color-text-muted);
+  font-size: var(--text-body);
+}

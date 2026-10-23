@@ -1,0 +1,181 @@
+.tour-root {
+  position: fixed;
+  z-index: 80;
+  inset: 0;
+}
+
+.tour-blocker {
+  position: absolute;
+  inset: 0;
+}
+
+.tour-blocker.is-dimmed {
+  background: var(--color-backdrop);
+}
+
+/* The hole: a ring of shadow around the target dims everything else. */
+.tour-spotlight {
+  position: fixed;
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 2px var(--color-accent),
+    0 0 0 9999px var(--color-backdrop);
+  pointer-events: none;
+  transition:
+    top 0.22s ease,
+    left 0.22s ease,
+    width 0.22s ease,
+    height 0.22s ease;
+}
+
+.tour-card {
+  position: fixed;
+  width: min(360px, calc(100vw - 32px));
+  padding: 18px 20px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-lg);
+  outline: none;
+  transition:
+    top 0.22s ease,
+    left 0.22s ease;
+}
+
+.tour-card.is-centred {
+  top: 50%;
+  left: 50%;
+  width: min(440px, calc(100vw - 32px));
+  padding: 24px 26px 20px;
+  transform: translate(-50%, -50%);
+}
+
+/* Phones: a sheet along the bottom, whatever the target. */
+@media (max-width: 600px) {
+  .tour-card.is-docked:not(.is-centred) {
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-spotlight,
+  .tour-card {
+    transition: none;
+  }
+}
+
+.tour-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.tour-progress {
+  color: var(--color-accent-label);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tour-skip {
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 5px;
+  color: var(--color-text-muted);
+  background: transparent;
+  font-size: var(--text-small);
+}
+
+.tour-skip:hover {
+  color: var(--color-text-strong);
+}
+
+.tour-card h2 {
+  margin: 0;
+  font-size: var(--text-title);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.tour-card.is-centred h2 {
+  font-size: 26px;
+}
+
+.tour-body {
+  margin-top: 8px;
+  color: var(--color-text-secondary);
+  font-size: var(--text-body);
+  line-height: 1.55;
+}
+
+.tour-body p {
+  margin: 0;
+}
+
+.tour-body p + p {
+  margin-top: 8px;
+}
+
+.tour-body kbd,
+.guide-article kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--color-border-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+  font-family: var(--font-interface);
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.tour-dots {
+  display: flex;
+  gap: 5px;
+  margin-top: 16px;
+}
+
+.tour-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-border-strong);
+  transition: width 0.2s ease;
+}
+
+.tour-dots span.is-current {
+  width: 18px;
+  background: var(--color-accent);
+}
+
+.tour-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.tour-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.tour-learn-more {
+  padding: 0;
+  border: 0;
+  color: var(--color-accent-text);
+  background: transparent;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  text-align: left;
+}
+
+.tour-learn-more:hover {
+  text-decoration: underline;
+}

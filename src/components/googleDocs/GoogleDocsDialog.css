@@ -1,0 +1,139 @@
+.google-docs-dialog {
+  width: min(560px, 100%);
+}
+
+.google-docs-points {
+  margin: 0 0 4px;
+  padding-left: 20px;
+  color: var(--color-text-secondary);
+  font-size: var(--text-body);
+  line-height: 1.6;
+}
+
+.google-docs-note {
+  padding: 10px 12px;
+  border-left: 3px solid var(--color-accent-border);
+  border-radius: 0 7px 7px 0;
+  background: var(--color-surface-muted);
+  font-size: var(--text-small) !important;
+}
+
+.google-docs-linked {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface-raised);
+}
+
+.google-docs-linked > div {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.google-docs-linked a {
+  overflow: hidden;
+  color: var(--color-text-strong);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.google-docs-linked a:hover {
+  text-decoration: underline;
+}
+
+.google-docs-linked span {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.google-docs-result {
+  color: var(--color-success-text) !important;
+}
+
+.google-docs-unlink {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin-top: 4px;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.google-docs-unlink .text-button {
+  margin-right: 0;
+}
+
+.google-docs-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border-subtle);
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.google-docs-footer .inline-link {
+  color: var(--color-accent-text);
+  font-weight: var(--weight-semibold);
+}
+
+.google-docs-comments {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.google-docs-comments h3 {
+  margin: 0 0 6px;
+  color: var(--color-text-strong);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+}
+
+.google-docs-comments > p {
+  margin: 0 0 12px;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: 1.55;
+}
+
+.google-docs-sources {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  margin: 10px 0 14px;
+  padding: 0;
+  border: 0;
+}
+
+.google-docs-publish {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.google-docs-publish span {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+@media (max-width: 600px) {
+  .google-docs-sources {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,787 @@
+.rhythm-page {
+  display: grid;
+  gap: 18px;
+  padding: 32px 0;
+  /* Lane heights, shared by the label column and the plot. */
+  --lane-bands: 22px;
+  --lane-tension: 132px;
+  --lane-bars: 46px;
+  --lane-cast: 16px;
+  --lane-axis: 18px;
+  --lane-gap: 8px;
+}
+
+.rhythm-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.rhythm-header .page-intro {
+  margin-bottom: 6px;
+}
+
+.rhythm-header > .button {
+  flex: none;
+  margin-bottom: 8px;
+}
+
+.rhythm-empty,
+.rhythm-loading {
+  display: grid;
+  gap: 6px;
+}
+
+.rhythm-empty p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.rhythm-loading {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px 12px;
+  font-size: var(--text-body);
+}
+
+.rhythm-progress {
+  grid-column: 1 / -1;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+}
+
+.rhythm-progress span {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 0.2s ease;
+}
+
+/* Summary figures */
+.rhythm-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.rhythm-stats > div {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 10px;
+  background: var(--color-surface-raised);
+}
+
+.rhythm-stats dt {
+  color: var(--color-accent-label);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rhythm-stats dd {
+  margin: 0;
+  font-family: var(--font-reading);
+  font-size: var(--text-heading);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.rhythm-stats dd small {
+  color: var(--color-text-faint);
+  font-size: var(--text-body);
+}
+
+.rhythm-stats > div > span,
+.rhythm-stats .text-button {
+  justify-self: start;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.rhythm-stats .text-button {
+  margin: 0;
+  color: var(--color-accent-text);
+}
+
+.rhythm-stat-missing {
+  color: var(--color-text-faint);
+}
+
+/* Chart panel */
+.rhythm-panel-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  margin-bottom: 14px;
+}
+
+.rhythm-panel-heading p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.rhythm-cast-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.rhythm-cast-filter select {
+  width: auto;
+  height: 30px;
+}
+
+.rhythm-hint {
+  margin: -4px 0 12px;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.rhythm-hint .text-button {
+  margin: 0;
+  font-size: inherit;
+}
+
+.rhythm-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.rhythm-chart {
+  display: grid;
+  grid-template-columns: 132px minmax(var(--plot-min), 1fr);
+  min-width: 0;
+}
+
+.rhythm-labels {
+  position: sticky;
+  z-index: 2;
+  left: 0;
+  display: grid;
+  align-content: start;
+  gap: var(--lane-gap);
+  padding-right: 10px;
+  background: var(--color-surface);
+}
+
+.rhythm-label {
+  display: grid;
+  align-content: center;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rhythm-label small {
+  color: var(--color-text-faint);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-medium);
+}
+
+.rhythm-label-bands {
+  height: var(--lane-bands);
+  color: var(--color-text-faint);
+  font-weight: var(--weight-medium);
+}
+
+.rhythm-label-tension {
+  height: var(--lane-tension);
+}
+
+.rhythm-label-bars {
+  height: var(--lane-bars);
+}
+
+.rhythm-label-cast {
+  display: block;
+  height: var(--lane-cast);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-medium);
+  line-height: var(--lane-cast);
+}
+
+.rhythm-label-axis {
+  height: var(--lane-axis);
+}
+
+.rhythm-plot {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--lane-gap);
+}
+
+.rhythm-lane {
+  display: grid;
+  grid-template-columns: repeat(var(--scene-count), minmax(0, 1fr));
+  column-gap: 1px;
+}
+
+.rhythm-lane-bands {
+  height: var(--lane-bands);
+  margin: 0;
+}
+
+.rhythm-lane-bands .overview-band {
+  height: var(--lane-bands);
+}
+
+/* Tension: area and line in SVG, beat dots in the scene grid. */
+.rhythm-tension {
+  position: relative;
+  height: var(--lane-tension);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.rhythm-tension svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.rhythm-gridline {
+  stroke: var(--color-border-subtle);
+  stroke-dasharray: 3 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.rhythm-tension-area {
+  fill: color-mix(in srgb, var(--color-critical) 14%, transparent);
+}
+
+.rhythm-tension-line {
+  fill: none;
+  stroke: var(--color-critical);
+  stroke-linejoin: round;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.rhythm-tension-dots {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--scene-count), minmax(0, 1fr));
+}
+
+.rhythm-tension-dots span {
+  position: relative;
+  grid-row: 1;
+  justify-self: center;
+  width: 7px;
+  height: 7px;
+  margin-bottom: -3.5px;
+  align-self: end;
+  border: 1.5px solid var(--color-surface);
+  border-radius: 50%;
+  background: var(--beat-color);
+}
+
+/* Beats */
+.beat-setup { --beat-color: var(--color-anomaly); }
+.beat-rising { --beat-color: var(--color-warning); }
+.beat-peak { --beat-color: var(--color-critical); }
+.beat-falling { --beat-color: var(--type-world-rule); }
+.beat-release { --beat-color: var(--color-accent); }
+
+.rhythm-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 10px 0 0 132px;
+  padding: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-micro);
+  list-style: none;
+}
+
+.rhythm-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.beat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--beat-color);
+}
+
+/* Bars */
+.rhythm-bars {
+  height: var(--lane-bars);
+  align-items: end;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.rhythm-bars > span {
+  display: flex;
+  height: 100%;
+  align-items: flex-end;
+}
+
+.rhythm-bars > span > span {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  background: var(--lane-color);
+}
+
+.lane-words { --lane-color: var(--color-accent); }
+.lane-dialogue { --lane-color: var(--color-note); }
+.lane-sentences { --lane-color: var(--color-anomaly); }
+.lane-facts { --lane-color: var(--type-item); }
+
+/* Cast heatmap */
+.rhythm-cast {
+  height: var(--lane-cast);
+}
+
+.rhythm-cast span {
+  border-radius: 2px;
+  background: var(--type-character);
+}
+
+.rhythm-axis {
+  height: var(--lane-axis);
+}
+
+.rhythm-axis span {
+  justify-self: center;
+  color: var(--color-text-faint);
+  font-size: var(--text-micro);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Focus column */
+.rhythm-column-highlight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-accent) 16%, transparent);
+  pointer-events: none;
+}
+
+.rhythm-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--scene-count), minmax(0, 1fr));
+}
+
+.rhythm-overlay button {
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.rhythm-overlay button:hover {
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+.rhythm-overlay button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+/* Inspector */
+.rhythm-inspector {
+  min-height: 120px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.rhythm-inspector-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rhythm-inspector-heading > div {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 2px;
+}
+
+.rhythm-inspector-heading h3 {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-reading);
+  font-size: var(--text-title);
+  font-weight: var(--weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rhythm-scene-number {
+  display: grid;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 6px;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.rhythm-group {
+  justify-self: start;
+  padding: 1px 8px;
+  border-radius: 999px;
+  color: var(--color-text-strong);
+  background: color-mix(in srgb, var(--group-color) 20%, transparent);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+}
+
+.rhythm-inspector-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 16px 24px;
+  margin-top: 14px;
+}
+
+.rhythm-inspector-tension {
+  grid-row: span 2;
+}
+
+.rhythm-tension-score {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  color: var(--color-text-faint);
+}
+
+.rhythm-tension-score strong {
+  color: var(--color-text-strong);
+  font-family: var(--font-reading);
+  font-size: var(--text-heading);
+  font-weight: var(--weight-medium);
+}
+
+.beat-chip {
+  margin-left: 8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  color: var(--color-text-strong);
+  background: color-mix(in srgb, var(--beat-color) 22%, transparent);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+}
+
+.rhythm-inspector blockquote {
+  margin: 8px 0 12px;
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--color-border-strong);
+  color: var(--color-text);
+  font-family: var(--font-reading);
+  font-size: var(--text-body);
+  line-height: 1.55;
+}
+
+.rhythm-components {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.rhythm-components > div {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  font-size: var(--text-small);
+}
+
+.rhythm-components dt {
+  color: var(--color-text-muted);
+}
+
+.rhythm-components dd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.rhythm-meter {
+  width: 100%;
+  max-width: 160px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+}
+
+.rhythm-meter span {
+  display: block;
+  height: 100%;
+  background: var(--color-critical);
+}
+
+.rhythm-scene-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 14px;
+  margin: 0;
+}
+
+.rhythm-scene-stats dt {
+  color: var(--color-text-faint);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rhythm-scene-stats dd {
+  margin: 2px 0 0;
+  font-size: var(--text-lead);
+  font-variant-numeric: tabular-nums;
+}
+
+.rhythm-scene-stats small {
+  color: var(--color-text-faint);
+  font-size: var(--text-micro);
+}
+
+.rhythm-inspector-text p {
+  margin: 0 0 6px;
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+
+.rhythm-inspector-text q {
+  font-family: var(--font-reading);
+}
+
+.rhythm-muted {
+  color: var(--color-text-muted);
+}
+
+p.rhythm-muted {
+  margin: 0;
+  font-size: var(--text-small);
+}
+
+/* Cadence and readings */
+.rhythm-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.rhythm-cadence h3 {
+  margin: 22px 0 10px;
+  color: var(--color-accent-label);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rhythm-panel-note {
+  margin: 6px 0 12px;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+
+.rhythm-shares {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rhythm-shares li {
+  display: grid;
+  grid-template-columns: minmax(0, 150px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--text-small);
+}
+
+.rhythm-share-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rhythm-share-bar {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+}
+
+.rhythm-share-bar > span:first-child {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--group-color);
+}
+
+.rhythm-share-expected {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--color-text-strong);
+}
+
+.rhythm-share-value {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rhythm-share-value small {
+  color: var(--color-text-faint);
+}
+
+.rhythm-split {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: var(--text-small);
+}
+
+.rhythm-endings {
+  display: flex;
+  height: 24px;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 6px;
+  gap: 2px;
+}
+
+.rhythm-ending {
+  display: grid;
+  min-width: 0;
+  flex-basis: 0;
+  place-items: center;
+  overflow: hidden;
+  color: var(--color-text-strong);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.rhythm-ending-0 { background: color-mix(in srgb, var(--color-note) 30%, transparent); }
+.rhythm-ending-1 { background: color-mix(in srgb, var(--color-warning) 30%, transparent); }
+.rhythm-ending-2 { background: color-mix(in srgb, var(--color-anomaly) 24%, transparent); }
+
+.rhythm-openings {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rhythm-openings li {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--color-surface-muted);
+  font-size: var(--text-small);
+}
+
+.rhythm-openings q {
+  overflow: hidden;
+  font-family: var(--font-reading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rhythm-readings ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: var(--text-body);
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .rhythm-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rhythm-columns,
+  .rhythm-inspector-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rhythm-inspector-tension {
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 680px) {
+  .rhythm-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .rhythm-chart {
+    grid-template-columns: 92px minmax(var(--plot-min), 1fr);
+  }
+
+  .rhythm-legend {
+    margin-left: 0;
+  }
+
+  .rhythm-scene-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rhythm-shares li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .rhythm-share-bar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+/* Grid children may shrink, so the chart scrolls inside its panel. */
+.rhythm-page > *,
+.rhythm-columns > * {
+  min-width: 0;
+}

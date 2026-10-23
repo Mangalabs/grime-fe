@@ -1,0 +1,221 @@
+/*
+ * Design tokens. Components use these variables only; dark mode swaps the
+ * values below instead of overriding component selectors.
+ */
+:root {
+  --font-reading: Georgia, "Baskerville Old Face", "Libre Baskerville",
+    "Iowan Old Style", serif;
+  --font-interface: "Segoe UI", Aptos, ui-sans-serif, system-ui, sans-serif;
+
+  /* Type scale */
+  --text-micro: 11px; /* eyebrows, tags, timestamps */
+  --text-small: 12px; /* labels, helper text, text buttons */
+  --text-ui: 13px; /* buttons, navigation, secondary copy */
+  --text-body: 14px; /* inputs, messages, descriptions */
+  --text-lead: 16px; /* prose inside the interface: facts, quotes */
+  --text-reading: 17px; /* the manuscript */
+  --text-title: 22px; /* panel and card titles */
+  --text-heading: clamp(28px, 3vw, 36px); /* page and scene titles */
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Surfaces */
+  --color-bg: #f5f5ef;
+  --color-bg-sunken: #eef0e9;
+  --color-surface: #fbfbf7;
+  --color-surface-raised: #ffffff;
+  --color-surface-paper: #fdfdfa;
+  --color-surface-muted: #f3f5ef;
+  --color-topbar: rgba(250, 250, 246, 0.92);
+  --color-backdrop: rgba(23, 30, 20, 0.45);
+
+  /* Borders */
+  --color-border: #d9dcd2;
+  --color-border-subtle: #e6e9e1;
+  --color-border-strong: #c9d0c2;
+
+  /* Text */
+  --color-text-strong: #20251f;
+  --color-text: #293126;
+  --color-text-secondary: #52604b;
+  --color-text-muted: #6e7769;
+  --color-text-faint: #8a9385;
+
+  /* Accent */
+  --color-accent: #405d34;
+  --color-accent-hover: #314b28;
+  --color-on-accent: #f8faf4;
+  --color-accent-text: #52723f;
+  --color-accent-text-strong: #2f4825;
+  --color-accent-label: #66824f;
+  --color-accent-soft: #e7efdf;
+  --color-accent-soft-strong: #dde7d5;
+  --color-accent-border: #b9c4b0;
+  --color-focus: #5a7442;
+
+  /* Status: strong marks, readable text, soft fills */
+  --color-critical: #c0493d;
+  --color-critical-text: #9e3229;
+  --color-critical-soft: #fbe5e1;
+  --color-critical-border: #e2b4ad;
+  --color-warning: #c08a2e;
+  --color-warning-text: #7d5414;
+  --color-warning-soft: #fcf0d5;
+  --color-note: #5d86a6;
+  --color-note-text: #46647d;
+  --color-note-soft: #e5f0f7;
+  --color-success-text: #3d5932;
+  --color-success-soft: #eff7ea;
+  --color-success-border: #c9dbc0;
+  --color-anomaly: #6d7d99;
+
+  /* Entity types (archive and relationship map) */
+  --type-character: #4f7a9a;
+  --type-location: #5f8a45;
+  --type-item: #b07a2a;
+  --type-faction: #8a5a8a;
+  --type-world-rule: #3f8a84;
+  --type-event: #b0564a;
+  --group-rose: #c2678a;
+
+  /* The sticky top bar; sticky panels below it offset by this. */
+  --topbar-height: 56px;
+
+  --shadow-sm: 0 1px 2px rgba(29, 38, 26, 0.05);
+  --shadow-lg: 0 20px 55px rgba(17, 25, 15, 0.22);
+
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-family: var(--font-interface);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #111613;
+  --color-bg-sunken: #18201b;
+  --color-surface: #1b231e;
+  --color-surface-raised: #202a22;
+  --color-surface-paper: #151c17;
+  --color-surface-muted: #182019;
+  --color-topbar: rgba(21, 27, 23, 0.94);
+  --color-backdrop: rgba(0, 0, 0, 0.55);
+
+  --color-border: #354036;
+  --color-border-subtle: #2c352e;
+  --color-border-strong: #465448;
+
+  --color-text-strong: #edf1e9;
+  --color-text: #dfe6da;
+  --color-text-secondary: #c1cabd;
+  --color-text-muted: #a3ae9f;
+  --color-text-faint: #7f8c7c;
+
+  --color-accent: #9abb7e;
+  --color-accent-hover: #b4cf99;
+  --color-on-accent: #122012;
+  --color-accent-text: #a8cf83;
+  --color-accent-text-strong: #c8e0b0;
+  --color-accent-label: #a7c68a;
+  --color-accent-soft: #2b3b2b;
+  --color-accent-soft-strong: #2c3d2e;
+  --color-accent-border: #56665a;
+  --color-focus: #9abb7e;
+
+  --color-critical: #e0786b;
+  --color-critical-text: #ffb9af;
+  --color-critical-soft: #4a2421;
+  --color-critical-border: #7b4740;
+  --color-warning: #d9a64e;
+  --color-warning-text: #f0c77a;
+  --color-warning-soft: #47361b;
+  --color-note: #7fb0d3;
+  --color-note-text: #b9d9ef;
+  --color-note-soft: #223a49;
+  --color-success-text: #d0e8c5;
+  --color-success-soft: #20301f;
+  --color-success-border: #4e6b45;
+  --color-anomaly: #93a3c0;
+
+  --type-character: #82acc9;
+  --type-location: #9cc47f;
+  --type-item: #dcae5f;
+  --type-faction: #c29ac2;
+  --type-world-rule: #78c2bb;
+  --type-event: #e08d80;
+  --group-rose: #e59cb8;
+
+  --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 20px 55px rgba(0, 0, 0, 0.45);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+textarea {
+  font-family: var(--font-reading);
+}
+
+button,
+select {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+h1,
+h2 {
+  color: var(--color-text-strong);
+  font-family: var(--font-reading);
+  font-weight: var(--weight-medium);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Scene group colours (bands over the timeline, chips, pickers). */
+.group-sage { --group-color: var(--color-accent-label); }
+.group-sky { --group-color: var(--color-note); }
+.group-amber { --group-color: var(--color-warning); }
+.group-plum { --group-color: var(--type-faction); }
+.group-teal { --group-color: var(--type-world-rule); }
+.group-brick { --group-color: var(--type-event); }
+.group-slate { --group-color: var(--color-text-faint); }
+.group-rose { --group-color: var(--group-rose); }

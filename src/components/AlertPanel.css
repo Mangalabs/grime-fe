@@ -1,0 +1,80 @@
+.alerts-panel .panel-description {
+  margin-top: 10px;
+}
+
+.alert-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.alert-card {
+  padding: 12px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  background: var(--color-surface-raised);
+}
+
+.alert-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.alert-status {
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.status-pending {
+  color: var(--color-warning-text);
+  background: var(--color-warning-soft);
+}
+
+.status-acknowledged {
+  color: var(--color-success-text);
+  background: var(--color-success-soft);
+}
+
+.alert-card time,
+.alert-card p {
+  color: var(--color-text-muted);
+  font-size: var(--text-micro);
+}
+
+.alert-card p {
+  margin: 12px 0 3px;
+}
+
+.alert-source {
+  display: block;
+  padding: 0;
+  border: 0;
+  color: var(--color-accent-text-strong);
+  background: transparent;
+  font-family: var(--font-reading);
+  font-size: var(--text-body);
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent-border);
+  text-underline-offset: 3px;
+}
+
+button.alert-source:hover {
+  text-decoration-color: currentColor;
+}
+
+.alert-source-missing {
+  color: var(--color-text-muted);
+  font-style: italic;
+  text-decoration: none;
+}
+
+.alert-card .text-button {
+  margin-top: 12px;
+}

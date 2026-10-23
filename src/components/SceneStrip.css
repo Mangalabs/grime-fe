@@ -1,0 +1,238 @@
+/* Scene states, shared by segments, swatches and the finder. */
+
+.state-critical {
+  --state-color: var(--color-critical);
+}
+
+.state-alert {
+  --state-color: var(--color-warning);
+}
+
+.state-facts {
+  --state-color: var(--color-note);
+}
+
+.state-clean {
+  --state-color: var(--color-accent-label);
+}
+
+.state-unanalyzed {
+  --state-color: var(--color-border);
+}
+
+.state-unknown {
+  --state-color: var(--color-border-strong);
+}
+
+.state-swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 2px;
+  background: var(--state-color);
+}
+
+.state-unanalyzed.state-swatch {
+  border: 1px solid var(--color-border-strong);
+  background: transparent;
+}
+
+/* Overview bar */
+
+.overview {
+  position: relative;
+  margin-top: 22px;
+}
+
+.overview-bar,
+.overview-bands {
+  display: grid;
+  grid-template-columns: repeat(var(--scene-count, 1), minmax(0, 1fr));
+  gap: 2px;
+}
+
+.overview-bar {
+  height: 30px;
+  align-items: end;
+}
+
+/* Scene groups as labelled bands over the bar. */
+.overview-bands {
+  margin-bottom: 6px;
+}
+
+.overview-band {
+  min-width: 0;
+  height: 20px;
+  padding: 0 6px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 4px;
+  color: var(--color-text-strong);
+  background: color-mix(in srgb, var(--group-color) 22%, transparent);
+  box-shadow: inset 0 -2px 0 var(--group-color);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  text-align: left;
+}
+
+.overview-band span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overview-band:hover {
+  background: color-mix(in srgb, var(--group-color) 34%, transparent);
+}
+
+.overview-segment.is-in-range {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.overview-segment {
+  position: relative;
+  min-width: 2px;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: var(--state-color);
+  cursor: pointer;
+  transform-origin: bottom;
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.15s;
+}
+
+/* Dock-style magnification: the hovered scene grows, its neighbours less. */
+.overview-segment:hover,
+.overview-segment:focus-visible {
+  transform: scaleY(1.9);
+  filter: brightness(0.92);
+}
+
+.overview-segment:hover + .overview-segment,
+.overview-segment:has(+ .overview-segment:hover),
+.overview-segment:focus-visible + .overview-segment,
+.overview-segment:has(+ .overview-segment:focus-visible) {
+  transform: scaleY(1.4);
+}
+
+.overview-segment:hover + .overview-segment + .overview-segment,
+.overview-segment:has(+ .overview-segment + .overview-segment:hover),
+.overview-segment:focus-visible + .overview-segment + .overview-segment,
+.overview-segment:has(+ .overview-segment + .overview-segment:focus-visible) {
+  transform: scaleY(1.15);
+}
+
+.overview-segment:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.overview-segment-selected {
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px var(--color-accent);
+}
+
+/* "You are here" caret under the selected scene. */
+.overview-segment-selected::after {
+  position: absolute;
+  bottom: -11px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-right: 4px solid transparent;
+  border-bottom: 5px solid var(--color-accent);
+  border-left: 4px solid transparent;
+  content: "";
+  transform: translateX(-50%);
+}
+
+.overview-tooltip {
+  position: absolute;
+  z-index: 5;
+  bottom: calc(100% + 12px);
+  /* stays inside the bar near both ends */
+  left: clamp(130px, var(--tip-x), calc(100% - 130px));
+  display: grid;
+  width: 260px;
+  max-width: 100%;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 6px) scale(0.97);
+  transition:
+    opacity 0.16s ease,
+    transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+    left 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.overview-tooltip.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.overview-tooltip-number {
+  color: var(--color-text-faint);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.overview-tooltip strong {
+  color: var(--color-text-strong);
+  font-family: var(--font-reading);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  line-height: 1.35;
+}
+
+.overview-tooltip-state {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.overview-axis {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  color: var(--color-text-faint);
+  font-size: var(--text-micro);
+}
+
+.overview-axis-current {
+  position: absolute;
+  left: var(--tip-x);
+  color: var(--color-accent-text-strong);
+  font-weight: var(--weight-bold);
+  transform: translateX(-50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overview-segment,
+  .overview-tooltip {
+    transition: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .overview-bar {
+    gap: 1px;
+  }
+}
