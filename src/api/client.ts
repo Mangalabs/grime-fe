@@ -52,15 +52,13 @@ import type {
 } from './contracts'
 import { notifyUsageChanged } from '../features/usage/usageEvents'
 import {
+  apiBaseUrl,
   clearSession,
   expireSession,
   getAccessToken,
   refreshSession,
   startSession,
 } from '../auth/session'
-
-// Without a trailing slash, so paths starting with / don't make //api/...
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
 
 export class ApiError extends Error {
   public readonly status: number

@@ -1,6 +1,7 @@
 import type { AuthSession } from '../api/contracts'
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
+// Without a trailing slash, so paths starting with / don't make //api/...
+export const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
 
 // The access token lives only in memory; the refresh token is an httpOnly
 // cookie the page never sees. A reload restores the session with refreshSession().
