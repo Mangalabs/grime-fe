@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError, google } from '../../api/client'
+import { apiBaseUrl } from '../../auth/session'
 import type {
   GoogleCommentSummary,
   GoogleDocLink,
@@ -14,6 +15,10 @@ import { syncGoogleDoc, type GoogleSyncResult } from './syncGoogleDoc'
 
 // While a linked project is open, the doc is checked this often.
 const autoSyncEveryMs = 10 * 60 * 1000
+
+// Google returns the popup to the API's callback: on this origin behind a
+// proxy, or on the API's own domain when VITE_API_BASE_URL points there.
+const popupOrigins = new Set([window.location.origin, new URL(apiBaseUrl || '/', window.location.origin).origin])
 
 function messageOf(reason: unknown, fallback: string) {
   return reason instanceof Error ? reason.message : fallback
@@ -146,13 +151,25 @@ export function useGoogleDocSync({
       setError(messageOf(reason, 'Não foi possível abrir a conexão com o Google.'))
       return
     }
-    function onMessage(event: MessageEvent) {
-      if (event.origin !== window.location.origin || event.data?.source !== 'petricor-google') return
+    function stopListening() {
       window.removeEventListener('message', onMessage)
+      window.removeEventListener('focus', onFocus)
+    }
+    function onMessage(event: MessageEvent) {
+      if (!popupOrigins.has(event.origin) || event.data?.source !== 'petricor-google') return
+      stopListening()
       if (!event.data.ok) setError('O Google não concluiu a conexão. Tente de novo.')
       reloadStatus()
     }
+    // Some browsers cut the popup off from this window once it has been on
+    // Google's pages, so its message never arrives: ask again on coming back.
+    function onFocus() {
+      if (!popup!.closed) return
+      stopListening()
+      reloadStatus()
+    }
     window.addEventListener('message', onMessage)
+    window.addEventListener('focus', onFocus)
   }
 
   // Findings and notes as comments on their passages in the doc.
