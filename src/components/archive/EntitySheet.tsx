@@ -12,8 +12,14 @@ import {
 import { attributeLabel } from '../../features/archive/attributes'
 import { relationsAt } from '../../features/archive/relations'
 import { orderScenes, sceneTitle } from '../../features/scenes/sceneStatus'
+import type { Wiki } from '../../features/wiki/useWiki'
 import { ChevronLeftIcon, ChevronRightIcon } from '../icons'
 import { SceneStrip } from '../SceneStrip'
+import { EntityWikiPage } from '../wiki/EntityWikiPage'
+import '../wiki/Wiki.css'
+
+// page: the author's wiki page. canon: what the analysed scenes established.
+export type SheetTab = 'page' | 'canon'
 
 interface EntitySheetProps {
   archive: ArchiveEntity[]
@@ -21,6 +27,12 @@ interface EntitySheetProps {
   hints: DuplicateHint[]
   slots: Slot[]
   isMutating: boolean
+  wiki: Wiki | null
+  tab: SheetTab
+  startEditing: boolean
+  onTabChange: (tab: SheetTab) => void
+  onEditTemplate: (templateId: string) => void
+  onDirtyChange: (isDirty: boolean) => void
   onOpenScene: (slotId: string) => void
   onSelectEntity: (entityId: string) => void
   onMerge: (target: ArchiveEntity, source: ArchiveEntity) => void
@@ -48,6 +60,12 @@ export function EntitySheet({
   hints,
   slots,
   isMutating,
+  wiki,
+  tab,
+  startEditing,
+  onTabChange,
+  onEditTemplate,
+  onDirtyChange,
   onOpenScene,
   onSelectEntity,
   onMerge,
@@ -266,6 +284,47 @@ export function EntitySheet({
         </ul>
       )}
 
+      {wiki && (
+        <div className="archive-tabs entity-sheet-tabs" role="tablist" aria-label="Visões da entidade">
+          <button
+            aria-controls="entity-page-panel"
+            aria-selected={tab === 'page'}
+            className={tab === 'page' ? 'is-active' : ''}
+            role="tab"
+            type="button"
+            onClick={() => onTabChange('page')}
+          >
+            Ficha
+          </button>
+          <button
+            aria-controls="entity-canon-panel"
+            aria-selected={tab === 'canon'}
+            className={tab === 'canon' ? 'is-active' : ''}
+            role="tab"
+            type="button"
+            onClick={() => onTabChange('canon')}
+          >
+            Cânone <span>{entity.facts.length}</span>
+          </button>
+        </div>
+      )}
+
+      {wiki && (
+        <div hidden={tab !== 'page'} id="entity-page-panel" role="tabpanel">
+          <EntityWikiPage
+            archive={archive}
+            entity={entity}
+            startEditing={startEditing}
+            wiki={wiki}
+            onDirtyChange={onDirtyChange}
+            onEditTemplate={onEditTemplate}
+            onOpenScene={onOpenScene}
+            onSelectEntity={onSelectEntity}
+          />
+        </div>
+      )}
+
+      <div className="entity-canon" hidden={tab !== 'canon'} id="entity-canon-panel" role={wiki ? 'tabpanel' : undefined}>
       {scenes.length > 0 && positions.length > 0 && (
         <section className="entity-timeline" aria-label="Linha do tempo da entidade">
           <label className="switch">
@@ -426,6 +485,7 @@ export function EntitySheet({
           </ul>
         </section>
       )}
+      </div>
     </article>
   )
 }

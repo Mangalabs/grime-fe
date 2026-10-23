@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../api/client'
-import type { DeletedEntity, ProjectEntity, Slot, SplitEntityResult } from '../../api/contracts'
+import type { DeletedEntity, FactEntityType, ProjectEntity, Slot, SplitEntityResult } from '../../api/contracts'
 import {
   entityTypeLabel,
   findDuplicateHints,
@@ -8,9 +8,10 @@ import {
 } from '../../features/archive/entityModel'
 import { attributeLabel } from '../../features/archive/attributes'
 import { normalizeForSearch } from '../../features/scenes/sceneStatus'
+import type { Wiki } from '../../features/wiki/useWiki'
 import { EntityReconciliationDialog } from '../EntityReconciliationDialog'
-import { SearchIcon } from '../icons'
-import { EntitySheet } from './EntitySheet'
+import { PlusIcon, SearchIcon } from '../icons'
+import { EntitySheet, type SheetTab } from './EntitySheet'
 
 interface EntitiesViewProps {
   projectId: string
@@ -18,10 +19,19 @@ interface EntitiesViewProps {
   entities: ProjectEntity[]
   selectedId: string
   slots: Slot[]
+  // Null when the wiki can't be used (locked project or older backend).
+  wiki: Wiki | null
+  // An entity just created by hand: its page opens for editing.
+  startEditingId: string | null
+  // False when the author keeps unsaved changes.
+  confirmLeave: () => boolean
   onSelect: (entityId: string) => void
   onOpenScene: (slotId: string) => void
   onRefresh: () => Promise<void>
   onError: (message: string) => void
+  onCreateEntity: (type?: FactEntityType) => void
+  onEditTemplate: (templateId: string) => void
+  onDirtyChange: (isDirty: boolean) => void
 }
 
 // The server's refusals, in the reviewer's language.
@@ -38,11 +48,27 @@ export function EntitiesView({
   entities,
   selectedId,
   slots,
-  onSelect,
+  wiki,
+  startEditingId,
+  confirmLeave,
+  onSelect: selectEntity,
   onOpenScene,
   onRefresh,
   onError,
+  onCreateEntity,
+  onEditTemplate,
+  onDirtyChange,
 }: EntitiesViewProps) {
+  const [sheetTab, setSheetTab] = useState<SheetTab>(wiki ? 'page' : 'canon')
+  // A newly created entity opens on its page.
+  const [seenStartId, setSeenStartId] = useState(startEditingId)
+  if (startEditingId !== seenStartId) {
+    setSeenStartId(startEditingId)
+    if (startEditingId) setSheetTab('page')
+  }
+  const onSelect = (entityId: string) => {
+    if (entityId !== selectedId && confirmLeave()) selectEntity(entityId)
+  }
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<string>('ALL')
   const [reconciling, setReconciling] = useState<ProjectEntity | null>(null)
@@ -202,6 +228,13 @@ export function EntitiesView({
   return (
     <div className="archive-entities">
       <aside className="entity-index" aria-label="Lista de entidades">
+        <button
+          className="button button-secondary button-small entity-new"
+          type="button"
+          onClick={() => onCreateEntity(typeFilter === 'ALL' ? undefined : (typeFilter as FactEntityType))}
+        >
+          <PlusIcon /> Nova entidade
+        </button>
         <label className="archive-search">
           <SearchIcon />
           <span className="sr-only">Buscar entidade</span>
@@ -251,6 +284,11 @@ export function EntitiesView({
                         <small> · {entityTypeLabel(entity.type)}</small>
                       )}
                     </span>
+                    {wiki?.pageIds.has(entity.id) && (
+                      <span className="entity-list-page" title="Tem ficha">
+                        ficha
+                      </span>
+                    )}
                     {likely && (
                       <span className="entity-list-flag" title="Possível duplicata">
                         duplicata?
@@ -368,6 +406,12 @@ export function EntitiesView({
           isMutating={isMutating}
           key={selected.id}
           slots={slots}
+          startEditing={startEditingId === selected.id}
+          tab={wiki ? sheetTab : 'canon'}
+          wiki={wiki}
+          onDirtyChange={onDirtyChange}
+          onEditTemplate={onEditTemplate}
+          onTabChange={setSheetTab}
           onMerge={mergeInto}
           onOpenScene={onOpenScene}
           onDelete={() => void deleteSelected()}

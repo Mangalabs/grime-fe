@@ -21,6 +21,9 @@ import type {
   SceneGroup,
   SealedText,
   StoredStyleSheet,
+  StoredEncryptedDocument,
+  EntityPageSummary,
+  FactEntityType,
   NoteKind,
   NoteStatus,
   StoredNote,
@@ -392,6 +395,13 @@ export const api = {
       ...jsonBody({ newEntityNames }),
     }),
 
+  // An entity added by hand, before any scene mentions it.
+  createEntity: (projectId: string, entity: { name: string; type: FactEntityType }) =>
+    request<{ id: string }>(`/api/v1/projects/${projectId}/entities`, {
+      method: 'POST',
+      ...jsonBody(entity),
+    }),
+
   listDeletedEntities: (projectId: string) =>
     request<DeletedEntity[]>(`/api/v1/projects/${projectId}/entities/deleted`),
 
@@ -427,6 +437,32 @@ export const api = {
       method: 'PUT',
       ...jsonBody({ ...sealed, expectedVersion }),
     }),
+
+  // 404 while the project uses the built-in templates.
+  getWikiTemplates: (projectId: string) =>
+    request<StoredEncryptedDocument>(`/api/v1/projects/${projectId}/wiki-templates`),
+
+  saveWikiTemplates: (projectId: string, sealed: SealedText, expectedVersion: number | null) =>
+    request<StoredEncryptedDocument>(`/api/v1/projects/${projectId}/wiki-templates`, {
+      method: 'PUT',
+      ...jsonBody({ ...sealed, expectedVersion }),
+    }),
+
+  listEntityPages: (projectId: string) =>
+    request<EntityPageSummary[]>(`/api/v1/projects/${projectId}/entity-pages`),
+
+  // 404 until the entity has a page.
+  getEntityPage: (entityId: string) =>
+    request<StoredEncryptedDocument>(`/api/v1/entities/${entityId}/page`),
+
+  saveEntityPage: (entityId: string, sealed: SealedText, expectedVersion: number | null) =>
+    request<StoredEncryptedDocument>(`/api/v1/entities/${entityId}/page`, {
+      method: 'PUT',
+      ...jsonBody({ ...sealed, expectedVersion }),
+    }),
+
+  deleteEntityPage: (entityId: string) =>
+    request<void>(`/api/v1/entities/${entityId}/page`, { method: 'DELETE' }),
 
   listGroups: (projectId: string) =>
     request<SceneGroup[]>(`/api/v1/projects/${projectId}/groups`),

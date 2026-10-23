@@ -1450,6 +1450,7 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
             <ArchivePage
               key={context.projectId}
               projectId={context.projectId}
+              projectKey={projectKey}
               groups={projectGroups}
               slots={projectSlots}
               onError={setContextError}

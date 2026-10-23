@@ -91,6 +91,16 @@ export interface StoredStyleSheet {
   updatedAt: string
 }
 
+/** An encrypted wiki document (templates or an entity page), versioned like the style sheet. */
+export type StoredEncryptedDocument = StoredStyleSheet
+
+/** Which entity has a wiki page, without its content. */
+export interface EntityPageSummary {
+  entityId: string
+  version: number
+  updatedAt: string
+}
+
 export interface SealedText {
   ciphertext: string
   iv: string
