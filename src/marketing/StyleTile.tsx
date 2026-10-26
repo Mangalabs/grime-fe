@@ -3,7 +3,7 @@ import { artifactKindLabels, contrastRatio, swatchFor, type IdentityKit } from '
 import { fontStack } from './fonts'
 
 /**
- * A style tile: the kit rendered as a fragment of the future site, so the
+ * A style tile: the kit rendered as one small composition, so the
  * palette, letters and materials are judged together, not one by one.
  */
 export function StyleTile({

@@ -7,8 +7,6 @@ import {
   applyPreset,
   artifactKindLabels,
   artifactKinds,
-  artifactRoleLabels,
-  artifactRoles,
   colorRoleLabels,
   colorRoles,
   contrastRatio,
@@ -30,7 +28,6 @@ import {
   tempos,
   type Artifact,
   type ArtifactKind,
-  type ArtifactRole,
   type ColorRole,
   type IdentityKit,
   type MoodImage,
@@ -121,8 +118,8 @@ export function IdentitySection({
             </fieldset>
             <Field label="Ponto de vista" placeholder="Primeira pessoa, diário; narrador distante…" value={identity.essence.pointOfView} onChange={(pointOfView) => set('essence', { ...identity.essence, pointOfView })} />
             <Field
-              label="A promessa do site"
-              hint="Em uma frase, o que o visitante vai viver. Ex.: entrar no apartamento dela e ler o que ela nunca disse."
+              label="A promessa"
+              hint="Em uma frase, o que o leitor vai viver. Ex.: entrar no apartamento dela e ler o que ela nunca disse."
               multiline
               value={identity.essence.promise}
               onChange={(promise) => set('essence', { ...identity.essence, promise })}
@@ -410,8 +407,8 @@ function ArtifactsCard({ identity, story, onChange }: { identity: IdentityKit; s
     <section className="admin-card mk-card" id="objetos">
       <h3>Objetos diegéticos</h3>
       <p className="admin-muted">
-        Os objetos do mundo do livro que viram a interface do site: o visitante navega abrindo o diário, desdobrando o
-        mapa, lendo as conversas. Um deles é o ponto de partida.
+        Documentos e objetos do mundo do livro (um diário, cartas, um mapa, conversas no celular), com o que se lê em
+        cada um. Material para o site, as ilustrações e as ações de marketing.
       </p>
       {artifacts.map((artifact) => (
         <div className="mk-row-card" key={artifact.id}>
@@ -426,14 +423,6 @@ function ArtifactsCard({ identity, story, onChange }: { identity: IdentityKit; s
             </label>
             <Field label="Nome" placeholder="O caderno dela, o mapa do reino…" value={artifact.title} onChange={(title) => update(artifact.id, { title })} />
             <EntitySelect label="De quem ou de onde" story={story} value={artifact.entityId} onChange={(entityId) => update(artifact.id, { entityId })} />
-            <label className="mk-field">
-              <span className="mk-label">Papel na navegação</span>
-              <select value={artifact.role} onChange={(event) => update(artifact.id, { role: event.target.value as ArtifactRole })}>
-                {artifactRoles.map((role) => (
-                  <option key={role} value={role}>{artifactRoleLabels[role]}</option>
-                ))}
-              </select>
-            </label>
           </div>
           <Field label="Como ele é" hint="Material, desgaste, letra, detalhes." multiline value={artifact.description} onChange={(description) => update(artifact.id, { description })} />
           <Field label="O que ele revela" multiline value={artifact.reveals} onChange={(reveals) => update(artifact.id, { reveals })} />
@@ -539,7 +528,7 @@ function MoodboardCard({
               </span>
               <label className="admin-toggle">
                 <input checked={image.publishable} type="checkbox" onChange={(event) => update(image.id, { publishable: event.target.checked })} />
-                <span>Pode ir para o site</span>
+                <span>Pode ser publicada</span>
               </label>
               <button className="text-button" type="button" onClick={() => onChange({ ...identity, moodboard: moodboard.filter((item) => item.id !== image.id) })}>
                 Remover

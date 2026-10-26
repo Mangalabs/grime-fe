@@ -27,6 +27,7 @@ import { ProjectCreationModal } from "./components/ProjectCreationModal";
 import { DeleteProjectModal } from "./components/DeleteProjectModal";
 import { ManuscriptImportModal } from "./components/ManuscriptImportModal";
 import { ProjectUnlockModal } from "./components/ProjectUnlockModal";
+import { forgetProjectKey } from "./crypto/projectKeyCache";
 import {
   SceneEditor,
   type FocusedQuote,
@@ -1806,6 +1807,7 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
           projectId={context.projectId}
           onClose={() => setIsDeleteProjectModalOpen(false)}
           onDeleted={() => {
+            void forgetProjectKey(context.projectId);
             activateContext("");
             reloadProjects();
             setIsDeleteProjectModalOpen(false);

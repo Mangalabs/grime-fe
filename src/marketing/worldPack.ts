@@ -4,10 +4,10 @@ import { attributeLabel } from '../features/archive/attributes'
 import type { ArchiveEntity } from '../features/archive/entityModel'
 import { templateForPage, type WikiPage, type WikiTemplateLibrary } from '../features/wiki/wikiModel'
 import { bookStatuses, isWebUrl, linkKindLabels, linkKinds, type BookImage, type BookInfo } from './bookModel'
+import type { BookMetadata } from './bookMetadata'
 import { fichaSections, shownValue } from './ficha'
 import {
   artifactKinds,
-  artifactRoles,
   colorRoles,
   imageUses,
   quoteUses,
@@ -31,8 +31,8 @@ import {
 } from './marketingKit'
 
 /**
- * The World Pack: what a book's site may use, already cut to an audience.
- * The contract between Petricor and the site engine — bump formatVersion on
+ * The World Pack: the book's information for whoever builds its site, already
+ * cut to an audience. A contract with those readers — bump formatVersion on
  * any change a reader of version 1 couldn't handle.
  */
 const Level = z.enum(spoilerLevels)
@@ -44,6 +44,28 @@ const PackImage = z
     mimeType: z.string(),
     width: z.number().int().nonnegative(),
     height: z.number().int().nonnegative(),
+  })
+  .strict()
+
+// The book in figures. Only what's safe for any audience: counts, length,
+// prose and the detected structure; the tension curve (it shows where the
+// climax falls) stays out, and only entities already in the pack are named.
+const MetadataSchema = z
+  .object({
+    words: z.number().int().nonnegative(),
+    pages: z.number().int().nonnegative(),
+    readingMinutes: z.number().int().nonnegative(),
+    scenes: z.number().int().nonnegative(),
+    wordsPerScene: z.number().int().nonnegative(),
+    dialogueShare: z.number().min(0).max(1),
+    wordsPerSentence: z.number().nonnegative(),
+    acts: z.number().int().nonnegative(),
+    genre: z.string().nullable(),
+    structure: z.string().nullable(),
+    entitiesByType: z.record(z.string(), z.number().int().nonnegative()),
+    mostPresent: z.array(
+      z.object({ entityId: z.string(), name: z.string(), type: z.string(), scenes: z.number().int().positive(), level: Level }).strict(),
+    ),
   })
   .strict()
 
@@ -91,7 +113,7 @@ const IdentitySchema = z
         notes: z.string(),
       })
       .strict(),
-    // The site's colour tokens: use the roles, the names guide illustrators.
+    // Colours with roles (background, ink, accent…); the names guide illustrators.
     palette: z.array(
       z
         .object({ name: z.string(), hex: z.string().regex(/^#[0-9a-f]{6}$/), role: z.enum(colorRoles), note: z.string() })
@@ -106,7 +128,7 @@ const IdentitySchema = z
     motifs: z.array(
       z.object({ name: z.string(), meaning: z.string(), entityId: z.string().nullable() }).strict(),
     ),
-    // The in-world objects the site navigates through; one should be the HUB.
+    // Documents and objects of the story's world, with what can be read in them.
     artifacts: z.array(
       z
         .object({
@@ -116,7 +138,6 @@ const IdentitySchema = z
           entityId: z.string().nullable(),
           description: z.string(),
           reveals: z.string(),
-          role: z.enum(artifactRoles),
           level: Level,
           // What the visitor reads inside the object, in order.
           entries: z.array(
@@ -153,7 +174,7 @@ const IdentitySchema = z
     ),
     // Lines of the book itself, all from scenes the public knows.
     quotes: z.array(
-      z.object({ text: z.string(), scene: z.number().int().positive(), use: z.enum(quoteUses), note: z.string() }).strict(),
+      z.object({ id: z.string(), text: z.string(), scene: z.number().int().positive(), use: z.enum(quoteUses), note: z.string() }).strict(),
     ),
     avoid: z.array(z.string()),
     stylePrompt: z.string(),
@@ -169,7 +190,9 @@ export const WorldPackSchema = z
     project: z.object({ title: z.string() }).strict(),
     // What the landing page sells.
     book: BookSchema,
-    // How the book looks and feels: the brief for the site and its images.
+    // The book in figures; null when it wasn't computed for this export.
+    metadata: MetadataSchema.nullable(),
+    // How the book looks and feels: the brief for its site, art and marketing.
     identity: IdentitySchema,
     audience: z
       .object({
@@ -256,7 +279,8 @@ export const WorldPackSchema = z
 
 export type WorldPack = z.infer<typeof WorldPackSchema>
 
-const extensionOf = (mimeType: string) => (mimeType === 'image/jpeg' ? 'jpg' : (mimeType.split('/')[1] ?? 'img'))
+const knownExtensions: Record<string, string> = { 'image/jpeg': 'jpg', 'image/svg+xml': 'svg', 'audio/mpeg': 'mp3', 'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'audio/wav': 'wav', 'audio/x-wav': 'wav' }
+const extensionOf = (mimeType: string) => knownExtensions[mimeType] ?? (mimeType.split('/')[1]?.split(';')[0] || 'bin')
 
 /** Where the book's own images go inside the pack's .zip. */
 export function bookFile(name: 'cover' | 'author', image: BookImage): string {
@@ -287,6 +311,39 @@ function exportBook(book: BookInfo, projectTitle: string): WorldPack['book'] {
     status: book.status,
     links,
     primaryLinkId: links.some((link) => link.id === book.primaryLinkId) ? book.primaryLinkId : null,
+  }
+}
+
+function exportMetadata(
+  metadata: BookMetadata,
+  levelOf: Map<string, SpoilerLevel>,
+  included: Map<string, string>,
+  includeTeasers: boolean,
+): WorldPack['metadata'] {
+  const { prose, structure, world } = metadata
+  const present = [
+    ...world.characters.map((entity) => ({ ...entity, type: 'CHARACTER' })),
+    ...world.places.map((entity) => ({ ...entity, type: 'LOCATION' })),
+  ].filter((entity) => included.has(entity.id) && isIncluded(levelOf.get(entity.id)!, includeTeasers))
+  return {
+    words: prose.words,
+    pages: prose.pages,
+    readingMinutes: prose.readingMinutes,
+    scenes: structure.scenes,
+    wordsPerScene: prose.wordsPerScene,
+    dialogueShare: Math.round(prose.dialogueShare * 1000) / 1000,
+    wordsPerSentence: prose.wordsPerSentence,
+    acts: structure.groups.filter((group) => group.scenes > 0).length,
+    genre: structure.review?.genre || null,
+    structure: structure.review?.detected || null,
+    entitiesByType: world.byType,
+    mostPresent: present.map((entity) => ({
+      entityId: entity.id,
+      name: entity.name,
+      type: entity.type,
+      scenes: entity.scenes,
+      level: levelOf.get(entity.id)!,
+    })),
   }
 }
 
@@ -327,7 +384,7 @@ export function slotPositions(slots: Slot[]): Map<string, number | null> {
 export function buildWorldPack(
   story: StoryData,
   kit: MarketingKit,
-  options: { includeTeasers: boolean; now?: Date },
+  options: { includeTeasers: boolean; now?: Date; metadata?: BookMetadata | null },
 ): WorldPack {
   const { includeTeasers } = options
   const positions = slotPositions(story.slots)
@@ -391,13 +448,7 @@ export function buildWorldPack(
   // secret as the entity (and so left out).
   const linked = (entityId: string | null) => (entityId && includedNames.has(entityId) ? entityId : null)
 
-  return WorldPackSchema.parse({
-    format: 'petricor.world-pack',
-    formatVersion: 1,
-    exportedAt: (options.now ?? new Date()).toISOString(),
-    project: { title: story.title },
-    book: exportBook(kit.book, story.title),
-    identity: {
+  const identityOut = {
       essence: identity.essence,
       mood: identity.mood,
       palette: identity.palette.map(({ name, hex, role, note }) => ({ name, hex, role, note })),
@@ -454,12 +505,21 @@ export function buildWorldPack(
         const order = quote.slotId ? orderOf.get(quote.slotId) : undefined
         const position = quote.slotId ? positions.get(quote.slotId) : null
         if (order === undefined || position === null || position === undefined || cut === null || position > cut) return []
-        return [{ text: quote.text, scene: order, use: quote.use, note: quote.note }]
+        return [{ id: quote.id, text: quote.text, scene: order, use: quote.use, note: quote.note }]
       }),
       avoid: identity.avoid,
       stylePrompt: identity.stylePrompt,
       sampleLine: identity.sampleLine,
-    },
+  }
+
+  return WorldPackSchema.parse({
+    format: 'petricor.world-pack',
+    formatVersion: 1,
+    exportedAt: (options.now ?? new Date()).toISOString(),
+    project: { title: story.title },
+    book: exportBook(kit.book, story.title),
+    metadata: options.metadata ? exportMetadata(options.metadata, levelOf, includedNames, includeTeasers) : null,
+    identity: identityOut,
     audience: {
       levels: includeTeasers ? ['PUBLIC', 'TEASER'] : ['PUBLIC'],
       publicThroughScene: kit.publicThroughSlotId ? (orderOf.get(kit.publicThroughSlotId) ?? null) : null,

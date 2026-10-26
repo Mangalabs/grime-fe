@@ -1,7 +1,13 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import './Modal.css'
 import { ApiError, api } from '../api/client'
 import { resetProjectPassword, unlockProjectKey } from '../crypto/projectEncryption'
+import {
+  readRememberPreference,
+  recallProjectKey,
+  rememberProjectKey,
+  writeRememberPreference,
+} from '../crypto/projectKeyCache'
 
 type Mode = 'unlock' | 'recover' | 'recovered'
 
@@ -22,6 +28,29 @@ export function ProjectUnlockModal({
   const [recoveredKey, setRecoveredKey] = useState<CryptoKey | null>(null)
   const [error, setError] = useState('')
   const [isWorking, setIsWorking] = useState(false)
+  const [remember, setRemember] = useState(readRememberPreference)
+  // A project unlocked recently on this browser opens without asking.
+  const [isRecalling, setIsRecalling] = useState(true)
+
+  useEffect(() => {
+    let isCurrent = true
+    void recallProjectKey(projectId).then((key) => {
+      if (!isCurrent) return
+      if (key) onUnlocked(projectId, key)
+      else setIsRecalling(false)
+    })
+    return () => {
+      isCurrent = false
+    }
+    // Only when the modal opens for a project, not on every parent render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId])
+
+  async function open(key: CryptoKey) {
+    writeRememberPreference(remember)
+    if (remember) await rememberProjectKey(projectId, key)
+    onUnlocked(projectId, key)
+  }
 
   const mismatch = confirmation.length > 0 && confirmation !== newPassword
   const canRecover = recoveryKey.trim() !== '' && newPassword !== '' && confirmation === newPassword
@@ -38,7 +67,7 @@ export function ProjectUnlockModal({
     setError('')
     try {
       const envelope = await api.getProjectEncryption(projectId)
-      onUnlocked(projectId, await unlockProjectKey(password, envelope))
+      await open(await unlockProjectKey(password, envelope))
     } catch {
       setError('Não foi possível desbloquear o projeto. Confira a senha e tente novamente.')
     } finally {
@@ -78,6 +107,18 @@ export function ProjectUnlockModal({
     }
   }
 
+  if (isRecalling) return null
+
+  const rememberField = (
+    <label className="modal-remember">
+      <input checked={remember} onChange={(event) => setRemember(event.target.checked)} type="checkbox" />
+      <span>
+        Lembrar este projeto neste navegador por 1 dia
+        <small>Não use em computadores compartilhados. Sair da conta esquece todos os projetos.</small>
+      </span>
+    </label>
+  )
+
   return (
     <div className="modal-backdrop">
       <section aria-labelledby="unlock-project-title" aria-modal="true" className="modal" role="dialog">
@@ -89,6 +130,7 @@ export function ProjectUnlockModal({
               <span>Senha do projeto</span>
               <input autoFocus onChange={(event) => setPassword(event.target.value)} type="password" value={password} />
             </label>
+            {rememberField}
             <button className="text-button modal-link" type="button" onClick={() => switchMode('recover')}>
               Esqueci a senha do projeto
             </button>
@@ -162,12 +204,13 @@ export function ProjectUnlockModal({
               A nova senha já vale para abrir e excluir o projeto. A chave de recuperação continua a mesma:
               mantenha-a guardada.
             </p>
+            {rememberField}
             <div className="modal-actions">
               <button
                 autoFocus
                 className="button button-primary"
                 type="button"
-                onClick={() => onUnlocked(projectId, recoveredKey)}
+                onClick={() => void open(recoveredKey)}
               >
                 Abrir o projeto
               </button>

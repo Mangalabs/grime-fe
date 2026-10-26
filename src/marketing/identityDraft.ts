@@ -133,18 +133,13 @@ export function applyDraftPart(identity: IdentityKit, draft: MarketingDraft, par
         ],
       }
     case 'artifacts': {
-      // Only one starting point: a second HUB from the draft becomes an index.
-      let hasHub = identity.artifacts.some((artifact) => artifact.role === 'HUB')
       return {
         ...identity,
         artifacts: [
           ...identity.artifacts,
           ...draft.artifacts
             .filter((artifact) => artifact.title.trim())
-            .map((artifact) => {
-              const role = artifact.role === 'HUB' && hasHub ? 'INDEX' : artifact.role
-              if (role === 'HUB') hasHub = true
-              return {
+            .map((artifact) => ({
                 id: newId(),
                 kind: artifact.kind,
                 title: artifact.title,
@@ -152,12 +147,10 @@ export function applyDraftPart(identity: IdentityKit, draft: MarketingDraft, par
                 description: artifact.description,
                 // What it reveals, and its content, the author writes.
                 reveals: '',
-                role,
                 // A draft can't know what's a surprise: the author opens it.
                 level: 'TEASER' as const,
                 entries: [],
-              }
-            }),
+              })),
         ],
       }
     }

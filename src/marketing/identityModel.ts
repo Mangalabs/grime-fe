@@ -53,16 +53,6 @@ export const artifactKindLabels: Record<ArtifactKind, string> = {
   OTHER: 'Outro',
 }
 
-// What the object does in the site's navigation.
-export const artifactRoles = ['HUB', 'INDEX', 'DETAIL', 'COLLECTIBLE'] as const
-export type ArtifactRole = (typeof artifactRoles)[number]
-export const artifactRoleLabels: Record<ArtifactRole, string> = {
-  HUB: 'Ponto de partida (a "home")',
-  INDEX: 'Índice (leva a outras partes)',
-  DETAIL: 'Detalhe (uma página)',
-  COLLECTIBLE: 'Achado (desbloqueável)',
-}
-
 export const imageUses = ['PALETTE', 'LIGHT', 'TEXTURE', 'PLACE', 'CHARACTER', 'OBJECT', 'TYPOGRAPHY', 'COMPOSITION'] as const
 export type ImageUse = (typeof imageUses)[number]
 export const imageUseLabels: Record<ImageUse, string> = {
@@ -146,7 +136,6 @@ export interface Artifact {
   description: string
   // What opening it gives the reader.
   reveals: string
-  role: ArtifactRole
   level: SpoilerLevel
   entries: ArtifactEntry[]
 }
@@ -248,7 +237,6 @@ export const newArtifact = (): Artifact => ({
   entityId: null,
   description: '',
   reveals: '',
-  role: 'DETAIL',
   level: 'PUBLIC',
   entries: [],
 })
@@ -323,7 +311,6 @@ export function normalizeIdentity(value: unknown): IdentityKit {
       entityId: typeof artifact.entityId === 'string' ? artifact.entityId : null,
       description: text(artifact.description),
       reveals: text(artifact.reveals),
-      role: oneOf(artifactRoles, artifact.role) ?? 'DETAIL',
       level: oneOf(['PUBLIC', 'TEASER', 'SPOILER'] as const, artifact.level) ?? 'PUBLIC',
       entries: objects(artifact.entries)
         .filter((entry) => typeof entry.body === 'string')
@@ -400,7 +387,7 @@ export function contrastRatio(a: string, b: string): number {
   return (light + 0.05) / (dark + 0.05)
 }
 
-/** The first swatch with a role, for the style tile and the site's tokens. */
+/** The first swatch with a role, for the style tile and the palette's tokens. */
 export function swatchFor(identity: IdentityKit, role: ColorRole): Swatch | undefined {
   return identity.palette.find((swatch) => swatch.role === role)
 }
@@ -410,11 +397,10 @@ export function swatchFor(identity: IdentityKit, role: ColorRole): Swatch | unde
 type Preset = { id: string; name: string; description: string; identity: Omit<IdentityKit, 'presetId' | 'moodboard' | 'motifs' | 'quotes' | 'essence'> & { essence: Partial<IdentityKit['essence']> } }
 
 const swatch = (name: string, hex: string, role: ColorRole, note = ''): Swatch => ({ id: newId(), name, hex, role, note })
-const artifact = (kind: ArtifactKind, title: string, role: ArtifactRole, description: string, reveals: string): Artifact => ({
+const artifact = (kind: ArtifactKind, title: string, description: string, reveals: string): Artifact => ({
   ...newArtifact(),
   kind,
   title,
-  role,
   description,
   reveals,
 })
@@ -446,9 +432,9 @@ export function presets(): Preset[] {
         sound: 'Vento nas ameias, fogo crepitando, sinos distantes.',
         composition: 'Planos abertos para paisagens; detalhes de mãos, selos e armas para os momentos íntimos.',
         artifacts: [
-          artifact('MAP', 'Mapa do reino', 'HUB', 'Desenhado à mão, com bordas queimadas e anotações na margem.', 'Os lugares da história, um a um.'),
-          artifact('LETTER', 'Carta lacrada', 'COLLECTIBLE', 'Lacre de cera com um brasão.', 'Uma voz de dentro da história.'),
-          artifact('BESTIARY', 'Bestiário', 'INDEX', 'Páginas ilustradas com notas de um estudioso.', 'Criaturas e as regras do mundo.'),
+          artifact('MAP', 'Mapa do reino', 'Desenhado à mão, com bordas queimadas e anotações na margem.', 'Os lugares da história, um a um.'),
+          artifact('LETTER', 'Carta lacrada', 'Lacre de cera com um brasão.', 'Uma voz de dentro da história.'),
+          artifact('BESTIARY', 'Bestiário', 'Páginas ilustradas com notas de um estudioso.', 'Criaturas e as regras do mundo.'),
         ],
         avoid: ['clipart de dragão genérico', 'fontes "medievais" de parque temático', 'dourado brilhante de plástico'],
         stylePrompt: 'Ilustração pintada, luz de vela, textura de pergaminho, paleta terrosa com brasa e ouro velho, atmosfera solene.',
@@ -476,10 +462,10 @@ export function presets(): Preset[] {
         sound: 'Chaleira, chuva na janela, trem ao longe, notificação do celular.',
         composition: 'Close em objetos e mãos; a casa vista em cantos, nunca inteira.',
         artifacts: [
-          artifact('DIARY', 'Caderno dela', 'HUB', 'Capa de tecido, páginas com fita e colagens.', 'O que ela pensa e não diz.'),
-          artifact('CHAT', 'Conversas no celular', 'INDEX', 'Tela do celular com o papel de parede dela.', 'As relações, mensagem a mensagem.'),
-          artifact('PHOTO', 'Polaroids na geladeira', 'COLLECTIBLE', 'Presas com ímãs, algumas com legenda a caneta.', 'Momentos e pessoas.'),
-          artifact('RECIPE', 'Receita da avó', 'DETAIL', 'Cartão manchado, letra antiga.', 'A herança da família.'),
+          artifact('DIARY', 'Caderno dela', 'Capa de tecido, páginas com fita e colagens.', 'O que ela pensa e não diz.'),
+          artifact('CHAT', 'Conversas no celular', 'Tela do celular com o papel de parede dela.', 'As relações, mensagem a mensagem.'),
+          artifact('PHOTO', 'Polaroids na geladeira', 'Presas com ímãs, algumas com legenda a caneta.', 'Momentos e pessoas.'),
+          artifact('RECIPE', 'Receita da avó', 'Cartão manchado, letra antiga.', 'A herança da família.'),
         ],
         avoid: ['estereótipos de cultura pop', 'neon e cyberpunk', 'interfaces de app genéricas'],
         stylePrompt: 'Fotografia analógica, luz natural suave, tons quentes e lavados, objetos do cotidiano em close, intimidade e silêncio.',
@@ -507,8 +493,8 @@ export function presets(): Preset[] {
         sound: 'Assoalho rangendo, relógio de pêndulo, respiração.',
         composition: 'Molduras dentro de molduras; portas entreabertas; rostos meio na sombra.',
         artifacts: [
-          artifact('LETTER', 'Cartas da família', 'INDEX', 'Envelopes amarrados com fita preta.', 'O que a família escondeu.'),
-          artifact('PHOTO', 'Retratos da galeria', 'HUB', 'Molduras ovais; um rosto foi raspado.', 'Quem viveu na casa.'),
+          artifact('LETTER', 'Cartas da família', 'Envelopes amarrados com fita preta.', 'O que a família escondeu.'),
+          artifact('PHOTO', 'Retratos da galeria', 'Molduras ovais; um rosto foi raspado.', 'Quem viveu na casa.'),
         ],
         avoid: ['caveiras e morcegos de Halloween', 'vermelho-sangue saturado'],
         stylePrompt: 'Pintura a óleo escura, chiaroscuro, luz de vela, veludo e prata, atmosfera de segredo.',
@@ -536,8 +522,8 @@ export function presets(): Preset[] {
         sound: 'Chuva, sirene distante, máquina de escrever, saxofone abafado.',
         composition: 'Ângulos inclinados, sombras de persianas, silhuetas.',
         artifacts: [
-          artifact('FILE', 'Dossiê do caso', 'HUB', 'Pasta parda com carimbos e fotos presas com clipe.', 'Suspeitos, pistas e mentiras.'),
-          artifact('NEWSPAPER', 'Recortes de jornal', 'COLLECTIBLE', 'Manchetes amareladas.', 'O que a cidade acha que sabe.'),
+          artifact('FILE', 'Dossiê do caso', 'Pasta parda com carimbos e fotos presas com clipe.', 'Suspeitos, pistas e mentiras.'),
+          artifact('NEWSPAPER', 'Recortes de jornal', 'Manchetes amareladas.', 'O que a cidade acha que sabe.'),
         ],
         avoid: ['chapéu e sobretudo de fantasia', 'filtro sépia genérico'],
         stylePrompt: 'Fotografia noturna cinematográfica, chuva, néon refletido, alto contraste, grão de filme.',

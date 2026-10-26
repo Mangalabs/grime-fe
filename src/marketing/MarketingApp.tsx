@@ -10,16 +10,19 @@ import { IdentitySection } from './IdentitySection'
 import type { MarketingKit } from './marketingKit'
 import { PackSection } from './PackSection'
 import { useMoodboardImages } from './useMoodboardImages'
+import { MetadataSection } from './MetadataSection'
+import { useBookMetadata } from './useBookMetadata'
 import { SpoilersSection } from './SpoilersSection'
 import { useMarketingStory } from './useMarketingStory'
 import '../App.css'
 import '../admin/Admin.css'
 import './Marketing.css'
 
-type Section = 'book' | 'identity' | 'spoilers' | 'pack'
+type Section = 'book' | 'metadata' | 'identity' | 'spoilers' | 'pack'
 
 const sectionLabels: Record<Section, string> = {
   book: 'Livro',
+  metadata: 'Metadados',
   identity: 'Identidade',
   spoilers: 'Spoilers',
   pack: 'Pacote',
@@ -134,6 +137,8 @@ export default function MarketingApp({ user, onLogout }: { user: AuthUser; onLog
 function Workspace({ project, projectKey, section }: { project: Project; projectKey: CryptoKey; section: Section }) {
   const { story, kit, error, saveKit } = useMarketingStory(project.id, project.title, projectKey)
   const images = useMoodboardImages(project.id, projectKey)
+  // Computed once, when Metadados or Pacote first needs it.
+  const metadata = useBookMetadata(project.id, projectKey, story)
   // Kept here, not in the section: a paid draft survives switching tabs.
   const [draftState, setDraftState] = useState<DraftState | null>(null)
   // Changes on screen, saved with the bar below.
@@ -195,6 +200,7 @@ function Workspace({ project, projectKey, section }: { project: Project; project
           onChange={(book) => setDraft((previous) => ({ ...(previous ?? current), book }))}
         />
       )}
+      {section === 'metadata' && <MetadataSection kit={current} metadata={metadata} story={story} />}
       {section === 'identity' && (
         <IdentitySection
           draftState={draftState}
@@ -208,7 +214,7 @@ function Workspace({ project, projectKey, section }: { project: Project; project
         />
       )}
       {section === 'spoilers' && <SpoilersSection kit={current} story={story} onChange={setDraft} />}
-      {section === 'pack' && <PackSection hasUnsavedChanges={isDirty} images={images} kit={current} story={story} />}
+      {section === 'pack' && <PackSection hasUnsavedChanges={isDirty} images={images} kit={current} metadata={metadata} story={story} />}
       {isDirty && (
         <div className="mk-save-bar" role="status">
           <span>Alterações do marketing ainda não salvas.</span>

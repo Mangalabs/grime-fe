@@ -5,6 +5,7 @@ import App from '../App'
 import { AdminApp, AdminForbidden } from '../admin/AdminApp'
 import { AuthPage } from './AuthPage'
 import { onSessionExpired, refreshSession } from './session'
+import { forgetAllProjectKeys, setProjectKeyOwner } from '../crypto/projectKeyCache'
 import './AuthPage.css'
 
 const MarketingApp = lazy(() => import('../marketing/MarketingApp'))
@@ -18,6 +19,8 @@ type GateState =
 // restores the previous session without asking for the password again.
 export function AuthGate() {
   const [state, setState] = useState<GateState>({ status: 'restoring' })
+  // Remembered project keys belong to the signed-in account only.
+  setProjectKeyOwner(state.status === 'signedIn' ? state.user.id : null)
 
   useEffect(() => {
     let isActive = true
@@ -26,9 +29,10 @@ export function AuthGate() {
         setState(session ? { status: 'signedIn', user: session.user } : { status: 'signedOut' })
       }
     })
-    const unsubscribe = onSessionExpired(() =>
-      setState({ status: 'signedOut', notice: 'Sua sessão expirou. Entre novamente.' }),
-    )
+    const unsubscribe = onSessionExpired(() => {
+      void forgetAllProjectKeys()
+      setState({ status: 'signedOut', notice: 'Sua sessão expirou. Entre novamente.' })
+    })
     return () => {
       isActive = false
       unsubscribe()
@@ -37,7 +41,7 @@ export function AuthGate() {
 
   async function logout() {
     try {
-      await auth.logout()
+      await Promise.all([auth.logout(), forgetAllProjectKeys()])
     } finally {
       setState({ status: 'signedOut' })
     }

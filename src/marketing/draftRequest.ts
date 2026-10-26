@@ -19,7 +19,7 @@ function currentIdentityText(identity: IdentityKit): string {
     sound,
     composition,
     motifs: identity.motifs.map(({ name, meaning }) => ({ name, meaning })),
-    artifacts: identity.artifacts.map(({ kind, title, role }) => ({ kind, title, role })),
+    artifacts: identity.artifacts.map(({ kind, title }) => ({ kind, title })),
     moodboardCaptions: identity.moodboard.map((image) => image.caption).filter(Boolean),
     avoid,
     stylePrompt,

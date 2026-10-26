@@ -180,7 +180,7 @@ function DraftReview({
       <ul className="mk-draft-list">
         {draft.artifacts.map((artifact) => (
           <li key={artifact.title}>
-            <strong>{artifact.title}</strong> <span className="admin-muted">{artifactKindLabels[artifact.kind]}{artifact.role === 'HUB' ? ' · ponto de partida' : ''}</span>
+            <strong>{artifact.title}</strong> <span className="admin-muted">{artifactKindLabels[artifact.kind]}</span>
           </li>
         ))}
       </ul>

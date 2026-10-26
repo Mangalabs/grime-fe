@@ -563,7 +563,6 @@ export interface MarketingDraft {
     title: string
     entityName: string
     description: string
-    role: 'HUB' | 'INDEX' | 'DETAIL' | 'COLLECTIBLE'
   }>
   // Checked by the server: each is in the public scene it names.
   quotes: Array<{ text: string; scene: number; use: QuoteUse; note: string }>

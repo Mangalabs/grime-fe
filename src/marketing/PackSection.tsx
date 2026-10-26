@@ -1,6 +1,7 @@
 import { strToU8, zipSync } from 'fflate'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { MarketingKit } from './marketingKit'
+import type { BookMetadataHandle } from './useBookMetadata'
 import type { MoodboardImages } from './useMoodboardImages'
 import { bookFile, buildWorldPack, moodboardFile, worldPackJsonSchema, type StoryData, type WorldPack } from './worldPack'
 
@@ -16,10 +17,9 @@ const readme = `# Pacote do mundo (Petricor)
   aparecer no site; as outras guiam a direção de arte (luz, cor, textura).
 
 Comece por identity: a paleta (use os papéis como tokens de cor), as fontes
-(Google Fonts), os materiais, a luz e os objetos diegéticos — a navegação do
-site acontece por eles, a partir do que tem role "HUB"; o que o visitante lê está
-em entries de cada objeto. book traz capa, sinopse, links e a chamada principal
-(primaryLinkId), que é o botão que o site inteiro deve levar a clicar.
+(Google Fonts), os materiais, a luz e os objetos diegéticos do mundo, com o que se
+lê em cada um (entries). book traz capa, sinopse, links e a chamada principal
+(primaryLinkId). metadata traz os números do livro: extensão, estrutura, elenco.
 `
 
 function downloadBlob(blob: Blob, fileName: string) {
@@ -64,13 +64,20 @@ export function PackSection({
   story,
   kit,
   images,
+  metadata: metadataHandle,
   hasUnsavedChanges,
 }: {
   story: StoryData
   kit: MarketingKit
   images: MoodboardImages
+  metadata: BookMetadataHandle
   hasUnsavedChanges: boolean
 }) {
+  const { state: metadataState, load: loadMetadata } = metadataHandle
+  useEffect(() => {
+    if (metadataState.status === 'idle') void loadMetadata()
+  }, [metadataState.status, loadMetadata])
+  const metadata = metadataState.status === 'ready' ? metadataState.metadata : null
   const [includeTeasers, setIncludeTeasers] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [zipState, setZipState] = useState<{ busy: boolean; error: string }>({ busy: false, error: '' })
@@ -78,11 +85,11 @@ export function PackSection({
   // Built from what is on screen, saved or not: the file is what you see.
   const result = useMemo(() => {
     try {
-      return { pack: buildWorldPack(story, kit, { includeTeasers }), error: '' }
+      return { pack: buildWorldPack(story, kit, { includeTeasers, metadata }), error: '' }
     } catch (reason) {
       return { pack: null, error: reason instanceof Error ? reason.message : 'O pacote não passou na validação.' }
     }
-  }, [story, kit, includeTeasers])
+  }, [story, kit, includeTeasers, metadata])
   const json = result.pack ? JSON.stringify(result.pack, null, 2) : ''
   const summary = result.pack ? counts(result.pack) : null
   const baseName = `${slug(story.title)}-world-pack${includeTeasers ? '-teasers' : ''}`
@@ -101,11 +108,10 @@ export function PackSection({
         new Uint8Array(await (await images.blobFor(image)).arrayBuffer())
       for (const image of kit.identity.moodboard) files[moodboardFile(image)] = await bytes(image)
       if (kit.book.cover) files[bookFile('cover', kit.book.cover)] = await bytes(kit.book.cover)
-      if (kit.book.authorPhoto) files[bookFile('author', kit.book.authorPhoto)] = await bytes(kit.book.authorPhoto)
-      // Images are already compressed; zipping them again only costs time.
+      if (kit.book.authorPhoto) files[bookFile('author', kit.book.authorPhoto)] = await bytes(kit.book.authorPhoto)      // Images are already compressed; zipping them again only costs time.
       const zipped = zipSync(
         Object.fromEntries(
-          Object.entries(files).map(([name, data]) => [name, [data, { level: name.startsWith('moodboard/') ? 0 : 6 }]]),
+          Object.entries(files).map(([name, data]) => [name, [data, { level: /^(moodboard|book)\//.test(name) ? 0 : 6 }]]),
         ),
       )
       downloadBlob(new Blob([zipped as Uint8Array<ArrayBuffer>], { type: 'application/zip' }), `${baseName}.zip`)
@@ -165,6 +171,15 @@ export function PackSection({
             ))}
           </div>
           {zipState.error && <p className="form-message">{zipState.error}</p>}
+          <p className="admin-muted">
+            {metadataState.status === 'ready'
+              ? 'Inclui os metadados do livro (extensão, estrutura, elenco).'
+              : metadataState.status === 'loading'
+                ? `Metadados: ${metadataState.progress}`
+                : metadataState.status === 'error'
+                  ? 'Os metadados não puderam ser calculados; o pacote sai sem eles.'
+                  : ''}
+          </p>
           {hasUnsavedChanges && (
             <p className="admin-muted">O pacote já reflete as alterações ainda não salvas.</p>
           )}
