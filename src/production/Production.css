@@ -1,0 +1,214 @@
+/* Production (/producao): builds on the admin shell and its cards and tables. */
+
+.pd-tiles {
+  margin-bottom: 16px;
+}
+
+.pd-card {
+  margin-bottom: 16px;
+}
+
+.pd-card h2 {
+  margin: 0 0 12px;
+  font-size: var(--text-title);
+}
+
+.pd-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px 18px;
+}
+
+.pd-field {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  font-size: var(--text-ui);
+}
+
+.pd-field > span {
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-semibold);
+}
+
+.pd-field input,
+.pd-field select {
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  font: inherit;
+}
+
+.pd-field small {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.pd-table th[scope='row'] {
+  min-width: 220px;
+  color: var(--color-text-strong);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  letter-spacing: normal;
+  text-align: left;
+  text-transform: none;
+}
+
+.pd-table th[scope='row'] .pd-sub {
+  text-transform: none;
+}
+
+.pd-table td {
+  font-size: var(--text-body);
+  vertical-align: top;
+}
+
+.pd-note {
+  margin: 12px 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+
+.pd-costs input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.pd-sub {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-regular);
+}
+
+.pd-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.pd-badge {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 8px;
+  border: 1px solid var(--color-accent-border);
+  border-radius: 999px;
+  color: var(--color-accent-text);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.pd-badges .pd-badge {
+  margin-left: 0;
+}
+
+.pd-badge-strong {
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+}
+
+.pd-chosen > * {
+  background: var(--color-accent-soft);
+}
+
+.pd-fit {
+  font-weight: var(--weight-semibold);
+}
+
+.pd-fit-dentro {
+  color: var(--color-accent-text);
+}
+
+.pd-fit-abaixo,
+.pd-fit-acima {
+  color: #9a5b1e;
+}
+
+.pd-affinity {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.pd-settings {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.pd-settings > div {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.pd-settings dt {
+  color: var(--color-text-secondary);
+}
+
+.pd-settings dd {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-weight: var(--weight-semibold);
+}
+
+.pd-levels {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-ui);
+}
+
+.pd-levels button[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+}
+
+.pd-costs input[type='text'],
+.pd-costs input:not([type]),
+.pd-costs select,
+.pd-price {
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  font: inherit;
+}
+
+.pd-costs th[scope='row'] input:not([type]) {
+  margin-right: 6px;
+}
+
+.pd-price {
+  width: 110px;
+}
+
+.pd-off > * {
+  opacity: 0.55;
+}
+
+.pd-costs tfoot td {
+  padding-top: 12px;
+}
+
+@media (max-width: 720px) {
+  .pd-settings > div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}

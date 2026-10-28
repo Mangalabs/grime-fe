@@ -9,6 +9,7 @@ import { forgetAllProjectKeys, setProjectKeyOwner } from '../crypto/projectKeyCa
 import './AuthPage.css'
 
 const MarketingApp = lazy(() => import('../marketing/MarketingApp'))
+const ProductionApp = lazy(() => import('../production/ProductionApp'))
 
 type GateState =
   | { status: 'restoring' }
@@ -68,6 +69,18 @@ export function AuthGate() {
       </Suspense>
     ) : (
       <AdminForbidden eyebrow="Marketing" message="O marketing não está liberado para a sua conta. Peça a um admin." />
+    )
+  }
+
+  // Production (format, pages, costs) is for the same accounts as marketing:
+  // both are the publishing side of the house.
+  if (isPath('/producao')) {
+    return state.user.marketingEnabled ? (
+      <Suspense fallback={<div className="auth-loading" role="status">Carregando…</div>}>
+        <ProductionApp key={state.user.id} user={state.user} onLogout={() => void logout()} />
+      </Suspense>
+    ) : (
+      <AdminForbidden eyebrow="Produção" message="A produção não está liberada para a sua conta. Peça a um admin." />
     )
   }
 

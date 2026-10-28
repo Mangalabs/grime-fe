@@ -3,7 +3,7 @@ import "./AccountMenu.css";
 import type { AuthUser } from "../api/contracts";
 import { usageLevel, useUsage } from "../features/usage/usage";
 import { usePopover } from "../features/usePopover";
-import { CompassIcon, LayersIcon, LogoutIcon } from "./icons";
+import { BookIcon, CompassIcon, LayersIcon, LogoutIcon } from "./icons";
 import { UsageDialog } from "./usage/UsageDialog";
 import { UsageMeter } from "./usage/UsageMeter";
 
@@ -71,6 +71,12 @@ export function AccountMenu({
             <a className="account-action" href="/marketing">
               <CompassIcon />
               Marketing
+            </a>
+          )}
+          {user.marketingEnabled && window.location.pathname.replace(/\/+$/, "") !== "/producao" && (
+            <a className="account-action" href="/producao">
+              <BookIcon />
+              Produção
             </a>
           )}
           {user.role === "ADMIN" && window.location.pathname.replace(/\/+$/, "") !== "/admin" && (
