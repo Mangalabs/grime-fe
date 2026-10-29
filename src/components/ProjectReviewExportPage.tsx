@@ -21,6 +21,9 @@ interface ProjectReviewExportPageProps {
   groups: SceneGroup[];
   notes: Note[];
   styleSheet: StyleSheet | null;
+  // The letter drafted in the pipeline's letter stage, to start the cover letter from.
+  letterDraft?: { stageName: string; text: string } | null;
+  onOpenPipeline?: () => void;
   onError: (message: string) => void;
 }
 
@@ -64,6 +67,8 @@ export function ProjectReviewExportPage({
   groups,
   notes,
   styleSheet,
+  letterDraft = null,
+  onOpenPipeline,
   onError,
 }: ProjectReviewExportPageProps) {
   const sceneKey = `${projectId}:${slots.map((slot) => slot.id).join(",")}`;
@@ -84,8 +89,14 @@ export function ProjectReviewExportPage({
     includeRhythm: true,
     includeExceptions: false,
     reviewer: readAuthorName(),
-    letter: "",
+    letter: letterDraft?.text ?? "",
   }));
+  // The pipeline loads after this page may have opened: an empty letter takes the draft once.
+  const [draftApplied, setDraftApplied] = useState(Boolean(letterDraft?.text));
+  if (!draftApplied && letterDraft?.text && !options.letter) {
+    setDraftApplied(true);
+    setOptions((current) => ({ ...current, letter: letterDraft.text }));
+  }
   const needsNames = Boolean(styleSheet?.typography.archiveNames);
 
   useEffect(() => {
@@ -171,8 +182,8 @@ export function ProjectReviewExportPage({
       sectionsPreview.push(options.letter.trim() ? "Capa com carta de revisão" : "Capa e sumário com links");
     if (options.preset === "AUTHOR") {
       sectionsPreview.push(`Resumo${model.rhythm ? " com extensão e tensão das cenas" : ""}`);
-      if (model.priorities.length) sectionsPreview.push(`${model.priorities.length} prioridades, agrupadas`);
-      if (model.structure) sectionsPreview.push(`Revisão estrutural: ${model.structure.findings.length} achados`);
+      if (model.priorities.length) sectionsPreview.push(`${model.priorities.length} ${model.priorities.length === 1 ? "prioridade" : "prioridades, agrupadas"}`);
+      if (model.structure) sectionsPreview.push(`Revisão estrutural: ${model.structure.findings.length} ${model.structure.findings.length === 1 ? "achado" : "achados"}`);
     }
     if (model.generalNotes.length)
       sectionsPreview.push(`${model.generalNotes.length} ${model.generalNotes.length === 1 ? 'nota geral' : 'notas gerais'} do projeto`);
@@ -370,6 +381,26 @@ export function ProjectReviewExportPage({
                     value={options.letter}
                     onChange={(event) => update({ letter: event.target.value })}
                   />
+                  {letterDraft?.text ? (
+                    <small className="export-letter-source">
+                      Começa pelo caderno da etapa “{letterDraft.stageName}”. O que mudar aqui vale só para esta exportação.{" "}
+                      {options.letter !== letterDraft.text && (
+                        <button className="inline-link" type="button" onClick={() => update({ letter: letterDraft.text })}>
+                          Recarregar do caderno
+                        </button>
+                      )}
+                    </small>
+                  ) : (
+                    onOpenPipeline && (
+                      <small className="export-letter-source">
+                        Dica: escreva a carta no caderno da etapa de carta, em{" "}
+                        <button className="inline-link" type="button" onClick={onOpenPipeline}>
+                          Etapas
+                        </button>
+                        , e ela aparece aqui.
+                      </small>
+                    )
+                  )}
                 </label>
                 )}
               </div>

@@ -72,6 +72,13 @@ import {
   type AnalysisState,
 } from "./features/analysis/useBackgroundAnalysis";
 import { useStyleSheet } from "./features/style/useStyleSheet";
+import { usePipeline } from "./features/pipeline/usePipeline";
+import { PipelinePage } from "./components/pipeline/PipelinePage";
+import { LineBreakRepairModal } from "./components/LineBreakRepairModal";
+import { SceneMapPage } from "./components/sceneMap/SceneMapPage";
+import { readLastScene, writeLastScene } from "./features/scenes/lastScene";
+import { locateQuote } from "./features/scenes/quotes";
+import type { NewNote } from "./features/notes/useNotes";
 import {
   checkScene,
   exceptionFor,
@@ -85,7 +92,7 @@ import {
   encryptSceneDraft,
 } from "./crypto/projectEncryption";
 import { groupColors } from "./api/contracts";
-import type { AuthUser } from "./api/contracts";
+import type { AuthUser, NoteKind } from "./api/contracts";
 import { initialTheme, type Theme } from "./features/theme";
 import {
   ArchiveIcon,
@@ -99,6 +106,9 @@ import {
   NoteIcon,
   PenIcon,
   PulseIcon,
+  StagesIcon,
+  JoinLinesIcon,
+  MapIcon,
   SunIcon,
   TrashIcon,
   TypeIcon,
@@ -106,14 +116,16 @@ import {
 } from "./components/icons";
 import "./App.css";
 
-type Page = "review" | "archive" | "style-sheet" | "architectural-review" | "rhythm" | "export" | "guide";
+type Page = "pipeline" | "review" | "archive" | "scene-map" | "style-sheet" | "architectural-review" | "rhythm" | "export" | "guide";
 
 const pageLabels: Record<Page, string> = {
+  pipeline: "Etapas do projeto",
   review: "Editor e timeline",
   archive: "Arquivo",
   "style-sheet": "Folha de estilo",
   "architectural-review": "Revisão arquitetural",
   rhythm: "Ritmo e tensão",
+  "scene-map": "Mapa de cenas",
   export: "Exportar revisões",
   guide: "Guia",
 };
@@ -181,6 +193,7 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
   const [projectKey, setProjectKey] = useState<CryptoKey | null>(null);
   const [projectToUnlock, setProjectToUnlock] = useState<string | null>(null);
   const [isEditingScene, setIsEditingScene] = useState(true);
+  const [isReadingMode, setIsReadingMode] = useState(false);
   const [page, setPage] = useState<Page>("review");
   // Null until the first load answers.
   const [projects, setProjects] = useState<Project[] | null>(null);
@@ -327,6 +340,9 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
   }, [context.projectId, timelineVersion]);
 
   const projectSlots = context.projectId ? slots : [];
+  const resumeSceneRef = useRef<string | null>(null);
+  // Reading mode applies to an open scene in the review page, outside editing.
+  const isReadingActive = isReadingMode && page === "review" && Boolean(context.slotId) && !isEditingScene;
   const projectGroups = context.projectId ? groups : [];
   const selectedSlot = projectSlots.find((slot) => slot.id === context.slotId);
   const orderedScenes = orderScenes(projectSlots);
@@ -384,6 +400,8 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
     undoLastMove: (): boolean => false,
     newScene: () => {},
     notes: () => {},
+    toggleReading: () => {},
+    exitReading: (): boolean => false,
   });
   useEffect(() => {
     shortcutHandlers.current = {
@@ -412,6 +430,14 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
         }
         if (isNotesOpen) setIsNotesOpen(false);
         else openNotes();
+      },
+      toggleReading: () => {
+        if (page === "review" && context.slotId && !isEditingScene) setIsReadingMode((value) => !value);
+      },
+      exitReading: () => {
+        if (!isReadingActive) return false;
+        setIsReadingMode(false);
+        return true;
       },
       newScene: () => {
         if (!context.projectId || !projectKey) return;
@@ -481,6 +507,8 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
       if (isTyping || event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.key === "[") shortcutHandlers.current.previous();
       if (event.key === "]") shortcutHandlers.current.next();
+      if (event.key.toLowerCase() === "l" && !event.shiftKey) shortcutHandlers.current.toggleReading();
+      if (event.key === "Escape" && shortcutHandlers.current.exitReading()) event.preventDefault();
     }
     document.addEventListener("keydown", handleShortcut);
     return () => document.removeEventListener("keydown", handleShortcut);
@@ -515,8 +543,30 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
   const openNoteCount = notes.notes.filter((note) => note.status === "OPEN").length;
 
   const styleSheet = useStyleSheet(context.projectId, projectKey);
+  const pipeline = usePipeline(context.projectId, projectKey);
+  const currentStage =
+    pipeline.pipeline?.stages.find((stage) => stage.id === pipeline.pipeline?.currentStageId) ?? null;
+  const stageNames = useMemo(
+    () => (pipeline.pipeline ? new Map(pipeline.pipeline.stages.map((stage) => [stage.id, stage.name])) : undefined),
+    [pipeline.pipeline],
+  );
+
+  // The letter stage's notebook starts the export's cover letter: the current
+  // stage when it is a letter stage, otherwise the last letter stage written in.
+  const letterDraft = useMemo(() => {
+    const stages = pipeline.pipeline?.stages.filter((stage) => stage.kind === "carta" && stage.notebook.trim()) ?? [];
+    const chosen = stages.find((stage) => stage.id === pipeline.pipeline?.currentStageId) ?? stages.at(-1);
+    return chosen ? { stageName: chosen.name, text: chosen.notebook.trim() } : null;
+  }, [pipeline.pipeline]);
+
+  // New notes belong to the stage the project is in.
+  function createNote(note: NewNote) {
+    return notes.create({ stageId: currentStage?.id ?? null, ...note });
+  }
 
   const [isGoogleDocsOpen, setIsGoogleDocsOpen] = useState(false);
+  const [noteKindRequest, setNoteKindRequest] = useState<{ kind: NoteKind; at: number } | null>(null);
+  const [isLineBreakRepairOpen, setIsLineBreakRepairOpen] = useState(false);
   const googleDocs = useGoogleDocSync({
     projectId: context.projectId,
     projectKey,
@@ -668,9 +718,10 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
     setIsNotesOpen(true);
   }
 
-  function annotate(excerpt: SceneExcerpt) {
+  function annotate(excerpt: SceneExcerpt, kind?: NoteKind) {
     if (!context.slotId) return;
     setAttachedExcerpt({ slotId: context.slotId, ...excerpt });
+    if (kind) setNoteKindRequest({ kind, at: Date.now() });
     openNotes("scene");
   }
 
@@ -925,10 +976,23 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
       );
   }
 
+  // Reopens the last scene of a project just unlocked, once its scenes load.
+  useEffect(() => {
+    const target = resumeSceneRef.current;
+    if (!target || !projectKey || !context.projectId || context.slotId) return;
+    const slot = projectSlots.find((item) => item.id === target && item.projectId === context.projectId);
+    if (!slot) return;
+    resumeSceneRef.current = null;
+    selectSlot(slot);
+    // selectSlot is redefined every render; the scene list is what this waits for.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectSlots, projectKey, context.projectId, context.slotId]);
+
   function selectSlot(slot: Slot) {
     if (!projectKey || !context.projectId) {
       return;
     }
+    writeLastScene(context.projectId, slot.id);
 
     activateContext(context.projectId, slot.id, projectKey, false);
     void (async () => {
@@ -1215,6 +1279,18 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
     }>;
   }> = [
     {
+      label: "Projeto",
+      items: [
+        {
+          page: "pipeline",
+          label: "Etapas",
+          icon: <StagesIcon />,
+          disabled: !hasOpenProject || !pipeline.isAvailable,
+          disabledReason: hasOpenProject ? "Etapas indisponíveis" : needsProject,
+        },
+      ],
+    },
+    {
       label: "Escrever",
       items: [{ page: "review", label: pageLabels.review, icon: <PenIcon /> }],
     },
@@ -1231,6 +1307,7 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
         },
         { page: "architectural-review", label: pageLabels["architectural-review"], icon: <LayersIcon />, disabled: !hasOpenProject, disabledReason: needsProject },
         { page: "rhythm", label: pageLabels.rhythm, icon: <PulseIcon />, disabled: !hasOpenProject, disabledReason: needsProject },
+        { page: "scene-map", label: pageLabels["scene-map"], icon: <MapIcon />, disabled: !hasOpenProject, disabledReason: needsProject },
       ],
     },
     {
@@ -1246,7 +1323,7 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
   ];
 
   return (
-    <main className={`app-shell${isNavOpen ? " nav-open" : ""}`}>
+    <main className={`app-shell${isNavOpen ? " nav-open" : ""}${isReadingActive ? " reading-mode" : ""}${isNotesOpen && context.projectId && projectKey ? " notes-docked" : ""}`}>
       <header className="topbar">
         <div className="topbar-start">
           <button
@@ -1277,6 +1354,16 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
               </>
             )}
             <span aria-current="page" className="breadcrumb-page">{pageLabels[page]}</span>
+            {currentProject && page !== "guide" && page !== "pipeline" && pipeline.pipeline && (
+              <button
+                className="breadcrumb-stage"
+                title="Etapa do projeto"
+                type="button"
+                onClick={() => goTo("pipeline")}
+              >
+                {pipeline.pipeline.finishedAt ? "Concluído" : (currentStage?.name ?? "Sem etapa")}
+              </button>
+            )}
           </nav>
         )}
         <div className="topbar-actions">
@@ -1408,6 +1495,25 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
                       </button>
                     </li>
                   )}
+                  {group.label === "Escrever" && (
+                    <li>
+                      <button
+                        className="sidebar-link"
+                        disabled={!hasOpenProject}
+                        title={hasOpenProject ? "Juntar quebras de linha no meio de frases (texto colado de PDF)" : needsProject}
+                        type="button"
+                        onClick={() => {
+                          // The open scene may be rewritten; unsaved edits would be lost.
+                          if (!confirmDiscard()) return;
+                          setIsNavOpen(false);
+                          setIsLineBreakRepairOpen(true);
+                        }}
+                      >
+                        <JoinLinesIcon />
+                        <span>Juntar linhas quebradas</span>
+                      </button>
+                    </li>
+                  )}
                 </ul>
               </div>
             ))}
@@ -1447,6 +1553,35 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
             </div>
           )}
 
+          {page === "pipeline" && context.projectId && (
+            <PipelinePage
+              canUseProduction={Boolean(user.marketingEnabled)}
+              error={pipeline.error}
+              isLoading={pipeline.isLoading}
+              notes={notes.notes}
+              pipeline={pipeline.pipeline}
+              projectTitle={currentProject?.title ?? ""}
+              saveState={pipeline.saveState}
+              slots={projectSlots}
+              onGoTo={goTo}
+              onLocateNote={(note) => {
+                if (note.slotId) {
+                  locateNote(note);
+                } else {
+                  setFocusedNoteId(note.id);
+                  openNotes("project");
+                }
+              }}
+              onOpenNotes={() => openNotes()}
+              onOpenScene={openScene}
+              onSetNoteStatus={async (note, status) => {
+                await notes.setStatus(note, status);
+                refreshProjectState();
+              }}
+              onUpdate={pipeline.update}
+            />
+          )}
+
           {page === "archive" && (
             <ArchivePage
               key={context.projectId}
@@ -1466,7 +1601,7 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
               projectKey={projectKey}
               slots={projectSlots}
               onCreateNote={async (body) => {
-                await notes.create({
+                await createNote({
                   slotId: null,
                   kind: "FIX",
                   payload: { body, author: readAuthorName(), excerpt: null },
@@ -1504,6 +1639,17 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
             />
           )}
 
+          {page === "scene-map" && context.projectId && (
+            <SceneMapPage
+              key={context.projectId}
+              projectId={context.projectId}
+              projectTitle={currentProject?.title ?? ""}
+              slots={projectSlots}
+              onAnalyse={isAnalysisBusy ? undefined : () => setIsAnalysisDialogOpen(true)}
+              onOpenScene={openScene}
+            />
+          )}
+
           {page === "export" && (
             <ProjectReviewExportPage
               groups={projectGroups}
@@ -1512,6 +1658,8 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
               projectKey={projectKey}
               slots={projectSlots}
               styleSheet={styleSheet.sheet}
+              letterDraft={letterDraft}
+              onOpenPipeline={pipeline.isAvailable ? () => goTo("pipeline") : undefined}
               onError={setContextError}
             />
           )}
@@ -1626,6 +1774,8 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
                     noteAnchors={noteAnchors}
                     noteFocus={noteFocus}
                     onAnnotate={annotate}
+                    isReadingMode={isReadingActive}
+                    onToggleReadingMode={() => setIsReadingMode((value) => !value)}
                     onExcerptChange={setSelectedExcerpt}
                     onFocusNote={(noteId) => {
                       setFocusedNoteId(noteId);
@@ -1691,6 +1841,34 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
                     }
                     onDismiss={(signatureHash) =>
                       review.dismissDiagnostic(signatureHash).then(refreshProjectState)
+                    }
+                    onMakeNote={
+                      context.slotId && projectKey
+                        ? async (diagnostic) => {
+                            // The finding becomes the reviewer's own note on the passage, to edit at will.
+                            const span = locateQuote(content, diagnostic.sourceQuote);
+                            try {
+                              const note = await createNote({
+                                slotId: context.slotId,
+                                kind: "FIX",
+                                payload: {
+                                  body: diagnostic.correctionHint
+                                    ? `${diagnostic.message}\n\n${diagnostic.correctionHint}`
+                                    : diagnostic.message,
+                                  author: readAuthorName(),
+                                  excerpt: span
+                                    ? { quote: content.slice(span.start, span.end), start: span.start, end: span.end }
+                                    : null,
+                                },
+                              });
+                              refreshProjectState();
+                              openNotes("scene");
+                              setFocusedNoteId(note.id);
+                            } catch (reason) {
+                              setContextError(reason instanceof Error ? reason.message : "Não foi possível criar a nota.");
+                            }
+                          }
+                        : undefined
                     }
                     tab={revisorTab}
                     onTabChange={setRevisorTab}
@@ -1796,6 +1974,8 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
           projectId={projectToUnlock}
           onClose={() => setProjectToUnlock(null)}
           onUnlocked={(projectId, key) => {
+            // Picks up at the last scene once the project's scenes arrive.
+            resumeSceneRef.current = readLastScene(projectId);
             activateContext(projectId, "", key);
             recordAccess(projectId);
             setProjectToUnlock(null);
@@ -1860,6 +2040,17 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
           onUndo={undoMove}
         />
       )}
+      {isLineBreakRepairOpen && projectKey && (
+        <LineBreakRepairModal
+          projectKey={projectKey}
+          slots={projectSlots}
+          onApplied={(slotIds) => {
+            const open = projectSlots.find((slot) => slot.id === context.slotId);
+            if (open && slotIds.includes(open.id)) selectSlot(open);
+          }}
+          onClose={() => setIsLineBreakRepairOpen(false)}
+        />
+      )}
       {context.projectId && projectKey && (
         <NotesPanel
           attachedExcerpt={attachedExcerpt}
@@ -1867,11 +2058,14 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
           error={notes.error}
           focusedNoteId={focusedNoteId}
           isOpen={isNotesOpen}
+          currentStageId={currentStage?.id ?? null}
           notes={notes.notes}
           slots={projectSlots}
+          requestedKind={noteKindRequest}
+          stageNames={stageNames}
           tab={notesTab}
           onCreate={async (note) => {
-            await notes.create(note);
+            await createNote(note);
             refreshProjectState();
           }}
           onDetachExcerpt={() => setAttachedExcerpt(null)}

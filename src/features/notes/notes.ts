@@ -1,3 +1,4 @@
+import { locateQuote } from '../scenes/quotes'
 import type { NoteKind, NoteStatus } from '../../api/contracts'
 
 /** A review note with its private part decrypted. */
@@ -6,6 +7,8 @@ export interface Note {
   slotId: string | null
   kind: NoteKind
   status: NoteStatus
+  // The pipeline stage the note was written in; null before the pipeline.
+  stageId: string | null
   body: string
   author: string
   excerpt: { quote: string; start: number; end: number } | null
@@ -47,13 +50,9 @@ export function resolveAnchor(content: string, note: Note): NoteAnchor | null {
   })
   if (content.slice(excerpt.start, excerpt.end) === excerpt.quote) return anchor(excerpt.start)
 
-  let best: number | null = null
-  let from = content.indexOf(excerpt.quote)
-  while (from >= 0) {
-    if (best === null || Math.abs(from - excerpt.start) < Math.abs(best - excerpt.start)) best = from
-    from = content.indexOf(excerpt.quote, from + 1)
-  }
-  return best === null ? null : anchor(best)
+  // Line breaks joined or dashes changed since the note was written still match.
+  const span = locateQuote(content, excerpt.quote, excerpt.start)
+  return span ? { noteId: note.id, start: span.start, end: span.end, kind: note.kind } : null
 }
 
 const authorKey = 'petricor-note-author'

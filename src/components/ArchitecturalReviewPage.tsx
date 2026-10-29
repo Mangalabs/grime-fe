@@ -460,11 +460,14 @@ export function ArchitecturalReviewPage({
                   drift.added ? `${drift.added} cena(s) nova(s)` : null,
                   drift.removed ? `${drift.removed} removida(s)` : null,
                   drift.reordered ? "ordem alterada" : null,
+                  drift.changed
+                    ? `${drift.changed} ${drift.changed === 1 ? "cena reanalisada" : "cenas reanalisadas"} depois dele`
+                    : null,
                 ]
                   .filter(Boolean)
                   .join(", ")}
-                ). Os links seguem cada cena até onde ela está agora; cenas novas não foram
-                analisadas.
+). Os links seguem cada cena até onde ela está agora; o que mudou depois não entrou
+                nesta leitura. Gere uma nova análise para a estrutura atual.
               </p>
             )}
             {!report.sceneIds && !hasReferences && report.diagnostics.length > 0 && (

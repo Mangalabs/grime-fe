@@ -25,6 +25,11 @@ interface NotesPanelProps {
   attachedExcerpt: AttachedExcerpt | null
   focusedNoteId: string | null
   error: string | null
+  // A kind picked with the excerpt (from the reading view); `at` makes each request new.
+  requestedKind?: { kind: NoteKind; at: number } | null
+  // Pipeline stages by id, to tag notes; the current one enables the stage filter.
+  stageNames?: Map<string, string>
+  currentStageId?: string | null
   onOpenChange: (isOpen: boolean) => void
   onTabChange: (tab: NotesTab) => void
   onDetachExcerpt: () => void
@@ -58,6 +63,9 @@ export function NotesPanel({
   attachedExcerpt,
   focusedNoteId,
   error,
+  stageNames,
+  currentStageId = null,
+  requestedKind = null,
   onOpenChange,
   onTabChange,
   onDetachExcerpt,
@@ -69,7 +77,13 @@ export function NotesPanel({
   onOpenScene,
 }: NotesPanelProps) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('OPEN')
+  const [onlyStage, setOnlyStage] = useState(false)
   const [kind, setKind] = useState<NoteKind>('NOTE')
+  const [appliedRequest, setAppliedRequest] = useState<number | null>(null)
+  if (requestedKind && requestedKind.at !== appliedRequest) {
+    setAppliedRequest(requestedKind.at)
+    setKind(requestedKind.kind)
+  }
   const [body, setBody] = useState('')
   const [author, setAuthor] = useState(readAuthorName)
   const [isEditingAuthor, setIsEditingAuthor] = useState(() => !readAuthorName())
@@ -83,11 +97,12 @@ export function NotesPanel({
   const effectiveTab: NotesTab = tab === 'scene' && !currentSlotId ? 'project' : tab
   const slotById = useMemo(() => new Map(slots.map((slot) => [slot.id, slot])), [slots])
   const currentSlot = slotById.get(currentSlotId)
-  const openCount = notes.filter((note) => note.status === 'OPEN').length
   const countOpen = (predicate: (note: Note) => boolean) =>
     notes.filter((note) => note.status === 'OPEN' && predicate(note)).length
 
-  const matchesStatus = (note: Note) => statusFilter === 'ALL' || note.status === statusFilter
+  const stageFilter = onlyStage && currentStageId ? currentStageId : null
+  const matchesStatus = (note: Note) =>
+    (statusFilter === 'ALL' || note.status === statusFilter) && (!stageFilter || note.stageId === stageFilter)
   const visible = notes.filter((note) => {
     if (!matchesStatus(note)) return false
     if (effectiveTab === 'scene') return note.slotId === currentSlotId
@@ -167,6 +182,11 @@ export function NotesPanel({
           <span>
             {note.author || 'Sem assinatura'} · {formatRelative(note.createdAt)}
           </span>
+          {note.stageId && stageNames && (
+            <span className="note-stage" title="Etapa em que a nota foi escrita">
+              {stageNames.get(note.stageId) ?? 'Etapa removida'}
+            </span>
+          )}
           {note.status === 'RESOLVED' && <span className="note-resolved">Resolvida</span>}
         </div>
         {note.excerpt && (
@@ -258,21 +278,8 @@ export function NotesPanel({
     )
   }
 
-  if (!isOpen) {
-    return (
-      <button
-        aria-keyshortcuts="Alt+A"
-        aria-label={`Abrir notas${openCount ? `, ${openCount} abertas` : ''}`}
-        className="notes-pill"
-        title="Notas (Alt+A)"
-        type="button"
-        onClick={() => onOpenChange(true)}
-      >
-        <span aria-hidden="true">✎</span> Notas
-        {openCount > 0 && <span className="notes-pill-count">{openCount}</span>}
-      </button>
-    )
-  }
+  // Closed, the panel is reached from the "Notas" button in the top bar (Alt+A).
+  if (!isOpen) return null
 
   return (
     <section
@@ -343,6 +350,12 @@ export function NotesPanel({
             {value === 'OPEN' ? 'Abertas' : value === 'RESOLVED' ? 'Resolvidas' : 'Todas'}
           </button>
         ))}
+        {currentStageId && stageNames?.has(currentStageId) && (
+          <label className="notes-stage-filter" title="Mostrar só as notas escritas na etapa atual">
+            <input checked={onlyStage} type="checkbox" onChange={(event) => setOnlyStage(event.target.checked)} />
+            {stageNames.get(currentStageId)}
+          </label>
+        )}
         {effectiveTab === 'scene' && currentSlot && (
           <span className="notes-scope">{sceneLabel(currentSlot)}</span>
         )}

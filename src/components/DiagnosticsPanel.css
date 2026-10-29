@@ -37,3 +37,9 @@ button.diagnostic-quote:hover { border-left-color: var(--color-accent); color: v
 .revisor-tabs button[aria-selected='true'] { color: var(--color-text-strong); background: var(--color-surface-raised); box-shadow: var(--shadow-sm); }
 .revisor-tabs .count-badge { min-width: 22px; height: 20px; font-size: var(--text-micro); }
 .count-badge-quiet { color: var(--color-text-secondary); background: var(--color-surface); }
+
+/* "Mostrar mais N de …" under a folded craft type. */
+.diagnostic-more {
+  justify-self: start;
+  margin: 4px 0 0;
+}

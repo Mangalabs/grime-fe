@@ -1,3 +1,4 @@
+import { locateQuote } from '../scenes/quotes'
 import type {
   ArchitectReview,
   DiagnosticSeverity,
@@ -223,7 +224,7 @@ export function buildReport(data: ReportData, options: ReportOptions): ReportMod
     scene.diagnostics.forEach((diagnostic, index) => {
       if (diagnostic.signatureHash && overridden.has(diagnostic.signatureHash)) return
       if (severityRank[diagnostic.severity] < severityRank[options.minSeverity]) return
-      const start = scene.text && diagnostic.sourceQuote ? scene.text.indexOf(diagnostic.sourceQuote) : -1
+      const anchor = scene.text && diagnostic.sourceQuote ? locateQuote(scene.text, diagnostic.sourceQuote) : null
       items.push({
         key: `d${index}`,
         tone: toneOfSeverity(diagnostic.severity),
@@ -232,7 +233,7 @@ export function buildReport(data: ReportData, options: ReportOptions): ReportMod
         body: diagnostic.message,
         quote: diagnostic.sourceQuote || null,
         hint: diagnostic.correctionHint,
-        anchor: start >= 0 ? { start, end: start + diagnostic.sourceQuote.length } : null,
+        anchor,
         priority: diagnosticPriority[diagnostic.severity],
       })
     })

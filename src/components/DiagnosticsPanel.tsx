@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import './DiagnosticsPanel.css'
 import './Modal.css'
+import { locateQuote } from '../features/scenes/quotes'
 import type {
   DiagnosticSeverity,
   DiagnosticType,
@@ -19,6 +20,8 @@ interface DiagnosticsPanelProps {
   onSaveOverride: (signatureHash: string, justification: string) => Promise<void>
   onRemoveOverride: (signatureHash: string) => Promise<void>
   onDismiss: (signatureHash: string) => Promise<void>
+  // Turns a finding into a review note on its passage; absent without notes.
+  onMakeNote?: (diagnostic: LinterDiagnostic) => Promise<void>
   // The style sheet tab; absent when the backend has no style sheets.
   style?: {
     count: number
@@ -39,6 +42,9 @@ const severityIcons: Record<DiagnosticSeverity, string> = {
   WARNING: '▲',
   NOTE: '■',
 }
+
+// Findings of one craft type shown before folding the rest.
+const FINDINGS_PER_TYPE = 2
 
 const typeLabels: Record<DiagnosticType, string> = {
   CONTINUITY_BREAK: 'Quebra de continuidade',
@@ -61,6 +67,7 @@ export function DiagnosticsPanel({
   onSaveOverride,
   onRemoveOverride,
   onDismiss,
+  onMakeNote,
   style,
   tab,
   onTabChange,
@@ -72,6 +79,8 @@ export function DiagnosticsPanel({
   )
   // The card asking "delete?", and the card whose request is in flight.
   const [confirmingDismiss, setConfirmingDismiss] = useState<string | null>(null)
+  // Craft types shown in full; the rest show their first findings only.
+  const [expandedTypes, setExpandedTypes] = useState<Set<DiagnosticType>>(() => new Set())
   const [busyHash, setBusyHash] = useState<string | null>(null)
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -91,6 +100,22 @@ export function DiagnosticsPanel({
       .sort((a, b) => Number(isIntentional(a)) - Number(isIntentional(b)))
   }, [diagnostics, overrides, severity, type])
   const openCount = diagnostics.filter((diagnostic) => !overrideFor(diagnostic)).length
+
+  // Older analyses could repeat one craft point many times in a scene: two
+  // examples of each type are shown, the rest on request. Continuity is never folded.
+  const { shownDiagnostics, foldedByType } = useMemo(() => {
+    const perType = new Map<DiagnosticType, number>()
+    const folded = new Map<DiagnosticType, number>()
+    const shown = filteredDiagnostics.filter((diagnostic) => {
+      if (type !== 'ALL' || diagnostic.type === 'CONTINUITY_BREAK' || expandedTypes.has(diagnostic.type)) return true
+      const count = (perType.get(diagnostic.type) ?? 0) + 1
+      perType.set(diagnostic.type, count)
+      if (count <= FINDINGS_PER_TYPE) return true
+      folded.set(diagnostic.type, (folded.get(diagnostic.type) ?? 0) + 1)
+      return false
+    })
+    return { shownDiagnostics: shown, foldedByType: [...folded.entries()] }
+  }, [filteredDiagnostics, type, expandedTypes])
 
   async function runOnCard(signatureHash: string, action: () => Promise<void>) {
     setBusyHash(signatureHash)
@@ -197,13 +222,11 @@ export function DiagnosticsPanel({
           <p className="empty-state">Nenhum diagnóstico corresponde aos filtros.</p>
         ) : (
           <div className="diagnostic-list" ref={listRef}>
-            {filteredDiagnostics.map((diagnostic, index) => {
+            {shownDiagnostics.map((diagnostic, index) => {
               const override = overrideFor(diagnostic)
               const signatureHash = diagnostic.signatureHash
               const isBusy = signatureHash !== undefined && busyHash === signatureHash
-              const isLocatable =
-                Boolean(diagnostic.sourceQuote.trim()) &&
-                sceneText.includes(diagnostic.sourceQuote)
+              const isLocatable = locateQuote(sceneText, diagnostic.sourceQuote) !== null
               const isActive = focusedQuote?.quote === diagnostic.sourceQuote
               return (
                 <article
@@ -288,6 +311,17 @@ export function DiagnosticsPanel({
                       </div>
                     ) : (
                       <div className="diagnostic-actions">
+                        {onMakeNote && (
+                          <button
+                            className="text-button"
+                            disabled={isBusy}
+                            title="Cria uma nota “Corrigir” no trecho, com este diagnóstico como texto editável"
+                            type="button"
+                            onClick={() => void runOnCard(signatureHash, () => onMakeNote(diagnostic))}
+                          >
+                            Virar nota
+                          </button>
+                        )}
                         <button
                           className="text-button"
                           type="button"
@@ -307,6 +341,16 @@ export function DiagnosticsPanel({
                 </article>
               )
             })}
+            {foldedByType.map(([foldedType, count]) => (
+              <button
+                className="text-button diagnostic-more"
+                key={foldedType}
+                type="button"
+                onClick={() => setExpandedTypes((current) => new Set(current).add(foldedType))}
+              >
+                Mostrar mais {count} de “{typeLabels[foldedType]}”
+              </button>
+            ))}
           </div>
         )}
         </div>

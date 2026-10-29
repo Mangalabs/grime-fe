@@ -53,15 +53,14 @@
 .notes-panel {
   position: fixed;
   z-index: 35;
-  right: 20px;
-  bottom: 20px;
+  top: var(--topbar-height);
+  right: 0;
+  bottom: 0;
   display: flex;
-  width: min(400px, calc(100vw - 40px));
-  max-height: min(78vh, 720px);
+  width: min(var(--notes-width), 100vw);
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-left: 1px solid var(--color-border);
   background: var(--color-surface);
   box-shadow: var(--shadow-lg);
   animation: notes-in 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -70,7 +69,7 @@
 @keyframes notes-in {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.98);
+    transform: translateX(16px);
   }
 }
 
@@ -168,6 +167,30 @@
 .notes-filter button.is-active {
   color: var(--color-accent-text-strong);
   background: var(--color-accent-soft);
+}
+
+.notes-stage-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  margin-left: 6px;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  white-space: nowrap;
+}
+
+.notes-stage-filter input {
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.note-stage {
+  padding: 0 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 .notes-scope {
@@ -512,4 +535,43 @@
   .annotate-button {
     animation: none;
   }
+}
+
+/* The selection's actions: annotate, or annotate as a given kind (keys 1–4). */
+.annotate-kinds {
+  gap: 2px;
+  padding: 4px;
+  white-space: nowrap;
+}
+
+.annotate-kinds button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+}
+
+.annotate-kinds button:hover,
+.annotate-kinds button:focus-visible {
+  background: color-mix(in srgb, var(--color-bg) 18%, transparent);
+}
+
+.annotate-kinds button[class^='kind-']::before {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--kind-color);
+  content: '';
+}
+
+.annotate-kinds kbd {
+  border-color: transparent;
+  color: inherit;
+  background: transparent;
+  opacity: 0.6;
 }

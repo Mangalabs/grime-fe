@@ -270,3 +270,11 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Where the cover letter comes from. */
+.export-letter-source {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-regular);
+  line-height: 1.45;
+}

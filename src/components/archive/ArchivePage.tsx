@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../../api/client'
+import { CanonApprovalBar } from './CanonApprovalBar'
+import { ToReviewView } from './ToReviewView'
+import { countToReview } from '../../features/archive/toReview'
 import type { FactEntityType, ProjectEntity, ProjectFact, SceneGroup, Slot } from '../../api/contracts'
 import { buildArchive } from '../../features/archive/entityModel'
 import { relationsAt } from '../../features/archive/relations'
@@ -20,7 +23,7 @@ interface ArchivePageProps {
   onError: (message: string) => void
 }
 
-type Tab = 'entities' | 'facts' | 'relations' | 'templates'
+type Tab = 'entities' | 'review' | 'facts' | 'relations' | 'templates'
 
 // The server's refusals of a new entity, in the author's language.
 function createErrorMessage(reason: unknown) {
@@ -77,6 +80,8 @@ export function ArchivePage({ projectId, projectKey, slots, groups, onOpenScene,
     [entities, facts, slots],
   )
   const relationCount = useMemo(() => relationsAt(archive, null).length, [archive])
+  // Read on every render: dismissals inside the tab show up as soon as it re-renders.
+  const toReviewCount = countToReview(projectId, archive)
 
   function openScene(slotId: string) {
     const slot = slots.find((item) => item.id === slotId)
@@ -149,6 +154,16 @@ export function ArchivePage({ projectId, projectKey, slots, groups, onOpenScene,
           </button>
           <button
             aria-controls="archive-panel"
+            aria-selected={tab === 'review'}
+            className={tab === 'review' ? 'is-active' : ''}
+            role="tab"
+            type="button"
+            onClick={() => changeTab('review')}
+          >
+            A conferir <span>{toReviewCount}</span>
+          </button>
+          <button
+            aria-controls="archive-panel"
             aria-selected={tab === 'facts'}
             className={tab === 'facts' ? 'is-active' : ''}
             role="tab"
@@ -181,6 +196,8 @@ export function ArchivePage({ projectId, projectKey, slots, groups, onOpenScene,
           )}
         </div>
       </header>
+
+      <CanonApprovalBar projectId={projectId} onApproved={() => void refresh()} onError={onError} />
 
       <div id="archive-panel" role="tabpanel">
         {isLoading ? (
@@ -221,6 +238,15 @@ export function ArchivePage({ projectId, projectKey, slots, groups, onOpenScene,
             onOpenScene={openScene}
             onRefresh={refresh}
             onSelect={setSelectedEntityId}
+          />
+        ) : tab === 'review' ? (
+          <ToReviewView
+            archive={archive}
+            projectId={projectId}
+            onError={onError}
+            onOpenEntity={openEntity}
+            onOpenScene={openScene}
+            onRefresh={refresh}
           />
         ) : tab === 'facts' ? (
           <FactsView

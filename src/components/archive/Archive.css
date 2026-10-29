@@ -1894,3 +1894,522 @@ button.relation-chip:hover {
     margin-left: 0;
   }
 }
+
+/* Whether extracted facts become canon on their own, and what still waits. */
+.canon-approval {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin: -8px 0 20px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+}
+
+.canon-approval-switch {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 360px;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--color-text);
+  font-weight: var(--weight-regular);
+  cursor: pointer;
+}
+
+.canon-approval-switch input {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin: 3px 0 0;
+  padding: 0;
+  accent-color: var(--color-accent);
+}
+
+.canon-approval-switch strong {
+  display: block;
+  font-size: var(--text-ui);
+}
+
+.canon-approval-switch small {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: 1.45;
+}
+
+.canon-approval-pending {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-warning-text);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+}
+
+.canon-approval-done {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--color-success-text);
+  font-size: var(--text-small);
+}
+
+/* Vínculos: an entity's bonds with people and groups, then other links. */
+.entity-bonds {
+  display: grid;
+  gap: 8px;
+}
+
+.bond-group-title {
+  margin: 8px 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bond-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bond {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 10px;
+  background: var(--color-surface-raised);
+}
+
+.bond-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.bond-kinds {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.bond-kind {
+  --bond-color: var(--color-text-faint);
+  padding: 0 8px;
+  border: 1px solid color-mix(in srgb, var(--bond-color) 45%, transparent);
+  border-radius: 999px;
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--bond-color) 14%, transparent);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.bond-family { --bond-color: var(--color-warning); }
+.bond-romance { --bond-color: var(--group-rose); }
+.bond-friendship { --bond-color: var(--color-accent-label); }
+.bond-rivalry { --bond-color: var(--color-critical); }
+.bond-alliance { --bond-color: var(--type-world-rule); }
+.bond-hierarchy { --bond-color: var(--type-faction); }
+.bond-debt { --bond-color: var(--type-event); }
+.bond-knowledge { --bond-color: var(--color-note); }
+
+.bond-latest {
+  margin: 6px 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+
+.bond-speaker {
+  color: var(--color-text-muted);
+}
+
+.bond-history {
+  margin-top: 6px;
+  font-size: var(--text-small);
+}
+
+.bond-history summary {
+  color: var(--color-accent-text);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.bond-history ol {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bond-history li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+.bond-others {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0;
+}
+
+.bond-others > div {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.3fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: baseline;
+}
+
+.bond-others dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.bond-others dd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+
+.bond-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  font-size: var(--text-small);
+}
+
+.bond-chip:hover {
+  border-color: var(--color-accent-border);
+}
+
+.bond-count {
+  color: var(--color-text-faint);
+  font-size: var(--text-micro);
+}
+
+@media (max-width: 720px) {
+  .bond-others > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+}
+
+/* A conferir: what an auto-approved canon still asks of the author. */
+.to-review {
+  display: grid;
+  gap: 16px;
+}
+
+.to-review-intro {
+  max-width: 760px;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: 1.55;
+}
+
+.to-review-section {
+  display: grid;
+  gap: 10px;
+}
+
+.to-review-count {
+  min-width: 26px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  color: var(--color-accent-text);
+  background: var(--color-accent-soft);
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+  text-align: center;
+}
+
+.to-review-empty {
+  margin: 0;
+  color: var(--color-text-faint);
+  font-size: var(--text-small);
+}
+
+.to-review-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.to-review-list > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.to-review-list > li.is-dismissed {
+  opacity: 0.55;
+}
+
+.to-review-main {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 420px;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-size: var(--text-ui);
+  line-height: 1.45;
+}
+
+.to-review-kind {
+  color: var(--color-text-muted);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.to-review-main small {
+  color: var(--color-text-faint);
+  font-size: var(--text-small);
+}
+
+.to-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 4px;
+}
+
+/* Trajetória: a character read from the text, scene by scene. */
+.trajectory {
+  display: grid;
+  gap: 22px;
+}
+
+.trajectory-summary dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.trajectory-summary dl > div {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.25fr) minmax(0, 1fr);
+  gap: 12px;
+  font-size: var(--text-ui);
+  line-height: 1.5;
+}
+
+.trajectory-summary dt {
+  color: var(--color-text-muted);
+}
+
+.trajectory-summary dd {
+  margin: 0;
+}
+
+.trajectory-summary small {
+  color: var(--color-text-muted);
+}
+
+.trajectory-goals {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.trajectory-note {
+  margin: 0 0 8px;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+
+.plan-rows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plan-rows > li {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.22fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+
+.plan-label {
+  color: var(--color-text-muted);
+  font-weight: var(--weight-semibold);
+}
+
+.plan-planned {
+  color: var(--color-text-secondary);
+  white-space: pre-line;
+}
+
+.plan-written {
+  display: grid;
+  gap: 4px;
+}
+
+.plan-flag {
+  justify-self: start;
+  padding: 0 8px;
+  border-radius: 999px;
+  color: var(--color-warning-text);
+  background: var(--color-warning-soft);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+}
+
+.trajectory-steps-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.trajectory-repeats {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-regular);
+}
+
+.trajectory-repeats input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--color-accent);
+}
+
+.trajectory-list {
+  display: grid;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trajectory-step {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.24fr) minmax(0, 1fr);
+  gap: 14px;
+  padding: 10px 0 10px 14px;
+  border-left: 2px solid var(--color-accent-border);
+}
+
+.trajectory-step.is-quiet {
+  opacity: 0.6;
+}
+
+.trajectory-scene {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  color: var(--color-text);
+  background: transparent;
+  text-align: left;
+}
+
+.trajectory-scene strong {
+  font-size: var(--text-ui);
+}
+
+.trajectory-scene span {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  text-overflow: ellipsis;
+}
+
+.trajectory-scene:hover strong {
+  color: var(--color-accent-text-strong);
+  text-decoration: underline;
+}
+
+.trajectory-step ul {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trajectory-item {
+  display: grid;
+  grid-template-columns: minmax(90px, 0.22fr) minmax(0, 1fr);
+  gap: 10px;
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+
+.trajectory-item.is-repeat {
+  color: var(--color-text-faint);
+}
+
+.trajectory-label {
+  color: var(--color-text-muted);
+  font-weight: var(--weight-semibold);
+}
+
+.trajectory-item.kind-place .trajectory-label { color: var(--type-location, var(--color-note)); }
+.trajectory-item.kind-health .trajectory-label { color: var(--color-critical-text); }
+.trajectory-item.kind-knowledge .trajectory-label { color: var(--color-note); }
+.trajectory-item.kind-goal .trajectory-label { color: var(--color-accent-text); }
+
+.trajectory-quiet {
+  margin: 0;
+  color: var(--color-text-faint);
+  font-size: var(--text-small);
+}
+
+.trajectory-gap {
+  margin: 0;
+  padding: 6px 0 6px 14px;
+  border-left: 2px dashed var(--color-border-strong);
+  color: var(--color-text-faint);
+  font-size: var(--text-small);
+  font-style: italic;
+}
+
+@media (max-width: 720px) {
+  .trajectory-summary dl > div,
+  .plan-rows > li,
+  .trajectory-step,
+  .trajectory-item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+}

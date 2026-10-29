@@ -72,7 +72,14 @@ export function useSceneReview(slotId: string) {
       if (!controller.signal.aborted) {
         setReport(nextReport)
         setFacts(nextReport.pendingFacts)
-        setFactStatus('PENDING')
+        if (nextReport.autoApproval) {
+          // Already canon: the panel shows them as approved, still editable.
+          setFactStatus('APPROVED')
+          setApproval({ slotId: nextReport.slotId, ...nextReport.autoApproval })
+          void refreshResources(nextReport.slotId)
+        } else {
+          setFactStatus('PENDING')
+        }
         if (nextReport.analysisErrors.length > 0) {
           setError(nextReport.analysisErrors.join(' '))
         }
@@ -86,7 +93,7 @@ export function useSceneReview(slotId: string) {
         setIsSubmitting(false)
       }
     }
-  }, [])
+  }, [refreshResources])
 
   const approve = useCallback(async () => {
     if (!report) {

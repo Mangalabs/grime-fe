@@ -141,6 +141,33 @@ export function LayersIcon() {
   );
 }
 
+export function MapIcon() {
+  return (
+    <Icon>
+      <path d="M2.5 5l5-2 5 2 5-2v12l-5 2-5-2-5 2V5zM7.5 3v12M12.5 5v12" />
+    </Icon>
+  );
+}
+
+export function JoinLinesIcon() {
+  return (
+    <Icon>
+      <path d="M3 5.5h14M3 10h8.5a2.5 2.5 0 010 5H8M10 13l-2 2 2 2M3 15h2" />
+    </Icon>
+  );
+}
+
+export function StagesIcon() {
+  return (
+    <Icon>
+      <circle cx="4" cy="10" r="1.8" />
+      <circle cx="10" cy="10" r="1.8" />
+      <circle cx="16" cy="10" r="1.8" />
+      <path d="M5.8 10h2.4M11.8 10h2.4" />
+    </Icon>
+  );
+}
+
 export function PulseIcon() {
   return (
     <Icon>

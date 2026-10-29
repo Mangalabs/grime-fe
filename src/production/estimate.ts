@@ -1,3 +1,4 @@
+import { joinSoftWraps } from '../features/scenes/softWraps'
 import { fonts, formats, marginsFor, papers, type BookFormat, type FormatId, type MarginRow, type PaperId } from './tables'
 
 /**
@@ -32,7 +33,8 @@ export function textStats(scenes: Array<{ text: string; groupId: string | null }
   const counted = scenes
     .map((scene) => ({
       groupId: scene.groupId,
-      paragraphs: scene.text
+      // Mid-sentence line breaks are not paragraphs in print.
+      paragraphs: joinSoftWraps(scene.text)
         .split(/\n+/)
         .map((paragraph) => paragraph.replace(/\s+/g, ' ').trim())
         .filter(Boolean)

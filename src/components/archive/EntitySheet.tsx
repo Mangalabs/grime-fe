@@ -10,7 +10,8 @@ import {
   type DuplicateHint,
 } from '../../features/archive/entityModel'
 import { attributeLabel } from '../../features/archive/attributes'
-import { relationsAt } from '../../features/archive/relations'
+import { EntityBonds } from './EntityBonds'
+import { TrajectoryView } from './TrajectoryView'
 import { orderScenes, sceneTitle } from '../../features/scenes/sceneStatus'
 import type { Wiki } from '../../features/wiki/useWiki'
 import { ChevronLeftIcon, ChevronRightIcon } from '../icons'
@@ -19,7 +20,7 @@ import { EntityWikiPage } from '../wiki/EntityWikiPage'
 import '../wiki/Wiki.css'
 
 // page: the author's wiki page. canon: what the analysed scenes established.
-export type SheetTab = 'page' | 'canon'
+export type SheetTab = 'page' | 'canon' | 'trajectory'
 
 interface EntitySheetProps {
   archive: ArchiveEntity[]
@@ -105,9 +106,6 @@ export function EntitySheet({
   const states = useMemo(() => entityStateAt(entity, upTo), [entity, upTo])
   const loose = looseFacts(entity)
   const byId = useMemo(() => new Map(archive.map((item) => [item.id, item])), [archive])
-  const relations = useMemo(() => relationsAt(archive, upTo), [archive, upTo])
-  const outgoing = relations.filter((relation) => relation.sourceId === entity.id)
-  const incoming = relations.filter((relation) => relation.targetId === entity.id)
 
   function targetChip(targetId: string | null) {
     const target = targetId ? byId.get(targetId) : undefined
@@ -118,6 +116,7 @@ export function EntitySheet({
     ) : null
   }
   const sceneCount = new Set(entity.facts.map((fact) => fact.slot.id)).size
+  const isCharacter = entity.type === 'CHARACTER'
   const previousAppearance = [...positions].reverse().find((position) => position < cursor)
   const nextAppearance = positions.find((position) => position > cursor)
   const cursorScene = scenes[cursor]
@@ -284,18 +283,20 @@ export function EntitySheet({
         </ul>
       )}
 
-      {wiki && (
+      {(wiki || isCharacter) && (
         <div className="archive-tabs entity-sheet-tabs" role="tablist" aria-label="Visões da entidade">
-          <button
-            aria-controls="entity-page-panel"
-            aria-selected={tab === 'page'}
-            className={tab === 'page' ? 'is-active' : ''}
-            role="tab"
-            type="button"
-            onClick={() => onTabChange('page')}
-          >
-            Ficha
-          </button>
+          {wiki && (
+            <button
+              aria-controls="entity-page-panel"
+              aria-selected={tab === 'page'}
+              className={tab === 'page' ? 'is-active' : ''}
+              role="tab"
+              type="button"
+              onClick={() => onTabChange('page')}
+            >
+              Ficha
+            </button>
+          )}
           <button
             aria-controls="entity-canon-panel"
             aria-selected={tab === 'canon'}
@@ -306,6 +307,31 @@ export function EntitySheet({
           >
             Cânone <span>{entity.facts.length}</span>
           </button>
+          {isCharacter && (
+            <button
+              aria-controls="entity-trajectory-panel"
+              aria-selected={tab === 'trajectory'}
+              className={tab === 'trajectory' ? 'is-active' : ''}
+              role="tab"
+              type="button"
+              onClick={() => onTabChange('trajectory')}
+            >
+              Trajetória
+            </button>
+          )}
+        </div>
+      )}
+
+      {isCharacter && tab === 'trajectory' && (
+        <div id="entity-trajectory-panel" role="tabpanel">
+          <TrajectoryView
+            archive={archive}
+            entity={entity}
+            hasPage={Boolean(wiki?.pageIds.has(entity.id))}
+            wiki={wiki}
+            onOpenScene={onOpenScene}
+            onSelectEntity={onSelectEntity}
+          />
         </div>
       )}
 
@@ -324,7 +350,7 @@ export function EntitySheet({
         </div>
       )}
 
-      <div className="entity-canon" hidden={tab !== 'canon'} id="entity-canon-panel" role={wiki ? 'tabpanel' : undefined}>
+      <div className="entity-canon" hidden={tab !== 'canon'} id="entity-canon-panel" role={wiki || isCharacter ? 'tabpanel' : undefined}>
       {scenes.length > 0 && positions.length > 0 && (
         <section className="entity-timeline" aria-label="Linha do tempo da entidade">
           <label className="switch">
@@ -437,35 +463,7 @@ export function EntitySheet({
         )}
       </section>
 
-      {(outgoing.length > 0 || incoming.length > 0) && (
-        <section aria-labelledby="entity-relations-title">
-          <h3 className="entity-section-title" id="entity-relations-title">
-            Relações{isFollowing ? ` até a cena ${cursor + 1}` : ''}
-          </h3>
-          <ul className="entity-relations">
-            {outgoing.map((relation) => (
-              <li key={relation.id}>
-                <span className="relation-direction">{relation.label} →</span>
-                <button className="facts-entity" type="button" onClick={() => onSelectEntity(relation.targetId)}>
-                  <span className={`entity-type-dot type-${byId.get(relation.targetId)?.type.toLowerCase()}`} aria-hidden="true" />
-                  {byId.get(relation.targetId)?.name}
-                </button>
-                <span className="relation-detail">“{relation.fact.value}”</span>
-              </li>
-            ))}
-            {incoming.map((relation) => (
-              <li key={relation.id}>
-                <span className="relation-direction">← {relation.label} de</span>
-                <button className="facts-entity" type="button" onClick={() => onSelectEntity(relation.sourceId)}>
-                  <span className={`entity-type-dot type-${byId.get(relation.sourceId)?.type.toLowerCase()}`} aria-hidden="true" />
-                  {byId.get(relation.sourceId)?.name}
-                </button>
-                <span className="relation-detail">“{relation.fact.value}”</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <EntityBonds archive={archive} entity={entity} upTo={upTo} onOpenScene={onOpenScene} onSelectEntity={onSelectEntity} />
 
       {loose.length > 0 && (
         <section aria-labelledby="entity-loose-title">

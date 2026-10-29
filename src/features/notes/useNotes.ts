@@ -10,6 +10,7 @@ async function open(projectKey: CryptoKey, stored: StoredNote): Promise<Note> {
     slotId: stored.slotId,
     kind: stored.kind,
     status: stored.status,
+    stageId: stored.stageId ?? null,
     createdAt: stored.createdAt,
     updatedAt: stored.updatedAt,
     resolvedAt: stored.resolvedAt,
@@ -25,6 +26,8 @@ export interface NewNote {
   slotId: string | null
   kind: NoteKind
   payload: NotePayload
+  // Defaults to the stage the project is in.
+  stageId?: string | null
 }
 
 /**
@@ -59,10 +62,10 @@ export function useNotes(projectId: string, projectKey: CryptoKey | null) {
         : [...current, note],
     )
 
-  async function create({ slotId, kind, payload }: NewNote): Promise<Note> {
+  async function create({ slotId, kind, payload, stageId = null }: NewNote): Promise<Note> {
     if (!projectKey) throw new Error('Desbloqueie o projeto para escrever notas.')
     const sealed = await encryptNote(projectKey, payload)
-    const stored = await api.createNote(projectId, { slotId, kind, ...sealed })
+    const stored = await api.createNote(projectId, { slotId, kind, stageId, ...sealed })
     const note = await open(projectKey, stored)
     replace(note)
     return note

@@ -1,3 +1,4 @@
+import type { StoredSceneCard } from '../features/sceneMap/sceneMap'
 import type {
   ArchitectAnalysis,
   ArchitectReview,
@@ -25,6 +26,7 @@ import type {
   SceneGroup,
   SealedText,
   StoredStyleSheet,
+  CanonSettings,
   StoredEncryptedDocument,
   EntityPageSummary,
   FactEntityType,
@@ -456,6 +458,39 @@ export const api = {
       ...jsonBody({ ...sealed, expectedVersion }),
     }),
 
+  // The Arquivista's reading of each analysed scene, for the scene map.
+  listSceneCards: (projectId: string) =>
+    request<StoredSceneCard[]>(`/api/v1/projects/${projectId}/scene-cards`),
+
+  getCanonSettings: (projectId: string) =>
+    request<CanonSettings>(`/api/v1/projects/${projectId}/canon-settings`),
+
+  saveCanonSettings: (projectId: string, settings: CanonSettings) =>
+    request<CanonSettings>(`/api/v1/projects/${projectId}/canon-settings`, {
+      method: 'PUT',
+      ...jsonBody(settings),
+    }),
+
+  // Scenes whose facts still wait for approval.
+  getPendingFacts: (projectId: string) =>
+    request<{ scenes: number; facts: number }>(`/api/v1/projects/${projectId}/facts/pending`),
+
+  approvePendingFacts: (projectId: string) =>
+    request<{ scenes: number; approvedFacts: number; regressionAlerts: number }>(
+      `/api/v1/projects/${projectId}/facts/approve-pending`,
+      { method: 'POST' },
+    ),
+
+  // The editorial pipeline; 404 until the project has one.
+  getPipeline: (projectId: string) =>
+    request<StoredEncryptedDocument>(`/api/v1/projects/${projectId}/pipeline`),
+
+  savePipeline: (projectId: string, sealed: SealedText, expectedVersion: number | null) =>
+    request<StoredEncryptedDocument>(`/api/v1/projects/${projectId}/pipeline`, {
+      method: 'PUT',
+      ...jsonBody({ ...sealed, expectedVersion }),
+    }),
+
   // Only for accounts with marketing on; 404 until the project has a kit.
   getMarketingKit: (projectId: string) =>
     request<StoredEncryptedDocument>(`/api/v1/projects/${projectId}/marketing-kit`),
@@ -586,7 +621,7 @@ export const api = {
 
   createNote: (
     projectId: string,
-    note: { slotId: string | null; kind: NoteKind; ciphertext: string; iv: string },
+    note: { slotId: string | null; kind: NoteKind; stageId?: string | null; ciphertext: string; iv: string },
   ) =>
     request<StoredNote>(`/api/v1/projects/${projectId}/notes`, {
       method: 'POST',
@@ -595,7 +630,7 @@ export const api = {
 
   updateNote: (
     noteId: string,
-    patch: { kind?: NoteKind; status?: NoteStatus; ciphertext?: string; iv?: string },
+    patch: { kind?: NoteKind; status?: NoteStatus; stageId?: string | null; ciphertext?: string; iv?: string },
   ) =>
     request<StoredNote>(`/api/v1/notes/${noteId}`, {
       method: 'PATCH',

@@ -1,0 +1,664 @@
+/* Etapas do projeto: the editorial pipeline and the work of each stage. */
+
+.pipeline-page {
+  display: grid;
+  gap: 18px;
+  padding: 32px 0;
+}
+
+.pipeline-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.pipeline-header .page-intro {
+  margin-bottom: 0;
+}
+
+.pipeline-header-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+}
+
+.pipeline-save {
+  color: var(--color-text-faint);
+  font-size: var(--text-small);
+}
+
+.pipeline-save.is-erro {
+  color: var(--color-critical-text);
+  font-weight: var(--weight-semibold);
+}
+
+.pipeline-error {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--color-critical-border);
+  border-radius: 10px;
+  color: var(--color-critical-text);
+  background: var(--color-critical-soft);
+  font-size: var(--text-small);
+}
+
+.pipeline-empty p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.pipeline-muted {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  white-space: nowrap;
+}
+
+/* Stepper */
+
+.pipeline-stepper {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.pipeline-stepper ol {
+  display: flex;
+  gap: 6px;
+  min-width: max-content;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pipeline-step {
+  position: relative;
+}
+
+.pipeline-step > button,
+.pipeline-step-static {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 150px;
+  max-width: 210px;
+  height: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  text-align: left;
+}
+
+.pipeline-step > button:hover {
+  border-color: var(--color-accent-border);
+}
+
+.pipeline-step.is-selected > button {
+  border-color: var(--color-accent);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+.pipeline-step-mark {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  place-items: center;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+}
+
+.pipeline-step-mark svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pipeline-step-text {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.pipeline-step-text strong {
+  overflow: hidden;
+  font-size: var(--text-ui);
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pipeline-step-text small {
+  color: var(--color-text-muted);
+  font-size: var(--text-micro);
+}
+
+.pipeline-step.is-atual .pipeline-step-mark {
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+}
+
+.pipeline-step.is-atual .pipeline-step-text small {
+  color: var(--color-accent-text);
+  font-weight: var(--weight-semibold);
+}
+
+.pipeline-step.is-feita .pipeline-step-mark {
+  border-color: var(--color-success-border);
+  color: var(--color-success-text);
+  background: var(--color-success-soft);
+}
+
+.pipeline-step.is-pulada > button {
+  border-style: dashed;
+  opacity: 0.6;
+}
+
+.pipeline-step-end .pipeline-step-static {
+  min-width: 120px;
+  border-style: dashed;
+  background: transparent;
+}
+
+/* Stage work */
+
+.pipeline-work {
+  display: grid;
+  gap: 16px;
+}
+
+.pipeline-stage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.pipeline-stage-head .eyebrow {
+  margin-bottom: 4px;
+}
+
+.pipeline-stage-head h2 {
+  margin-bottom: 6px;
+}
+
+.pipeline-stage-actions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.pipeline-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.pipeline-column {
+  display: grid;
+  gap: 16px;
+}
+
+.pipeline-card {
+  display: grid;
+  gap: 10px;
+}
+
+.pipeline-card h3 {
+  margin: 0;
+  font-size: var(--text-body);
+}
+
+.pipeline-progress {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+}
+
+.pipeline-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  transition: width 0.2s ease;
+}
+
+.pipeline-checklist,
+.pipeline-scenes,
+.pipeline-tools,
+.pipeline-notes,
+.pipeline-editor-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pipeline-checklist {
+  gap: 2px;
+}
+
+.pipeline-checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.pipeline-checklist label {
+  display: flex;
+  flex: 1;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 5px 0;
+  font-size: var(--text-ui);
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.pipeline-checklist input,
+.pipeline-scenes input {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin: 2px 0 0;
+  accent-color: var(--color-accent);
+}
+
+.pipeline-checklist .is-done span {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.pipeline-icon-button {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: var(--color-text-faint);
+  background: transparent;
+}
+
+.pipeline-icon-button:hover:not(:disabled) {
+  color: var(--color-text-strong);
+  background: var(--color-surface-muted);
+}
+
+.pipeline-icon-button:disabled {
+  opacity: 0.35;
+}
+
+.pipeline-icon-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pipeline-checklist .pipeline-icon-button {
+  opacity: 0;
+}
+
+.pipeline-checklist li:hover .pipeline-icon-button,
+.pipeline-checklist .pipeline-icon-button:focus-visible {
+  opacity: 1;
+}
+
+.pipeline-inline-form {
+  display: flex;
+  gap: 8px;
+}
+
+.pipeline-inline-form input,
+.pipeline-inline-form select,
+.pipeline-editor-list input,
+.pipeline-dates input {
+  min-width: 0;
+  min-height: 32px;
+  padding: 4px 9px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  font: inherit;
+  font-size: var(--text-ui);
+}
+
+.pipeline-inline-form input {
+  flex: 1;
+}
+
+.pipeline-notebook {
+  width: 100%;
+  min-height: 180px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  font-family: var(--font-reading);
+  font-size: var(--text-body);
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.pipeline-notebook:focus {
+  border-color: var(--color-accent-border);
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.pipeline-dates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.pipeline-dates label {
+  display: grid;
+  gap: 4px;
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+}
+
+.pipeline-deadline {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+  font-size: var(--text-small);
+}
+
+.pipeline-deadline.is-near {
+  color: var(--color-warning-text);
+  background: var(--color-warning-soft);
+}
+
+.pipeline-deadline.is-late {
+  color: var(--color-critical-text);
+  background: var(--color-critical-soft);
+  font-weight: var(--weight-semibold);
+}
+
+.pipeline-continue {
+  justify-self: start;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pipeline-scenes {
+  max-height: 340px;
+  overflow-y: auto;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.pipeline-scenes li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.pipeline-scenes input {
+  margin: 0;
+}
+
+.pipeline-scene-link {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: baseline;
+  gap: 8px;
+  padding: 2px 0;
+  overflow: hidden;
+  border: 0;
+  color: var(--color-text);
+  background: transparent;
+  font-size: var(--text-ui);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pipeline-scene-link:hover {
+  color: var(--color-accent-text-strong);
+}
+
+.pipeline-scenes .is-done .pipeline-scene-link {
+  color: var(--color-text-muted);
+}
+
+.pipeline-scene-number {
+  min-width: 2.4em;
+  color: var(--color-text-faint);
+  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.pipeline-tools {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.pipeline-tool {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  text-align: left;
+  text-decoration: none;
+}
+
+.pipeline-tool:hover {
+  border-color: var(--color-accent-border);
+  background: var(--color-accent-soft);
+}
+
+.pipeline-tool strong {
+  font-size: var(--text-ui);
+}
+
+.pipeline-tool small {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.pipeline-notes {
+  gap: 8px;
+}
+
+.pipeline-note {
+  padding: 8px 10px;
+  border-left: 3px solid var(--kind-color);
+  border-radius: 0 8px 8px 0;
+  background: var(--color-surface-raised);
+}
+
+.pipeline-note.is-resolved {
+  opacity: 0.65;
+}
+
+.pipeline-note-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: var(--color-text-faint);
+  font-size: var(--text-micro);
+}
+
+.pipeline-note-kind {
+  color: var(--kind-color);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pipeline-note p {
+  display: -webkit-box;
+  margin: 4px 0;
+  overflow: hidden;
+  font-size: var(--text-ui);
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.pipeline-note-actions,
+.pipeline-note-footer {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.pipeline-empty-line {
+  margin: 0;
+  color: var(--color-text-faint);
+  font-size: var(--text-small);
+}
+
+.pipeline-carried-head {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* Editing the stages */
+
+.pipeline-editor {
+  display: grid;
+  gap: 12px;
+}
+
+.pipeline-editor-list {
+  gap: 6px;
+  counter-reset: stage;
+}
+
+.pipeline-editor-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.pipeline-editor-list li.is-skipped input {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.pipeline-editor-kind {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pipeline-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pipeline-editor-actions .text-button {
+  margin: 0 0 0 8px;
+}
+
+.pipeline-add-stage select {
+  flex: 0 1 220px;
+}
+
+/* History */
+
+.pipeline-history ol {
+  display: grid;
+  gap: 0;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pipeline-history li {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-size: var(--text-ui);
+}
+
+.pipeline-history time {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .pipeline-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .pipeline-header,
+  .pipeline-stage-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pipeline-stage-actions {
+    justify-content: flex-start;
+  }
+
+  .pipeline-editor-list li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .pipeline-inline-form {
+    flex-wrap: wrap;
+  }
+
+  .pipeline-history li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .pipeline-history time {
+    grid-column: 1 / -1;
+  }
+}
+
+.pipeline-questions {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 20px;
+  font-size: var(--text-ui);
+}
+
+.pipeline-questions p {
+  margin: 0 0 2px;
+  line-height: 1.45;
+}

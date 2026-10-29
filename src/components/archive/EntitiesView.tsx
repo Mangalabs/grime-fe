@@ -407,7 +407,8 @@ export function EntitiesView({
           key={selected.id}
           slots={slots}
           startEditing={startEditingId === selected.id}
-          tab={wiki ? sheetTab : 'canon'}
+          // Without pages there is no Ficha tab; the canon is the default view.
+          tab={wiki || sheetTab === 'trajectory' ? sheetTab : 'canon'}
           wiki={wiki}
           onDirtyChange={onDirtyChange}
           onEditTemplate={onEditTemplate}

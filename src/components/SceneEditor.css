@@ -4,15 +4,17 @@
 
 .scene-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
+  gap: 12px 20px;
   margin-bottom: 18px;
 }
 
+/* In a narrow column the actions drop below the title instead of overflowing. */
 .scene-heading {
-  min-width: 0;
-  flex: 1;
+  min-width: min(260px, 100%);
+  flex: 1 1 260px;
 }
 
 .scene-title {
@@ -454,4 +456,12 @@
   border-radius: 2px;
   background: color-mix(in srgb, var(--color-anomaly) 18%, transparent);
   text-decoration-style: solid;
+}
+
+/* What the chosen review focus checks. */
+.scene-focus-hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-regular);
+  line-height: 1.4;
 }

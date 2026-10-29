@@ -53,6 +53,8 @@ export interface StoredNote {
   slotId: string | null
   kind: NoteKind
   status: NoteStatus
+  // The pipeline stage the note was written in; absent on older backends.
+  stageId?: string | null
   ciphertext: string
   iv: string
   resolvedAt: string | null
@@ -183,6 +185,13 @@ export interface LinterReport {
   diagnostics: LinterDiagnostic[]
   pendingFacts: PendingFact[]
   analysisErrors: string[]
+  // Set when the project approves facts automatically and they became canon.
+  autoApproval?: { approvedFacts: number; regressionAlerts: string[] } | null
+}
+
+/** How a project treats the facts the Arquivista extracts. */
+export interface CanonSettings {
+  autoApproveFacts: boolean
 }
 
 export type MacroDiagnosticType =
@@ -333,6 +342,8 @@ export interface ProjectFact {
   targetEntity?: FactTarget | null
   // Created by the author in the Arquivo; re-analysis leaves it alone.
   isManual?: boolean
+  // Kind of bond for a relation (FAMILY, ROMANCE…); absent on older facts.
+  relationKind?: string | null
   slot: Pick<Slot, 'id' | 'title' | 'isUnanchored' | 'timelinePosition'>
 }
 

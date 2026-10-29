@@ -1,0 +1,171 @@
+/* Juntar linhas quebradas: review every mid-sentence break before joining. */
+
+.linebreak-modal {
+  width: min(820px, 100%);
+}
+
+.linebreak-progress {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+}
+
+.linebreak-progress > div {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+}
+
+.linebreak-progress > div span {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 0.2s ease;
+}
+
+.linebreak-done {
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--color-success-text) !important;
+  background: var(--color-success-soft);
+}
+
+.linebreak-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 16px 0 8px;
+  font-size: var(--text-ui);
+}
+
+.linebreak-scenes,
+.linebreak-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.linebreak-scenes {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.linebreak-scenes > li {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.linebreak-scene-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Checkboxes here are not the full-width text-field look inputs get by default. */
+.linebreak-modal input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--color-accent);
+}
+
+.linebreak-scene-head button {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 0;
+  border: 0;
+  color: var(--color-text);
+  background: transparent;
+  font-size: var(--text-ui);
+  text-align: left;
+}
+
+.linebreak-scene-number {
+  min-width: 2.2em;
+  color: var(--color-text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.linebreak-scene-title {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.linebreak-count {
+  padding: 1px 8px;
+  border-radius: 999px;
+  color: var(--color-accent-text);
+  background: var(--color-accent-soft);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+}
+
+.linebreak-list {
+  display: grid;
+  gap: 2px;
+  max-height: 340px;
+  margin: 0 0 10px 26px;
+  overflow-y: auto;
+}
+
+.linebreak-list label {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-weight: var(--weight-regular);
+  cursor: pointer;
+}
+
+.linebreak-list label:hover {
+  background: var(--color-surface-muted);
+}
+
+.linebreak-list input[type='checkbox'] {
+  margin-top: 3px;
+}
+
+.linebreak-list span {
+  color: var(--color-text-secondary);
+  font-family: var(--font-reading);
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+
+.linebreak-list mark {
+  margin: 0 2px;
+  padding: 0 4px;
+  border-radius: 4px;
+  color: var(--color-accent-text-strong);
+  background: var(--color-accent-soft);
+  font-family: var(--font-interface);
+  font-weight: var(--weight-bold);
+}
+
+.linebreak-list .is-off span {
+  color: var(--color-text-faint);
+  text-decoration: line-through;
+}
+
+.linebreak-list .is-off mark {
+  color: var(--color-text-faint);
+  background: transparent;
+}
+
+.linebreak-more {
+  padding: 6px 8px;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}

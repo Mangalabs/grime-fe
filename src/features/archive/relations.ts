@@ -1,5 +1,6 @@
 import { normalizeForSearch } from '../scenes/sceneStatus'
 import { attributeLabel } from './attributes'
+import { bondKind, bondLabels } from './bonds'
 import type { ArchiveEntity, ArchiveFact } from './entityModel'
 
 /** A directed relation: `source` → `target`, described by one fact. */
@@ -40,7 +41,7 @@ export function relationsAt(
   archive: ArchiveEntity[],
   upTo: number | null,
 ): Relation[] {
-  const known = new Set(archive.map((entity) => entity.id))
+  const typeOf = new Map(archive.map((entity) => [entity.id, entity.type]))
   const relations: Relation[] = []
 
   archive.forEach((entity) => {
@@ -68,16 +69,18 @@ export function relationsAt(
         effective = [...byTarget.values()]
       }
       effective
-        .filter((fact) => fact.targetId && fact.targetId !== entity.id && known.has(fact.targetId))
-        .forEach((fact) =>
+        .filter((fact) => fact.targetId && fact.targetId !== entity.id && typeOf.has(fact.targetId))
+        .forEach((fact) => {
+          // Between people and groups, the kind of bond reads better than the attribute.
+          const kind = bondKind(fact, typeOf.get(fact.targetId!))
           relations.push({
             id: fact.id,
             sourceId: entity.id,
             targetId: fact.targetId!,
-            label: attributeLabel(fact.attribute),
+            label: kind && kind !== 'OTHER' ? bondLabels[kind] : attributeLabel(fact.attribute),
             fact,
-          }),
-        )
+          })
+        })
     })
   })
   return relations

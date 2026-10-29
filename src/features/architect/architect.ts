@@ -102,7 +102,12 @@ export function timelineDrift(report: ArchitectReview, slots: Slot[]) {
   const currentOrder = orderScenes(current).map((slot) => slot.id).filter((id) => reported.has(id))
   const keptOrder = report.sceneIds.filter((id) => currentOrder.includes(id))
   const reordered = currentOrder.some((id, index) => keptOrder[index] !== id)
-  return added || removed || reordered ? { added, removed, reordered } : null
+  // Scenes analysed again after the report: their text likely changed.
+  const reportedAt = new Date(report.createdAt).getTime()
+  const changed = current.filter(
+    (slot) => reported.has(slot.id) && slot.status?.lastAnalyzedAt && new Date(slot.status.lastAnalyzedAt).getTime() > reportedAt,
+  ).length
+  return added || removed || reordered || changed ? { added, removed, reordered, changed } : null
 }
 
 export function bySeverity(left: MacroDiagnostic, right: MacroDiagnostic) {

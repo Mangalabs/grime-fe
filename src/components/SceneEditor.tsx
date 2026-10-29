@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { countWords, formatWords } from "../features/usage/usage";
 import {
   focusModes,
+  noteKinds,
   type DiagnosticSeverity,
   type FocusMode,
   type LinterDiagnostic,
@@ -9,6 +10,7 @@ import {
   type SceneGroup,
 } from "../api/contracts";
 import type { NoteAnchor } from "../features/notes/notes";
+import { locateQuote } from "../features/scenes/quotes";
 import "./SceneEditor.css";
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "./icons";
 
@@ -95,7 +97,10 @@ interface SceneEditorProps {
   noteFocus: { noteId: string } | null;
   onFocusNote: (noteId: string) => void;
   onExcerptChange: (excerpt: SceneExcerpt | null) => void;
-  onAnnotate: (excerpt: SceneExcerpt) => void;
+  // With a kind, the note composer opens already set to it.
+  onAnnotate: (excerpt: SceneExcerpt, kind?: NoteKind) => void;
+  isReadingMode?: boolean;
+  onToggleReadingMode?: () => void;
   // Style sheet occurrences: a quieter layer than diagnostics.
   styleMarks: StyleMark[];
   styleFocus: { key: string } | null;
@@ -121,11 +126,26 @@ interface SceneEditorProps {
   onDelete: () => void;
 }
 
+const annotateKindLabels: Record<NoteKind, string> = {
+  NOTE: "Nota",
+  QUESTION: "Pergunta",
+  FIX: "Corrigir",
+  IDEA: "Ideia",
+};
+
 const focusLabels: Record<FocusMode, string> = {
   GENERAL: "Revisão geral",
   PACING: "Ritmo e causalidade",
   WORLDBUILDING: "Mundo e continuidade",
   PROSE_STYLE: "Estilo de prosa",
+};
+
+// What the Revisor looks at under each focus; continuity is always checked.
+const focusHints: Record<FocusMode, string> = {
+  GENERAL: "Continuidade e até 3 pontos de ofício: mostrar × contar, causalidade, exposição, ambientação.",
+  PACING: "Continuidade, mostrar × contar, causalidade e ambientação.",
+  WORLDBUILDING: "Só continuidade com o cânone e exposição do mundo em diálogos.",
+  PROSE_STYLE: "Continuidade e prosa: verbos de filtro, cadência, muletas e voz nos diálogos.",
 };
 
 const severityRank: Record<DiagnosticSeverity, number> = {
@@ -165,13 +185,15 @@ function segmentContent(
   const diagnosticRanges: Array<{ start: number; end: number; quote: string; severity: DiagnosticSeverity }> = [];
   [...severityByQuote]
     .filter(([quote]) => quote.trim())
-    .map(([quote, severity]) => ({ start: content.indexOf(quote), quote, severity }))
-    .filter((range) => range.start >= 0)
+    .flatMap(([quote, severity]) => {
+      const span = locateQuote(content, quote);
+      return span ? [{ ...span, quote, severity }] : [];
+    })
     .sort((a, b) => a.start - b.start)
     .forEach((range) => {
       const last = diagnosticRanges.at(-1);
       if (!last || range.start >= last.end) {
-        diagnosticRanges.push({ ...range, end: range.start + range.quote.length });
+        diagnosticRanges.push(range);
       }
     });
 
@@ -234,6 +256,8 @@ export function SceneEditor({
   onFocusNote,
   onExcerptChange,
   onAnnotate,
+  isReadingMode = false,
+  onToggleReadingMode,
   styleMarks,
   styleFocus,
   onFocusStyle,
@@ -483,15 +507,12 @@ export function SceneEditor({
       return;
     }
 
-    const start = content.indexOf(focusedQuote.quote);
-    if (start < 0 || !editorRef.current) {
+    const span = locateQuote(content, focusedQuote.quote);
+    if (!span || !editorRef.current) {
       return;
     }
     editorRef.current.focus();
-    editorRef.current.setSelectionRange(
-      start,
-      start + focusedQuote.quote.length,
-    );
+    editorRef.current.setSelectionRange(span.start, span.end);
     // Selecting text in a textarea doesn't reliably scroll it into view.
     editorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [content, focusedQuote, isLocked]);
@@ -521,6 +542,23 @@ export function SceneEditor({
   const [selection, setSelection] = useState<
     (SceneExcerpt & { x: number; y: number }) | null
   >(null);
+
+  // While text is selected, 1–4 annotate it as Nota, Pergunta, Corrigir or Ideia.
+  useEffect(() => {
+    if (!selection) return;
+    const current = selection;
+    function onKey(event: KeyboardEvent) {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if ((event.target as HTMLElement | null)?.closest("input, textarea, select, [contenteditable]")) return;
+      const kind = noteKinds[Number(event.key) - 1];
+      if (!kind) return;
+      event.preventDefault();
+      onAnnotate(current, kind);
+      window.getSelection()?.removeAllRanges();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [selection, onAnnotate]);
   const readingFrameRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -655,6 +693,18 @@ export function SceneEditor({
         </div>
         {isLocked && !isSubmitting && !isSplitting && (
           <div className="scene-header-actions">
+            {onToggleReadingMode && (
+              <button
+                aria-keyshortcuts="L"
+                aria-pressed={isReadingMode}
+                className="button button-secondary"
+                title={isReadingMode ? "Voltar ao editor completo (Esc)" : "Só o texto, sem timeline nem diagnósticos (L)"}
+                type="button"
+                onClick={onToggleReadingMode}
+              >
+                {isReadingMode ? "Sair da leitura" : "Modo leitura"}
+              </button>
+            )}
             <button
               className="button button-secondary"
               type="button"
@@ -731,6 +781,7 @@ export function SceneEditor({
                 </option>
               ))}
             </select>
+            <small className="scene-focus-hint">{focusHints[focusMode]}</small>
           </label>
           <label>
             <span>Gênero (opcional)</span>
@@ -876,19 +927,39 @@ export function SceneEditor({
           })}
         </div>
         {selection && (
-          <button
-            aria-keyshortcuts="Alt+A"
-            className="annotate-button"
+          <div
+            className="annotate-button annotate-kinds"
+            role="group"
+            aria-label="Anotar o trecho selecionado"
             style={{ left: selection.x, top: selection.y }}
-            type="button"
             onMouseDown={(event) => event.preventDefault()}
-            onClick={() => {
-              onAnnotate(selection);
-              window.getSelection()?.removeAllRanges();
-            }}
           >
-            ✎ Anotar trecho <kbd>Alt A</kbd>
-          </button>
+            <button
+              aria-keyshortcuts="Alt+A"
+              type="button"
+              onClick={() => {
+                onAnnotate(selection);
+                window.getSelection()?.removeAllRanges();
+              }}
+            >
+              ✎ Anotar <kbd>Alt A</kbd>
+            </button>
+            {noteKinds.map((kind, index) => (
+              <button
+                aria-keyshortcuts={String(index + 1)}
+                className={`kind-${kind.toLowerCase()}`}
+                key={kind}
+                title={`${annotateKindLabels[kind]} (${index + 1})`}
+                type="button"
+                onClick={() => {
+                  onAnnotate(selection, kind);
+                  window.getSelection()?.removeAllRanges();
+                }}
+              >
+                {annotateKindLabels[kind]} <kbd>{index + 1}</kbd>
+              </button>
+            ))}
+          </div>
         )}
         </div>
       ) : (
