@@ -19,9 +19,30 @@
 
 .pipeline-header-actions {
   display: flex;
-  flex: none;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: 12px;
+}
+
+.pipeline-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.pipeline-author input {
+  width: 200px;
+  min-height: 34px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-ui);
 }
 
 .pipeline-save {
@@ -613,6 +634,56 @@
   color: var(--color-text-muted);
   font-size: var(--text-small);
   font-variant-numeric: tabular-nums;
+}
+
+.pipeline-time-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pipeline-time-head strong {
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pipeline-time-stages,
+.pipeline-time-days {
+  display: grid;
+  gap: 0;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pipeline-time-stages li {
+  display: grid;
+  grid-template-columns: minmax(120px, 220px) minmax(0, 1fr) 90px;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: var(--text-ui);
+}
+
+.pipeline-time-stages li > .pipeline-muted {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pipeline-time-days li {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-size: var(--text-ui);
+}
+
+.pipeline-time-days time {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
 }
 
 @media (max-width: 900px) {

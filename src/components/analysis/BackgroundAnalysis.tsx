@@ -18,18 +18,24 @@ const plural = (count: number, one: string, many: string) => `${count} ${count =
 
 interface StartDialogProps {
   slots: Slot[]
+  // Scenes offered first, e.g. the ones an author's revision changed.
+  preselected?: string[] | null
   onStart: (slotIds: string[], concurrency: number) => void
   onClose: () => void
 }
 
 /** Chooses which scenes to analyse in the background, and how many at a time. */
-export function AnalysisStartDialog({ slots, onStart, onClose }: StartDialogProps) {
+export function AnalysisStartDialog({ slots, preselected, onStart, onClose }: StartDialogProps) {
   const ordered = orderScenes(slots)
   const { usage } = useUsage()
   const pending = ordered.filter((slot) => slot.status?.lastAnalyzedAt === null)
-  const [scope, setScope] = useState<'pending' | 'all'>(pending.length ? 'pending' : 'all')
+  const wanted = new Set(preselected ?? [])
+  const changed = ordered.filter((slot) => wanted.has(slot.id))
+  const [scope, setScope] = useState<'changed' | 'pending' | 'all'>(
+    changed.length ? 'changed' : pending.length ? 'pending' : 'all',
+  )
   const [concurrency, setConcurrency] = useState(2)
-  const chosen = scope === 'pending' ? pending : ordered
+  const chosen = scope === 'changed' ? changed : scope === 'pending' ? pending : ordered
 
   useEffect(() => {
     const close = (event: KeyboardEvent) => {
@@ -56,6 +62,15 @@ export function AnalysisStartDialog({ slots, onStart, onClose }: StartDialogProp
         </p>
         <fieldset className="analysis-scope">
           <legend>Quais cenas</legend>
+          {changed.length > 0 && (
+            <label className="checkbox-label">
+              <input checked={scope === 'changed'} name="analysis-scope" type="radio" onChange={() => setScope('changed')} />
+              <span>
+                <strong>As que mudaram na revisão</strong>
+                <small>{plural(changed.length, 'cena', 'cenas')}</small>
+              </span>
+            </label>
+          )}
           <label className="checkbox-label">
             <input
               checked={scope === 'pending'}

@@ -48,6 +48,8 @@ export interface PipelineEvent {
 
 export interface Pipeline {
   version: 1
+  // Who the book belongs to (author or client), shown on the board.
+  author: string
   stages: Stage[]
   currentStageId: string | null
   finishedAt: string | null
@@ -205,7 +207,14 @@ export function createStage(kind: StageKind, name?: string): Stage {
 }
 
 export function createPipeline(): Pipeline {
-  return { version: 1, stages: defaultStageKinds.map((kind) => createStage(kind)), currentStageId: null, finishedAt: null, history: [] }
+  return {
+    version: 1,
+    author: '',
+    stages: defaultStageKinds.map((kind) => createStage(kind)),
+    currentStageId: null,
+    finishedAt: null,
+    history: [],
+  }
 }
 
 const isKind = (value: unknown): value is StageKind => typeof value === 'string' && value in stageKinds
@@ -233,7 +242,7 @@ export function normalizePipeline(raw: unknown): Pipeline {
         skipped: stage.skipped === true,
       }),
     )
-  if (stages.length === 0) return createPipeline()
+  if (stages.length === 0) return { ...createPipeline(), author: text(source.author) }
   const ids = new Set(stages.map((stage) => stage.id))
   const current = typeof source.currentStageId === 'string' && ids.has(source.currentStageId) ? source.currentStageId : null
   const history = (Array.isArray(source.history) ? source.history : [])
@@ -245,6 +254,7 @@ export function normalizePipeline(raw: unknown): Pipeline {
     }))
   return {
     version: 1,
+    author: text(source.author),
     stages,
     currentStageId: current,
     finishedAt: current ? null : typeof source.finishedAt === 'string' ? source.finishedAt : null,

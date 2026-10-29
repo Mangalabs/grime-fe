@@ -152,3 +152,106 @@
   font-size: var(--text-small);
   line-height: 1.5;
 }
+
+/* Choosing between replacing the timeline and importing a revision. */
+.import-mode {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.import-mode legend {
+  margin-bottom: 6px;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.import-mode .checkbox-label span {
+  display: grid;
+  gap: 2px;
+}
+
+.import-mode small {
+  color: var(--color-text-muted);
+}
+
+/* The revision's scenes paired with the project's. */
+.revision-modal {
+  width: min(760px, calc(100vw - 32px));
+}
+
+.revision-rows {
+  display: grid;
+  gap: 6px;
+  max-height: min(50vh, 460px);
+  margin: 0;
+  padding: 0 4px 0 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.revision-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-subtle);
+  border-left: 3px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.revision-row.is-changed {
+  border-left-color: var(--color-warning);
+}
+
+.revision-row.is-new {
+  border-left-color: var(--color-success-border);
+}
+
+.revision-file,
+.revision-target {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.revision-file strong {
+  overflow: hidden;
+  font-size: var(--text-ui);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.revision-row small {
+  color: var(--color-text-muted);
+  font-size: var(--text-micro);
+}
+
+.revision-target select {
+  min-width: 0;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-small);
+}
+
+.revision-arrow {
+  color: var(--color-text-faint);
+}
+
+@media (max-width: 640px) {
+  .revision-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .revision-arrow {
+    display: none;
+  }
+}

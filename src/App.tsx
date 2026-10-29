@@ -73,8 +73,13 @@ import {
 } from "./features/analysis/useBackgroundAnalysis";
 import { useStyleSheet } from "./features/style/useStyleSheet";
 import { usePipeline } from "./features/pipeline/usePipeline";
+import { useActiveTime } from "./features/time/useActiveTime";
+import { saveVersion } from "./features/versions/versions";
+import { VersionsPage } from "./components/versions/VersionsPage";
+import { BoardPage } from "./components/board/BoardPage";
 import { PipelinePage } from "./components/pipeline/PipelinePage";
 import { LineBreakRepairModal } from "./components/LineBreakRepairModal";
+import { CopyeditModal } from "./components/style/CopyeditModal";
 import { SceneMapPage } from "./components/sceneMap/SceneMapPage";
 import { readLastScene, writeLastScene } from "./features/scenes/lastScene";
 import { locateQuote } from "./features/scenes/quotes";
@@ -108,7 +113,10 @@ import {
   PulseIcon,
   StagesIcon,
   JoinLinesIcon,
+  SpellCheckIcon,
   MapIcon,
+  BoardIcon,
+  VersionsIcon,
   SunIcon,
   TrashIcon,
   TypeIcon,
@@ -116,10 +124,23 @@ import {
 } from "./components/icons";
 import "./App.css";
 
-type Page = "pipeline" | "review" | "archive" | "scene-map" | "style-sheet" | "architectural-review" | "rhythm" | "export" | "guide";
+type Page =
+  | "board"
+  | "pipeline"
+  | "versions"
+  | "review"
+  | "archive"
+  | "scene-map"
+  | "style-sheet"
+  | "architectural-review"
+  | "rhythm"
+  | "export"
+  | "guide";
 
 const pageLabels: Record<Page, string> = {
+  board: "Quadro de projetos",
   pipeline: "Etapas do projeto",
+  versions: "Versões",
   review: "Editor e timeline",
   archive: "Arquivo",
   "style-sheet": "Folha de estilo",
@@ -192,6 +213,12 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
   const [isManuscriptImportOpen, setIsManuscriptImportOpen] = useState(false);
   const [projectKey, setProjectKey] = useState<CryptoKey | null>(null);
   const [projectToUnlock, setProjectToUnlock] = useState<string | null>(null);
+  // The page to show once the project being unlocked opens (from the board).
+  const pageAfterUnlockRef = useRef<Page | null>(null);
+  // The import dialog opens as a revision from the Versões page.
+  const [importMode, setImportMode] = useState<"replace" | "revision">("replace");
+  // Scenes the analysis dialog offers first (the ones a revision changed).
+  const [analysisPreselect, setAnalysisPreselect] = useState<string[] | null>(null);
   const [isEditingScene, setIsEditingScene] = useState(true);
   const [isReadingMode, setIsReadingMode] = useState(false);
   const [page, setPage] = useState<Page>("review");
@@ -546,6 +573,19 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
   const pipeline = usePipeline(context.projectId, projectKey);
   const currentStage =
     pipeline.pipeline?.stages.find((stage) => stage.id === pipeline.pipeline?.currentStageId) ?? null;
+  // Active time on the open project, counted per day and stage.
+  useActiveTime(context.projectId || null, currentStage?.id ?? null, Boolean(context.projectId && projectKey));
+
+  // Every stage move keeps a copy of the text as it was, to compare later.
+  function saveStageVersion(stage: { name: string } | null) {
+    if (!context.projectId || !projectKey) return;
+    const label = stage ? `Ao entrar em ${stage.name}` : "Ao concluir o projeto";
+    void saveVersion(context.projectId, projectKey, "STAGE", label)
+      .then(() => setToast({ kind: "undone", message: `Versão do texto guardada: ${label.toLowerCase()}.` }))
+      .catch(() =>
+        setToast({ kind: "undone", message: "A etapa mudou, mas não foi possível guardar a versão do texto." }),
+      );
+  }
   const stageNames = useMemo(
     () => (pipeline.pipeline ? new Map(pipeline.pipeline.stages.map((stage) => [stage.id, stage.name])) : undefined),
     [pipeline.pipeline],
@@ -567,6 +607,15 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
   const [isGoogleDocsOpen, setIsGoogleDocsOpen] = useState(false);
   const [noteKindRequest, setNoteKindRequest] = useState<{ kind: NoteKind; at: number } | null>(null);
   const [isLineBreakRepairOpen, setIsLineBreakRepairOpen] = useState(false);
+  // The copyedit dialog: the whole book, or one scene by its id.
+  const [copyeditScope, setCopyeditScope] = useState<"project" | string | null>(null);
+
+  function openCopyedit(scope: "project" | string) {
+    // The open scene may be rewritten; unsaved edits would be lost.
+    if (!confirmDiscard()) return;
+    setIsNavOpen(false);
+    setCopyeditScope(scope);
+  }
   const googleDocs = useGoogleDocSync({
     projectId: context.projectId,
     projectKey,
@@ -1288,6 +1337,7 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
           disabled: !hasOpenProject || !pipeline.isAvailable,
           disabledReason: hasOpenProject ? "Etapas indisponíveis" : needsProject,
         },
+        { page: "versions", label: pageLabels.versions, icon: <VersionsIcon />, disabled: !hasOpenProject, disabledReason: needsProject },
       ],
     },
     {
@@ -1342,10 +1392,10 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
             <span className="brand-name">Petricor</span>
           </a>
         </div>
-        {/* The guide belongs to no project, so it shows on its own. */}
-        {(currentProject || page === "guide") && (
+        {/* The guide and the board belong to no project, so they show on their own. */}
+        {(currentProject || page === "guide" || page === "board") && (
           <nav aria-label="Localização" className="topbar-breadcrumb">
-            {currentProject && page !== "guide" && (
+            {currentProject && page !== "guide" && page !== "board" && (
               <>
                 <span className="breadcrumb-project" title={currentProject.title}>
                   {currentProject.title}
@@ -1354,7 +1404,7 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
               </>
             )}
             <span aria-current="page" className="breadcrumb-page">{pageLabels[page]}</span>
-            {currentProject && page !== "guide" && page !== "pipeline" && pipeline.pipeline && (
+            {currentProject && page !== "guide" && page !== "board" && page !== "pipeline" && pipeline.pipeline && (
               <button
                 className="breadcrumb-stage"
                 title="Etapa do projeto"
@@ -1415,6 +1465,16 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
             onClick={() => setIsNavOpen(false)}
           >
             <CloseIcon />
+          </button>
+          {/* All projects at once: above the switcher, apart from the open project's pages. */}
+          <button
+            aria-current={page === "board" ? "page" : undefined}
+            className="sidebar-link sidebar-board-link"
+            type="button"
+            onClick={() => goTo("board")}
+          >
+            <BoardIcon />
+            <span>{pageLabels.board}</span>
           </button>
           <ProjectSwitcher
             projectId={context.projectId}
@@ -1487,6 +1547,7 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
                         type="button"
                         onClick={() => {
                           setIsNavOpen(false);
+                          setImportMode("replace");
                           setIsManuscriptImportOpen(true);
                         }}
                       >
@@ -1511,6 +1572,20 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
                       >
                         <JoinLinesIcon />
                         <span>Juntar linhas quebradas</span>
+                      </button>
+                    </li>
+                  )}
+                  {group.label === "Escrever" && styleSheet.isAvailable && (
+                    <li>
+                      <button
+                        className="sidebar-link"
+                        disabled={!hasOpenProject || !styleSheet.sheet}
+                        title={hasOpenProject ? "Corrigir a obra com as regras da folha de estilo" : needsProject}
+                        type="button"
+                        onClick={() => openCopyedit("project")}
+                      >
+                        <SpellCheckIcon />
+                        <span>Revisão ortotipográfica</span>
                       </button>
                     </li>
                   )}
@@ -1553,8 +1628,55 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
             </div>
           )}
 
+          {page === "board" && (
+            <BoardPage
+              openProjectId={context.projectId}
+              openProjectKey={projectKey}
+              onOpenProject={(projectId) => {
+                if (projectId === context.projectId && projectKey) {
+                  goTo("pipeline");
+                  return;
+                }
+                pageAfterUnlockRef.current = "pipeline";
+                setProjectToUnlock(projectId);
+              }}
+            />
+          )}
+
+          {page === "versions" && context.projectId && (
+            <VersionsPage
+              // Remounts when the scenes reload (an import, a sync), so the
+              // comparison is read again.
+              key={`${context.projectId}-${timelineVersion}`}
+              notes={notes.notes}
+              projectId={context.projectId}
+              projectKey={projectKey}
+              projectTitle={currentProject?.title ?? ""}
+              slots={projectSlots}
+              onAnalyse={
+                isAnalysisBusy
+                  ? undefined
+                  : (slotIds) => {
+                      setAnalysisPreselect(slotIds);
+                      setIsAnalysisDialogOpen(true);
+                    }
+              }
+              onImportRevision={() => {
+                setImportMode("revision");
+                setIsManuscriptImportOpen(true);
+              }}
+              onLocateNote={locateNote}
+              onOpenScene={openScene}
+              onSetNoteStatus={async (note, status) => {
+                await notes.setStatus(note, status);
+                refreshProjectState();
+              }}
+            />
+          )}
+
           {page === "pipeline" && context.projectId && (
             <PipelinePage
+              projectId={context.projectId}
               canUseProduction={Boolean(user.marketingEnabled)}
               error={pipeline.error}
               isLoading={pipeline.isLoading}
@@ -1579,6 +1701,7 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
                 refreshProjectState();
               }}
               onUpdate={pipeline.update}
+              onMoved={saveStageVersion}
             />
           )}
 
@@ -1623,6 +1746,7 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
               projectKey={projectKey}
               sheet={styleSheet.sheet}
               slots={projectSlots}
+              onCopyedit={() => openCopyedit("project")}
               onOpenScene={openScene}
               onSave={styleSheet.save}
             />
@@ -1885,6 +2009,7 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
                                 isLoading={styleSheet.isLoading}
                                 showMarks={showStyleMarks}
                                 onLocate={(finding) => setStyleFocus({ key: finding.key })}
+                                onCopyedit={context.slotId ? () => openCopyedit(context.slotId) : undefined}
                                 onOpenSheet={() => goTo("style-sheet")}
                                 onToggleException={(finding) => void toggleStyleException(finding)}
                                 onToggleMarks={(show) => {
@@ -1972,13 +2097,20 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
       {projectToUnlock && (
         <ProjectUnlockModal
           projectId={projectToUnlock}
-          onClose={() => setProjectToUnlock(null)}
+          onClose={() => {
+            pageAfterUnlockRef.current = null;
+            setProjectToUnlock(null);
+          }}
           onUnlocked={(projectId, key) => {
             // Picks up at the last scene once the project's scenes arrive.
             resumeSceneRef.current = readLastScene(projectId);
             activateContext(projectId, "", key);
             recordAccess(projectId);
             setProjectToUnlock(null);
+            if (pageAfterUnlockRef.current) {
+              setPage(pageAfterUnlockRef.current);
+              pageAfterUnlockRef.current = null;
+            }
           }}
         />
       )}
@@ -2038,6 +2170,20 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
             openScene(slot);
           }}
           onUndo={undoMove}
+        />
+      )}
+      {copyeditScope && projectKey && styleSheet.sheet && context.projectId && (
+        <CopyeditModal
+          names={projectNames}
+          projectId={context.projectId}
+          projectKey={projectKey}
+          sheet={styleSheet.sheet}
+          slots={copyeditScope === "project" ? projectSlots : projectSlots.filter((slot) => slot.id === copyeditScope)}
+          onApplied={(slotIds) => {
+            const open = projectSlots.find((slot) => slot.id === context.slotId);
+            if (open && slotIds.includes(open.id)) selectSlot(open);
+          }}
+          onClose={() => setCopyeditScope(null)}
         />
       )}
       {isLineBreakRepairOpen && projectKey && (
@@ -2122,10 +2268,15 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
       )}
       {isAnalysisDialogOpen && context.projectId && projectKey && (
         <AnalysisStartDialog
+          preselected={analysisPreselect}
           slots={projectSlots}
-          onClose={() => setIsAnalysisDialogOpen(false)}
+          onClose={() => {
+            setIsAnalysisDialogOpen(false);
+            setAnalysisPreselect(null);
+          }}
           onStart={(slotIds, concurrency) => {
             setIsAnalysisDialogOpen(false);
+            setAnalysisPreselect(null);
             backgroundAnalysis.start(slotIds, concurrency);
           }}
         />
@@ -2146,9 +2297,26 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
       )}
       {isManuscriptImportOpen && context.projectId && projectKey && (
         <ManuscriptImportModal
+          hasScenes={projectSlots.length > 0}
+          initialMode={importMode}
           projectId={context.projectId}
           projectKey={projectKey}
           onClose={() => setIsManuscriptImportOpen(false)}
+          onRevisionApplied={(result) => {
+            activateContext(context.projectId, "", projectKey);
+            setIsManuscriptImportOpen(false);
+            const summary = `Revisão importada: ${result.updated} ${result.updated === 1 ? "cena atualizada" : "cenas atualizadas"}, ${result.created} ${result.created === 1 ? "nova" : "novas"}.`;
+            if (result.changedSlotIds.length === 0) {
+              setToast({ kind: "undone", message: "A nova versão é igual ao texto do projeto; nada mudou." });
+              return;
+            }
+            setToast({
+              kind: "action",
+              message: `${summary} Veja o que mudou em Versões.`,
+              actionLabel: "Ver o que mudou",
+              onAction: () => goTo("versions"),
+            });
+          }}
           onCompleted={() => {
             activateContext(context.projectId, "", projectKey);
             setIsManuscriptImportOpen(false);

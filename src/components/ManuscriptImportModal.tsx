@@ -3,6 +3,7 @@ import { api } from '../api/client'
 import type { ManuscriptImportProgress, ManuscriptImportStatus } from '../api/contracts'
 import { encryptScene } from '../crypto/projectEncryption'
 import { formatResetDate, formatWords, useUsage } from '../features/usage/usage'
+import { RevisionImportReview, type RevisionResult } from './versions/RevisionImportReview'
 import './Modal.css'
 import './ManuscriptImportModal.css'
 
@@ -25,6 +26,15 @@ function importStorageKey(projectId: string) {
   return `grime:manuscript-import:${projectId}`
 }
 
+// Replace: the file becomes the timeline. Revision: the author's new version
+// updates the scenes it matches, and everything else (notes, facts) stays.
+type ImportMode = 'replace' | 'revision'
+
+function readMode(projectId: string): ImportMode | null {
+  const stored = localStorage.getItem(`${importStorageKey(projectId)}:mode`)
+  return stored === 'revision' || stored === 'replace' ? stored : null
+}
+
 type StepState = 'done' | 'active' | 'waiting' | 'failed'
 
 function formatRemaining(ms: number) {
@@ -38,14 +48,24 @@ const megabytes = (bytes: number) => (bytes / 1024 / 1024).toLocaleString('pt-BR
 export function ManuscriptImportModal({
   projectId,
   projectKey,
+  hasScenes = false,
+  initialMode = 'replace',
   onClose,
   onCompleted,
+  onRevisionApplied,
 }: {
   projectId: string
   projectKey: CryptoKey
+  hasScenes?: boolean
+  initialMode?: ImportMode
   onClose: () => void
   onCompleted: () => void
+  onRevisionApplied?: (result: RevisionResult) => void
 }) {
+  const [mode, setMode] = useState<ImportMode>(() => readMode(projectId) ?? (hasScenes ? initialMode : 'replace'))
+  const isRevision = mode === 'revision'
+  // The scenes identified in a revision, waiting for the matching step.
+  const [revisionScenes, setRevisionScenes] = useState<Array<{ sequence: number; title: string; rawContent: string }> | null>(null)
   const [file, setFile] = useState<File | null>(null)
   const [split, setSplit] = useState<SplitChoice>(1)
   const fileKind = file ? kindOf(file) : null
@@ -85,7 +105,7 @@ export function ManuscriptImportModal({
   }, [])
 
   useEffect(() => {
-    if (!importId || status === 'COMPLETED' || status === 'FAILED' || finalizeFailed) {
+    if (!importId || status === 'COMPLETED' || status === 'FAILED' || finalizeFailed || revisionScenes) {
       return
     }
 
@@ -111,6 +131,10 @@ export function ManuscriptImportModal({
             manuscriptImport.errorMessage ??
               'Não foi possível processar este arquivo.',
           )
+        }
+        if (manuscriptImport.status === 'AWAITING_FINALIZATION' && manuscriptImport.scenes && isRevision) {
+          setRevisionScenes(manuscriptImport.scenes)
+          return
         }
         if (
           manuscriptImport.status === 'AWAITING_FINALIZATION' &&
@@ -143,6 +167,7 @@ export function ManuscriptImportModal({
               setFinalizing(null)
               setStatus(completedImport.status)
               localStorage.removeItem(importStorageKey(projectId))
+              localStorage.removeItem(`${importStorageKey(projectId)}:mode`)
               onCompleted()
             }
           } catch (reason) {
@@ -175,7 +200,7 @@ export function ManuscriptImportModal({
       isCurrent = false
       window.clearInterval(timer)
     }
-  }, [importId, onCompleted, projectId, projectKey, status, finalizeFailed])
+  }, [importId, onCompleted, projectId, projectKey, status, finalizeFailed, revisionScenes, isRevision])
 
   function retryFinalize() {
     finalizingRef.current = false
@@ -184,7 +209,7 @@ export function ManuscriptImportModal({
   }
 
   async function startImport() {
-    if (!file || !confirmed) {
+    if (!file || (!confirmed && !isRevision)) {
       setError('Selecione um arquivo e confirme a substituição da timeline.')
       return
     }
@@ -208,6 +233,7 @@ export function ManuscriptImportModal({
         kind === 'docx' && split !== 'auto' ? split : null,
       )
       localStorage.setItem(importStorageKey(projectId), manuscriptImport.id)
+      localStorage.setItem(`${importStorageKey(projectId)}:mode`, mode)
       setPace(null)
       setProgress(manuscriptImport.progress ?? null)
       setImportId(manuscriptImport.id)
@@ -225,6 +251,7 @@ export function ManuscriptImportModal({
 
   function retryImport() {
     localStorage.removeItem(importStorageKey(projectId))
+    localStorage.removeItem(`${importStorageKey(projectId)}:mode`)
     finalizingRef.current = false
     setPace(null)
     setError('')
@@ -232,7 +259,7 @@ export function ManuscriptImportModal({
     setStatus(null)
     setProgress(null)
 
-    if (file && confirmed) {
+    if (file && (confirmed || isRevision)) {
       void startImport()
     }
   }
@@ -317,13 +344,61 @@ export function ManuscriptImportModal({
     },
   ]
 
+  if (revisionScenes && importId) {
+    return (
+      <div className="modal-backdrop">
+        <section aria-labelledby="import-manuscript-title" aria-modal="true" className="modal import-modal revision-modal" role="dialog">
+          <p className="eyebrow">Nova versão do autor</p>
+          <h2 id="import-manuscript-title">Conferir as cenas antes de atualizar</h2>
+          <RevisionImportReview
+            fileName={file?.name ?? 'o arquivo'}
+            importId={importId}
+            imported={revisionScenes}
+            projectId={projectId}
+            projectKey={projectKey}
+            onCancel={onClose}
+            onApplied={(result) => {
+              localStorage.removeItem(importStorageKey(projectId))
+              localStorage.removeItem(`${importStorageKey(projectId)}:mode`)
+              onRevisionApplied?.(result)
+            }}
+          />
+        </section>
+      </div>
+    )
+  }
+
   return (
     <div className="modal-backdrop">
       <section aria-labelledby="import-manuscript-title" aria-modal="true" className="modal import-modal" role="dialog">
-        <p className="eyebrow">Importar manuscrito</p>
-        <h2 id="import-manuscript-title">Criar cenas a partir de um PDF ou Word</h2>
+        <p className="eyebrow">{isRevision ? 'Nova versão do autor' : 'Importar manuscrito'}</p>
+        <h2 id="import-manuscript-title">
+          {isRevision ? 'Atualizar as cenas com a revisão do autor' : 'Criar cenas a partir de um PDF ou Word'}
+        </h2>
         {!importId && !isUploading ? (
           <>
+            {hasScenes && (
+              <fieldset className="import-mode">
+                <legend>O que fazer com o arquivo</legend>
+                <label className="checkbox-label">
+                  <input checked={isRevision} name="import-mode" type="radio" onChange={() => setMode('revision')} />
+                  <span>
+                    <strong>É uma nova versão deste livro</strong>
+                    <small>
+                      Atualiza as cenas que encontrar, cria as novas e guarda uma versão antes, para comparar. Notas,
+                      fatos e diagnósticos ficam.
+                    </small>
+                  </span>
+                </label>
+                <label className="checkbox-label">
+                  <input checked={!isRevision} name="import-mode" type="radio" onChange={() => setMode('replace')} />
+                  <span>
+                    <strong>Substituir tudo</strong>
+                    <small>Apaga as cenas atuais (com suas notas e fatos) e recria a timeline a partir do arquivo.</small>
+                  </span>
+                </label>
+              </fieldset>
+            )}
             <label>
               <span>Arquivo PDF ou Word (.docx), de até 25 MB</span>
               <input
@@ -353,14 +428,16 @@ export function ManuscriptImportModal({
                 </select>
               </label>
             )}
-            <label className="checkbox-label">
-              <input
-                checked={confirmed}
-                onChange={(event) => setConfirmed(event.target.checked)}
-                type="checkbox"
-              />
-              <span>Entendo que as cenas atuais serão substituídas após a importação.</span>
-            </label>
+            {!isRevision && (
+              <label className="checkbox-label">
+                <input
+                  checked={confirmed}
+                  onChange={(event) => setConfirmed(event.target.checked)}
+                  type="checkbox"
+                />
+                <span>Entendo que as cenas atuais serão substituídas após a importação.</span>
+              </label>
+            )}
             {usesImporter ? (
               <p className="import-note">
                 O Importador lê o {fileKind === 'docx' ? 'documento' : 'PDF'} inteiro: a importação usa do seu limite
@@ -450,8 +527,13 @@ export function ManuscriptImportModal({
             </button>
           )}
           {!importId && !isUploading && (
-            <button className="button button-primary" disabled={!file || !confirmed} onClick={() => void startImport()} type="button">
-              Iniciar importação
+            <button
+              className="button button-primary"
+              disabled={!file || (!confirmed && !isRevision)}
+              onClick={() => void startImport()}
+              type="button"
+            >
+              {isRevision ? 'Ler a nova versão' : 'Iniciar importação'}
             </button>
           )}
           {failedAtServer && (

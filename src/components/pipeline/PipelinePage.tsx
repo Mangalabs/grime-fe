@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react'
-import type { NoteStatus, Slot } from '../../api/contracts'
+import { useEffect, useMemo, useState } from 'react'
+import { api } from '../../api/client'
+import type { NoteStatus, Slot, TimeEntry } from '../../api/contracts'
+import { formatDuration, IDLE_AFTER_MS } from '../../features/time/useActiveTime'
 import { noteKindLabels, type Note } from '../../features/notes/notes'
 import {
   createStage,
@@ -28,6 +30,7 @@ type Update = (change: (pipeline: Pipeline) => Pipeline, options?: { immediate?:
 export type WorkspaceTool = Exclude<StageTool, 'producao'>
 
 interface PipelinePageProps {
+  projectId: string
   projectTitle: string
   pipeline: Pipeline | null
   isLoading: boolean
@@ -37,6 +40,8 @@ interface PipelinePageProps {
   notes: Note[]
   canUseProduction: boolean
   onUpdate: Update
+  // After the project moved stage (null: finished); a version is saved then.
+  onMoved?: (stage: Stage | null) => void
   onGoTo: (tool: WorkspaceTool) => void
   onOpenScene: (slot: Slot) => void
   onOpenNotes: () => void
@@ -123,6 +128,15 @@ export function PipelinePage(props: PipelinePageProps) {
           <span className={`pipeline-save is-${saveState}`} role="status">
             {saveState === 'salvando' ? 'Salvando…' : saveState === 'erro' ? 'Não salvo' : 'Salvo'}
           </span>
+          <label className="pipeline-author">
+            <span>Autor(a)</span>
+            <input
+              placeholder="Nome de quem escreveu"
+              type="text"
+              value={pipeline.author}
+              onChange={(event) => onUpdate((value) => ({ ...value, author: event.target.value }))}
+            />
+          </label>
           <button
             aria-pressed={isEditing}
             className="button button-secondary"
@@ -149,6 +163,7 @@ export function PipelinePage(props: PipelinePageProps) {
       {selected && !isEditing && <StageWork {...props} now={now} pipeline={pipeline} stage={selected} />}
 
       <History now={now} pipeline={pipeline} />
+      <WorkTime pipeline={pipeline} projectId={props.projectId} />
     </section>
   )
 }
@@ -208,6 +223,7 @@ function StageWork({
   notes,
   canUseProduction,
   onUpdate,
+  onMoved,
   onGoTo,
   onOpenScene,
   onOpenNotes,
@@ -241,7 +257,10 @@ function StageWork({
               <button
                 className="button button-primary"
                 type="button"
-                onClick={() => onUpdate((current) => moveTo(current, next?.id ?? null), { immediate: true })}
+                onClick={() => {
+                  onUpdate((current) => moveTo(current, next?.id ?? null), { immediate: true })
+                  onMoved?.(next)
+                }}
               >
                 {next ? `Avançar para ${next.name}` : 'Concluir o projeto'}
               </button>
@@ -250,7 +269,10 @@ function StageWork({
             <button
               className={pipeline.currentStageId ? 'button button-secondary' : 'button button-primary'}
               type="button"
-              onClick={() => onUpdate((current) => moveTo(current, stage.id), { immediate: true })}
+              onClick={() => {
+                onUpdate((current) => moveTo(current, stage.id), { immediate: true })
+                onMoved?.(stage)
+              }}
             >
               {round > 0 ? `Voltar para esta etapa (${roundLabel(round + 1)})` : 'Mover o projeto para esta etapa'}
             </button>
@@ -773,6 +795,89 @@ function History({ pipeline, now }: { pipeline: Pipeline; now: Date }) {
     </section>
   )
 }
+
+// Active time counted while the project was open, per stage and per day.
+function WorkTime({ pipeline, projectId }: { pipeline: Pipeline; projectId: string }) {
+  const [entries, setEntries] = useState<TimeEntry[] | null>(null)
+  const [showDays, setShowDays] = useState(false)
+  useEffect(() => {
+    let isCurrent = true
+    api
+      .listTime(projectId)
+      .then((list) => isCurrent && setEntries(list))
+      .catch(() => isCurrent && setEntries([]))
+    return () => {
+      isCurrent = false
+    }
+  }, [projectId])
+  if (!entries || entries.length === 0) return null
+
+  const names = new Map(pipeline.stages.map((stage) => [stage.id, stage.name]))
+  const stageName = (stageId: string) => (stageId ? (names.get(stageId) ?? 'Etapa removida') : 'Antes das etapas')
+  const total = entries.reduce((sum, entry) => sum + entry.seconds, 0)
+  const byStage = new Map<string, number>()
+  for (const entry of entries) byStage.set(entry.stageId, (byStage.get(entry.stageId) ?? 0) + entry.seconds)
+  const stageRows = [...byStage].sort(
+    ([a], [b]) =>
+      (pipeline.stages.findIndex((stage) => stage.id === a) + 1 || 999) -
+      (pipeline.stages.findIndex((stage) => stage.id === b) + 1 || 999),
+  )
+
+  async function remove(entry: TimeEntry) {
+    const label = `${formatDay(entry.day)} em ${stageName(entry.stageId)}`
+    if (!window.confirm(`Apagar ${formatDuration(entry.seconds)} contados em ${label}?`)) return
+    await api.deleteTime(projectId, entry.day, entry.stageId)
+    setEntries((list) => list?.filter((item) => item !== entry) ?? null)
+  }
+
+  return (
+    <section className="panel pipeline-time">
+      <div className="pipeline-time-head">
+        <h2>Tempo de trabalho</h2>
+        <strong>{formatDuration(total)}</strong>
+      </div>
+      <p className="panel-description">
+        Contado sozinho enquanto o projeto está aberto e você está ativo; pausa depois de {IDLE_AFTER_MS / 60000} minutos sem
+        mexer no teclado ou no mouse.
+      </p>
+      <ul className="pipeline-time-stages">
+        {stageRows.map(([stageId, seconds]) => (
+          <li key={stageId}>
+            <span>{stageName(stageId)}</span>
+            <Progress done={seconds} total={total} />
+            <span className="pipeline-muted">{formatDuration(seconds)}</span>
+          </li>
+        ))}
+      </ul>
+      <button className="text-button" type="button" onClick={() => setShowDays((value) => !value)}>
+        {showDays ? 'Esconder os dias' : 'Ver dia a dia'}
+      </button>
+      {showDays && (
+        <ol className="pipeline-time-days">
+          {entries.map((entry) => (
+            <li key={`${entry.day}|${entry.stageId}`}>
+              <time dateTime={entry.day}>{formatDay(entry.day)}</time>
+              <span>{stageName(entry.stageId)}</span>
+              <span className="pipeline-muted">{formatDuration(entry.seconds)}</span>
+              <button
+                aria-label={`Apagar o tempo de ${formatDay(entry.day)}`}
+                className="icon-button"
+                title="Apagar (contado por engano)"
+                type="button"
+                onClick={() => void remove(entry)}
+              >
+                <CloseIcon />
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  )
+}
+
+const formatDay = (day: string) =>
+  new Date(`${day}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })
 
 function Progress({ done, total }: { done: number; total: number }) {
   return (

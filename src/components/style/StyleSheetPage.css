@@ -414,3 +414,8 @@
     justify-self: start;
   }
 }
+
+.style-copyedit {
+  width: 100%;
+  margin-top: 12px;
+}

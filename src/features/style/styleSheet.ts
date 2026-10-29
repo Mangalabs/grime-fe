@@ -1,3 +1,5 @@
+import { checkPtBr, keepCase, type PtBrRule } from './ptBr'
+
 /**
  * Editorial style sheet: the project's own spelling, vocabulary and typography
  * rules, checked deterministically in the browser. It complements the Revisor
@@ -37,6 +39,18 @@ export interface TypographyConventions {
   repeatedWords: boolean
   // Archive names written with a different capitalisation or accent.
   archiveNames: boolean
+  // Brazilian Portuguese copyediting (see ptBr.ts).
+  orthographyAgreement: boolean
+  prefixHyphen: boolean
+  porQueEnd: boolean
+  craseBeforeMasculine: boolean
+  spaceAfterPunctuation: boolean
+  repeatedPunctuation: boolean
+  ordinals: boolean
+  // House style: "— Oi — disse ela", the dash apart from the words.
+  dialogueSpace: boolean
+  // House style: numbers up to ten written out.
+  numbersInWords: boolean
 }
 
 /** An occurrence the reviewer decided to keep. */
@@ -66,6 +80,15 @@ export const emptyStyleSheet = (): StyleSheet => ({
     spaceBeforePunctuation: true,
     repeatedWords: true,
     archiveNames: false,
+    orthographyAgreement: true,
+    prefixHyphen: true,
+    porQueEnd: true,
+    craseBeforeMasculine: true,
+    spaceAfterPunctuation: true,
+    repeatedPunctuation: true,
+    ordinals: true,
+    dialogueSpace: false,
+    numbersInWords: false,
   },
   exceptions: [],
 })
@@ -76,7 +99,17 @@ export const ruleKindLabels: Record<StyleRuleKind, string> = {
   LIMIT: 'Limitar',
 }
 
-export const typographyLabels: Record<keyof TypographyConventions, { label: string; hint: string }> = {
+export type ConventionGroup = 'tipografia' | 'portugues'
+
+export const conventionGroupLabels: Record<ConventionGroup, { title: string; description: string }> = {
+  tipografia: { title: 'Convenções tipográficas', description: '' },
+  portugues: {
+    title: 'Português (Brasil)',
+    description: 'Revisão ortotipográfica sem IA: regras fixas, que só apontam e sugerem a correção exata.',
+  },
+}
+
+export const typographyLabels: Record<keyof TypographyConventions, { label: string; hint: string; group?: ConventionGroup }> = {
   dialogueDash: { label: 'Travessão nos diálogos', hint: 'Falas abrem com “—”, não com hífen ou meia-risca.' },
   curlyQuotes: { label: 'Aspas curvas', hint: '“assim”, não "assim".' },
   ellipsisCharacter: { label: 'Reticências em um caractere', hint: '“…” em vez de três pontos.' },
@@ -84,7 +117,44 @@ export const typographyLabels: Record<keyof TypographyConventions, { label: stri
   spaceBeforePunctuation: { label: 'Espaço antes da pontuação', hint: 'Como em “palavra ,” ou “fim .”.' },
   repeatedWords: { label: 'Palavra repetida', hint: 'A mesma palavra duas vezes seguidas, como “de de”.' },
   archiveNames: { label: 'Grafia dos nomes do Arquivo', hint: 'Nomes de entidades com maiúsculas ou acentos diferentes.' },
+  orthographyAgreement: {
+    label: 'Acordo Ortográfico',
+    hint: 'Grafias antigas: idéia, jóia, vôo, lêem, freqüente, pára, pêlo.',
+    group: 'portugues',
+  },
+  prefixHyphen: {
+    label: 'Hífen com prefixos',
+    hint: 'auto-estima → autoestima, anti-social → antissocial; micro-ondas e anti-herói ficam.',
+    group: 'portugues',
+  },
+  porQueEnd: { label: 'Por quê no fim da frase', hint: '“Não sei por que.” → “por quê.”', group: 'portugues' },
+  craseBeforeMasculine: {
+    label: 'Crase indevida',
+    hint: '“à partir”, “à ele”, “à prazo”: sem crase antes de verbo, pronome ou masculino.',
+    group: 'portugues',
+  },
+  spaceAfterPunctuation: {
+    label: 'Espaço depois da pontuação',
+    hint: '“fim.Começo”, “isso,aquilo”. Números (3,5) e siglas ficam.',
+    group: 'portugues',
+  },
+  repeatedPunctuation: { label: 'Pontuação repetida', hint: '“!!”, “??”, “,,” e dois ou quatro pontos.', group: 'portugues' },
+  ordinals: { label: 'Ordinais', hint: '1o → 1º, 2a → 2ª, no 5 → nº 5.', group: 'portugues' },
+  dialogueSpace: {
+    label: 'Espaço junto ao travessão',
+    hint: 'Estilo da casa: “— Oi — disse ela”, nunca “—Oi”.',
+    group: 'portugues',
+  },
+  numbersInWords: {
+    label: 'Números até dez por extenso',
+    hint: 'Estilo da casa: “3 dias” → “três dias”. Horas, medidas e capítulos ficam.',
+    group: 'portugues',
+  },
 }
+
+/** Every convention off: for probing a single rule. */
+export const noConventions = (): TypographyConventions =>
+  Object.fromEntries(Object.keys(emptyStyleSheet().typography).map((key) => [key, false])) as unknown as TypographyConventions
 
 export const typographyRuleId = (key: keyof TypographyConventions) => `typography:${key}`
 
@@ -128,6 +198,8 @@ export interface StyleFinding {
   match: string
   message: string
   preferred: string | null
+  // The exact text that replaces the match, when the fix is certain.
+  replacement: string | null
   note: string
   context: string
   isException: boolean
@@ -200,6 +272,7 @@ export function checkScene(text: string, sheet: StyleSheet, context: CheckContex
     message: string,
     preferred: string | null,
     note = '',
+    replacement: string | null = null,
   ) => {
     const match = text.slice(start, end)
     findings.push({
@@ -212,6 +285,7 @@ export function checkScene(text: string, sheet: StyleSheet, context: CheckContex
       match,
       message,
       preferred,
+      replacement,
       note,
       context: contextOf(text, start, end),
       isException: isException(ruleId, match, start, end),
@@ -233,7 +307,9 @@ export function checkScene(text: string, sheet: StyleSheet, context: CheckContex
       for (const { start, end } of matches) {
         // The preferred form itself is never flagged.
         if (text.slice(start, end) === rule.preferred) continue
-        push(rule.id, label, category, start, end, `Use “${rule.preferred}”.`, rule.preferred, rule.note)
+        const written = text.slice(start, end)
+        const fix = rule.matchCase ? rule.preferred : keepCase(written, rule.preferred)
+        push(rule.id, label, category, start, end, `Use “${rule.preferred}”.`, rule.preferred, rule.note, fix || null)
       }
     } else if (rule.kind === 'AVOID') {
       for (const { start, end } of matches) {
@@ -256,25 +332,42 @@ export function checkScene(text: string, sheet: StyleSheet, context: CheckContex
   }
 
   const typography = sheet.typography
-  const typo = (key: keyof TypographyConventions, pattern: RegExp, message: string, preferred: string | null, group = 0) => {
+  const typo = (
+    key: keyof TypographyConventions,
+    pattern: RegExp,
+    message: string,
+    preferred: string | null,
+    group = 0,
+    fix: ((match: RegExpMatchArray) => string) | string | null = preferred,
+  ) => {
     if (!typography[key]) return
     const ruleId = typographyRuleId(key)
     for (const match of text.matchAll(pattern)) {
       const offset = group ? match[0].indexOf(match[group]) : 0
-      const start = match.index + offset
-      push(ruleId, typographyLabels[key].label, 'Tipografia', start, start + match[group].length, message, preferred)
+      const start = match.index! + offset
+      const replacement = typeof fix === 'function' ? fix(match) : fix
+      push(ruleId, typographyLabels[key].label, 'Tipografia', start, start + match[group].length, message, preferred, '', replacement)
     }
   }
   typo('dialogueDash', /^[ \t]*([-–])(?=\s*\S)/gm, 'Diálogo aberto com hífen ou meia-risca; use travessão.', '—', 1)
-  typo('curlyQuotes', /"/g, 'Aspas retas; use aspas curvas.', '“ ”')
-  typo('ellipsisCharacter', /\.{3}/g, 'Três pontos; use o caractere de reticências.', '…')
+  // The narrator's aside inside a line: "Oi - disse ela - tudo bem?"
+  // A range between numbers ("3 - 4") is left alone.
+  typo('dialogueDash', /(?<=\S )(?<!\p{N} )([-–])(?= \S)(?! \p{N})/gu,'Hífen ou meia-risca entre espaços; use travessão.', '—', 1)
+  // Opening after a space, a line start or an opening mark; closing otherwise.
+  const opens = (match: RegExpMatchArray) => match.index === 0 || /[\s([{—–-]/.test(text[match.index! - 1])
+  typo('curlyQuotes', /"/g, 'Aspas retas; use aspas curvas.', '“ ”', 0, (match) => (opens(match) ? '“' : '”'))
+  typo('curlyQuotes', /(?<=\p{L})'(?=\p{L})/gu, 'Apóstrofo reto; use ’.', '’')
+  typo('ellipsisCharacter', /(?<!\.)\.{3}(?!\.)/g, 'Três pontos; use o caractere de reticências.', '…')
   typo('doubleSpaces', /(?<=\S) {2,}(?=\S)/g, 'Espaço duplo.', ' ')
   typo('spaceBeforePunctuation', /(?<=[\p{L}\p{N}]) +(?=[,.;:!?](?:\s|$))/gu, 'Espaço antes da pontuação.', '')
   if (typography.repeatedWords) {
     const ruleId = typographyRuleId('repeatedWords')
     for (const match of text.matchAll(/(?<![\p{L}\p{N}])([\p{L}]+)\s+\1(?![\p{L}\p{N}])/giu)) {
-      push(ruleId, typographyLabels.repeatedWords.label, 'Tipografia', match.index, match.index + match[0].length, `“${match[1]}” repetida.`, match[1])
+      push(ruleId, typographyLabels.repeatedWords.label, 'Tipografia', match.index, match.index + match[0].length, `“${match[1]}” repetida.`, match[1], '', match[1])
     }
+  }
+  for (const hit of checkPtBr(text, (rule: PtBrRule) => typography[rule])) {
+    push(typographyRuleId(hit.rule), typographyLabels[hit.rule].label, 'Português', hit.start, hit.end, hit.message, hit.replacement, '', hit.replacement)
   }
   if (typography.archiveNames && context.names?.length) {
     const ruleId = typographyRuleId('archiveNames')
@@ -292,7 +385,7 @@ export function checkScene(text: string, sheet: StyleSheet, context: CheckContex
         // Only names written with a capital differ in a meaningful way:
         // a lowercase common word that happens to be a name isn't flagged.
         if (expected && written !== expected && /^\p{Lu}/u.test(written)) {
-          push(ruleId, typographyLabels.archiveNames.label, 'Nomes', start, end, `No Arquivo: “${expected}”.`, expected)
+          push(ruleId, typographyLabels.archiveNames.label, 'Nomes', start, end, `No Arquivo: “${expected}”.`, expected, '', expected)
         }
       }
     }

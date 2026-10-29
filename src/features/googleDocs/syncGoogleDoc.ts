@@ -1,6 +1,7 @@
 import { api, google } from '../../api/client'
 import type { GoogleDocLink, GoogleDocSectionLink, Slot } from '../../api/contracts'
 import { decryptSceneDraft, encryptSceneDraft } from '../../crypto/projectEncryption'
+import { hasRecentVersion, saveVersion } from '../versions/versions'
 
 export type GoogleSyncResult = {
   upToDate: boolean
@@ -40,13 +41,34 @@ async function runSync(projectId: string, projectKey: CryptoKey): Promise<Google
   let updated = 0
   let previousSlot: Slot | undefined
 
+  // Read every linked scene first: if the doc changes any text, a version of
+  // the project as it was is saved before anything is overwritten.
+  const drafts = new Map<string, { content?: string; genre?: string; focusMode?: string }>()
+  for (const section of remote.sections) {
+    const known = slots.get(previous.get(section.key) ?? '')
+    if (!known) continue
+    const review = await api.getSlotReview(known.id)
+    drafts.set(
+      known.id,
+      review.content
+        ? await decryptSceneDraft(projectKey, review.content.ciphertext, review.content.iv)
+        : { content: '', genre: '', focusMode: 'GENERAL' },
+    )
+  }
+  const willChangeText = remote.sections.some((section) => {
+    const slotId = previous.get(section.key)
+    const draft = slotId ? drafts.get(slotId) : undefined
+    return draft !== undefined && (draft.content ?? '') !== section.text
+  })
+  if (willChangeText && !(await hasRecentVersion(projectId, 'SYNC').catch(() => true))) {
+    // An older backend without versions: the sync still goes ahead.
+    await saveVersion(projectId, projectKey, 'SYNC', `Antes de sincronizar com o Google Docs`).catch(() => undefined)
+  }
+
   for (const section of remote.sections) {
     const known = slots.get(previous.get(section.key) ?? '')
     if (known) {
-      const review = await api.getSlotReview(known.id)
-      const draft = review.content
-        ? await decryptSceneDraft(projectKey, review.content.ciphertext, review.content.iv)
-        : { content: '', genre: '', focusMode: 'GENERAL' }
+      const draft = drafts.get(known.id) ?? { content: '', genre: '', focusMode: 'GENERAL' }
       if ((draft.content ?? '') !== section.text) {
         await api.saveSceneContent(
           known.id,

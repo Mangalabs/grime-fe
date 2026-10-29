@@ -145,3 +145,8 @@
 .style-show-kept {
   justify-self: start;
 }
+
+.style-fix-scene {
+  justify-self: start;
+  margin-top: 8px;
+}

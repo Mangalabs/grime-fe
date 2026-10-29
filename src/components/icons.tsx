@@ -149,6 +149,30 @@ export function MapIcon() {
   );
 }
 
+export function SpellCheckIcon() {
+  return (
+    <Icon>
+      <path d="M3 13l3.5-9 3.5 9M4.3 10h4.4M11 13.5l2.5 2.5L18 10.5" />
+    </Icon>
+  );
+}
+
+export function VersionsIcon() {
+  return (
+    <Icon>
+      <path d="M6 3.5h8.5v11H6zM3.5 6v10.5H12M9 7h3M9 10h3" />
+    </Icon>
+  );
+}
+
+export function BoardIcon() {
+  return (
+    <Icon>
+      <path d="M3 3.5h4v13H3zM8.5 3.5h4v8h-4zM14 3.5h3v10.5h-3z" />
+    </Icon>
+  );
+}
+
 export function JoinLinesIcon() {
   return (
     <Icon>

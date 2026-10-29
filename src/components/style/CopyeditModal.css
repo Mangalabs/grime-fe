@@ -1,0 +1,39 @@
+/* Revisão ortotipográfica: builds on the line-break dialog's list styles. */
+
+.copyedit-list label > span {
+  display: grid;
+  gap: 2px;
+}
+
+.copyedit-scene {
+  color: var(--color-text-muted);
+  font-size: var(--text-micro);
+}
+
+.copyedit-change {
+  font-family: var(--font-reading);
+}
+
+.copyedit-change del {
+  border-radius: 3px;
+  background: var(--color-critical-soft);
+  color: var(--color-critical-text);
+}
+
+.copyedit-change ins {
+  border-radius: 3px;
+  background: var(--color-success-soft);
+  color: var(--color-success-text);
+  text-decoration: none;
+}
+
+.copyedit-judgement {
+  color: var(--color-warning-text);
+  font-weight: var(--weight-regular);
+}
+
+.copyedit-manual {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}

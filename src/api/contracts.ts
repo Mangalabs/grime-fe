@@ -588,3 +588,40 @@ export interface MarketingDraftRequest {
   storyBible: string
   currentIdentity: string
 }
+
+// Frozen copies of the manuscript (label and scenes encrypted in the browser).
+export type VersionKind = 'MANUAL' | 'STAGE' | 'SYNC' | 'IMPORT' | 'COPYEDIT'
+
+export interface VersionSummary {
+  id: string
+  kind: VersionKind
+  labelCiphertext: string
+  labelIv: string
+  sceneCount: number
+  wordCount: number
+  createdAt: string
+}
+
+export interface VersionDetail extends VersionSummary {
+  ciphertext: string
+  iv: string
+}
+
+export type CreateVersion = Omit<VersionDetail, 'id' | 'createdAt'>
+
+// Active review time; stageId '' before the project had a pipeline.
+export interface TimeEntry {
+  day: string
+  stageId: string
+  seconds: number
+}
+
+export interface BoardProject {
+  id: string
+  title: string
+  lastAccessedAt: string
+  sceneCount: number
+  pipeline: { ciphertext: string; iv: string } | null
+  openNotes: Record<'NOTE' | 'QUESTION' | 'FIX' | 'IDEA', number>
+  seconds: number
+}

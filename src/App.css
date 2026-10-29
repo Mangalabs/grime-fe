@@ -844,3 +844,9 @@ textarea::placeholder {
     padding: 20px 4px;
   }
 }
+
+/* The board sits above the project switcher: it is about every project. */
+.sidebar-board-link {
+  flex: none;
+  margin-bottom: -8px;
+}

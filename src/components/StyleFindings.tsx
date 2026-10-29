@@ -13,6 +13,8 @@ interface StyleFindingsProps {
   onLocate: (finding: StyleFinding) => void
   onToggleException: (finding: StyleFinding) => void
   onOpenSheet: () => void
+  // Opens the copyedit dialog for this scene, when a finding has an exact fix.
+  onCopyedit?: () => void
 }
 
 const PREVIEW = 4
@@ -51,12 +53,16 @@ export function StyleFindings({
   onLocate,
   onToggleException,
   onOpenSheet,
+  onCopyedit,
 }: StyleFindingsProps) {
   const [showKept, setShowKept] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const listRef = useRef<HTMLDivElement>(null)
 
   const kept = findings.filter((finding) => finding.isException)
+  const fixable = findings.filter(
+    (finding) => !finding.isException && finding.replacement !== null && finding.replacement !== finding.match,
+  ).length
   const visible = showKept ? findings : findings.filter((finding) => !finding.isException)
   const groups = new Map<string, StyleFinding[]>()
   for (const finding of visible) groups.set(finding.ruleId, [...(groups.get(finding.ruleId) ?? []), finding])
@@ -88,6 +94,11 @@ export function StyleFindings({
           Editar folha de estilo
         </button>
       </div>
+      {onCopyedit && fixable > 0 && (
+        <button className="button button-secondary button-small style-fix-scene" type="button" onClick={onCopyedit}>
+          Corrigir nesta cena ({fixable})…
+        </button>
+      )}
 
       {visible.length === 0 ? (
         <div className="empty-state">

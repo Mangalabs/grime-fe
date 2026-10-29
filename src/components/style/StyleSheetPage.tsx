@@ -4,13 +4,16 @@ import { loadSceneTexts } from '../../features/manuscript/loadSceneTexts'
 import { orderScenes, sceneTitle } from '../../features/scenes/sceneStatus'
 import {
   checkScene,
+  conventionGroupLabels,
   newRule,
+  noConventions,
   ruleKindLabels,
   ruleLabel,
   typographyLabels,
   typographyRuleId,
   type StyleRule,
   type StyleRuleKind,
+  type ConventionGroup,
   type StyleSheet,
   type TypographyConventions,
 } from '../../features/style/styleSheet'
@@ -25,6 +28,8 @@ interface StyleSheetPageProps {
   names: string[]
   onSave: (sheet: StyleSheet) => Promise<void>
   onOpenScene: (slot: Slot) => void
+  // Opens the copyedit dialog: fixes across the book, reviewed one by one.
+  onCopyedit?: () => void
 }
 
 const kindHelp: Record<StyleRuleKind, string> = {
@@ -76,6 +81,7 @@ export function StyleSheetPage({
   names,
   onSave,
   onOpenScene,
+  onCopyedit,
 }: StyleSheetPageProps) {
   const scenes = useMemo(() => orderScenes(slots), [slots])
   const sceneKey = scenes.map((slot) => slot.id).join(',')
@@ -137,15 +143,7 @@ export function StyleSheetPage({
     const probe: StyleSheet = {
       version: 1,
       rules: [rule],
-      typography: {
-        dialogueDash: false,
-        curlyQuotes: false,
-        ellipsisCharacter: false,
-        doubleSpaces: false,
-        spaceBeforePunctuation: false,
-        repeatedWords: false,
-        archiveNames: false,
-      },
+      typography: noConventions(),
       exceptions: [],
     }
     let occurrences = 0
@@ -477,10 +475,16 @@ export function StyleSheetPage({
             )}
           </section>
 
-          <section className="panel" aria-labelledby="style-typography-title">
-            <h2 id="style-typography-title">Convenções tipográficas</h2>
+          {(['tipografia', 'portugues'] as ConventionGroup[]).map((group) => (
+          <section className="panel" aria-labelledby={`style-${group}-title`} key={group}>
+            <h2 id={`style-${group}-title`}>{conventionGroupLabels[group].title}</h2>
+            {conventionGroupLabels[group].description && (
+              <p className="panel-description">{conventionGroupLabels[group].description}</p>
+            )}
             <ul className="style-typography">
-              {(Object.keys(typographyLabels) as Array<keyof TypographyConventions>).map((key) => (
+              {(Object.keys(typographyLabels) as Array<keyof TypographyConventions>)
+                .filter((key) => (typographyLabels[key].group ?? 'tipografia') === group)
+                .map((key) => (
                 <li key={key}>
                   <label className="checkbox-label">
                     <input
@@ -503,6 +507,7 @@ export function StyleSheetPage({
               ))}
             </ul>
           </section>
+          ))}
         </div>
 
         <aside className="style-aside">
@@ -520,6 +525,11 @@ export function StyleSheetPage({
                   <strong>{scan.total}</strong> {scan.total === 1 ? 'ocorrência' : 'ocorrências'} em{' '}
                   {scan.counts.filter(Boolean).length} de {scenes.length} cenas
                 </p>
+                {onCopyedit && scan.total > 0 && (
+                  <button className="button button-secondary style-copyedit" type="button" onClick={onCopyedit}>
+                    Revisar e corrigir a obra…
+                  </button>
+                )}
                 <ol className="style-scenes">
                   {scenes
                     .map((slot, index) => ({ slot, index, count: scan.counts[index] }))
