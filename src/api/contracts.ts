@@ -558,6 +558,8 @@ export interface GoogleDocSuggestion {
   end: number
   // What it would add at `start`.
   inserted: string
+  // The name typed by whoever suggested it in Petricor, sealed; null from Docs.
+  author: { ciphertext: string; iv: string } | null
 }
 
 export interface GoogleDocSuggestionSection {
@@ -568,6 +570,19 @@ export interface GoogleDocSuggestionSection {
   // The scene's text in the doc, without any suggestion.
   text: string
   suggestions: GoogleDocSuggestion[]
+}
+
+// A suggested edit in a project without a linked doc; the content is sealed.
+export type SuggestionStatus = 'OPEN' | 'ACCEPTED' | 'DECLINED' | 'CHANGED' | 'GONE'
+
+export interface StoredSuggestion {
+  id: string
+  slotId: string
+  status: SuggestionStatus
+  ciphertext: string
+  iv: string
+  createdAt: string
+  decidedAt: string | null
 }
 
 export interface SuggestionDecision {

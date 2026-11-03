@@ -15,6 +15,7 @@ import { diagnosticTypes as macroTypes, findSceneReferences, sceneResolver, seve
 import { resolveAnchor, type Note } from '../notes/notes'
 import { sceneTitle } from '../scenes/sceneStatus'
 import { checkScene, type StyleSheet } from '../style/styleSheet'
+import type { PlacedSuggestion } from '../suggestions/openSuggestions'
 
 /**
  * What goes into the review PDF, decided before anything is drawn: only what
@@ -40,14 +41,16 @@ export interface ReportOptions {
   includeRhythm: boolean
   // List intentional exceptions (with their justification) instead of hiding them.
   includeExceptions: boolean
+  // Open suggested edits: tracked changes in Word, marked passages in the PDF.
+  includeSuggestions: boolean
   reviewer: string
   letter: string
 }
 
 export const presetDefaults: Record<ReportPreset, Partial<ReportOptions>> = {
-  AUTHOR: { minSeverity: 'WARNING', includeArchitect: true, notes: 'OPEN', includeAlerts: true, includeStyle: true, includeRhythm: true, includeExceptions: false },
-  CHECKLIST: { minSeverity: 'WARNING', includeArchitect: false, notes: 'OPEN', includeAlerts: true, includeStyle: true, includeRhythm: false, includeExceptions: false },
-  MANUSCRIPT: { minSeverity: 'NOTE', includeArchitect: false, notes: 'OPEN', includeAlerts: false, includeStyle: false, includeRhythm: false, includeExceptions: false },
+  AUTHOR: { minSeverity: 'WARNING', includeArchitect: true, notes: 'OPEN', includeAlerts: true, includeStyle: true, includeRhythm: true, includeExceptions: false, includeSuggestions: true },
+  CHECKLIST: { minSeverity: 'WARNING', includeArchitect: false, notes: 'OPEN', includeAlerts: true, includeStyle: true, includeRhythm: false, includeExceptions: false, includeSuggestions: true },
+  MANUSCRIPT: { minSeverity: 'NOTE', includeArchitect: false, notes: 'OPEN', includeAlerts: false, includeStyle: false, includeRhythm: false, includeExceptions: false, includeSuggestions: true },
 }
 
 /** Everything gathered from the project, decrypted, in timeline order. */
@@ -59,6 +62,8 @@ export interface SceneData {
   diagnostics: LinterDiagnostic[]
   overrides: Override[]
   alerts: RegressionAlert[]
+  // Open suggested edits, placed in `text`.
+  suggestions?: PlacedSuggestion[]
 }
 
 export interface ReportData {
@@ -127,6 +132,8 @@ export interface SceneSection {
   items: ReportItem[]
   exceptions: string[]
   styleSummary: Array<{ label: string; count: number }>
+  // Open suggested edits of the scene, in the order of the text.
+  suggestions: PlacedSuggestion[]
 }
 
 export interface Priority {
@@ -323,6 +330,7 @@ export function buildReport(data: ReportData, options: ReportOptions): ReportMod
       items,
       exceptions,
       styleSummary,
+      suggestions: options.includeSuggestions ? [...(scene.suggestions ?? [])].sort((a, b) => a.start - b.start) : [],
     }
   })
 
@@ -333,8 +341,11 @@ export function buildReport(data: ReportData, options: ReportOptions): ReportMod
     options.preset === 'MANUSCRIPT'
       ? sections
       : options.preset === 'CHECKLIST'
-        ? sections.filter((section) => section.items.length || section.exceptions.length || section.styleSummary.length)
-        : sections.filter((section) => section.items.length || section.exceptions.length)
+        ? sections.filter(
+            (section) =>
+              section.items.length || section.exceptions.length || section.styleSummary.length || section.suggestions.length,
+          )
+        : sections.filter((section) => section.items.length || section.exceptions.length || section.suggestions.length)
 
   const generalNotes: ReportItem[] =
     options.notes === 'NONE' || options.preset === 'MANUSCRIPT'

@@ -464,6 +464,7 @@ function writeAuthor(w: Writer, model: ReportModel) {
   for (const section of model.sections) {
     writeSceneHeader(w, section)
     for (const item of section.items) writeItem(w, item)
+    writeSuggestions(w, section)
     writeStyleLine(w, section)
     if (section.exceptions.length) {
       w.label('Exceções intencionais registradas')
@@ -504,6 +505,7 @@ function writeChecklist(w: Writer, model: ReportModel) {
   for (const section of model.sections) {
     writeSceneHeader(w, section, true)
     for (const item of section.items) writeCheckRow(w, item)
+    writeSuggestions(w, section)
     writeStyleLine(w, section, 7)
   }
   if (model.sections.length === 0) w.paragraph('Nada pendente com estes critérios.', { color: muted })
@@ -557,9 +559,26 @@ function writeManuscript(w: Writer, model: ReportModel) {
       w.label('Observações desta cena')
       numbered.forEach((item) => writeItem(w, { ...item, title: `[${numberOf.get(item.key)}] ${item.title}`, quote: item.anchor ? null : item.quote }))
     }
+    writeSuggestions(w, section)
     writeStyleLine(w, section)
   }
   return { tocPage, coverPages: 1 }
+}
+
+// Each open suggestion with a little of its text around it:
+// "…andou pela [rua escura -> viela] e voltou…" (the PDF fonts have no ⟦ ⟧).
+function writeSuggestions(w: Writer, section: SceneSection) {
+  if (section.suggestions.length === 0) return
+  const text = section.scene.text ?? ''
+  w.label(section.suggestions.length === 1 ? 'Sugestão de edição aberta' : 'Sugestões de edição abertas')
+  for (const suggestion of section.suggestions) {
+    const before = text.slice(Math.max(0, suggestion.start - 50), suggestion.start).replace(/\s+/g, ' ')
+    const after = text.slice(suggestion.end, suggestion.end + 50).replace(/\s+/g, ' ')
+    const removed = text.slice(suggestion.start, suggestion.end).replace(/\s+/g, ' ')
+    const change = removed && suggestion.inserted ? `${removed} → ${suggestion.inserted}` : removed ? `remover: ${removed}` : `incluir: ${suggestion.inserted}`
+    const who = suggestion.author ? ` (de ${suggestion.author})` : ' (do Google Docs)'
+    w.paragraph(`• …${before}[${change.replace(/\s+/g, ' ')}]${after}…${who}`, { size: 9.5, gap: 1.5 })
+  }
 }
 
 export function renderReportPdf(model: ReportModel) {

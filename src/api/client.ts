@@ -11,6 +11,7 @@ import { editorialApi } from './endpoints/editorial'
 import { marketingApi } from './endpoints/marketing'
 import { notesApi } from './endpoints/notes'
 import { scenesApi } from './endpoints/scenes'
+import { suggestionsApi } from './endpoints/suggestions'
 
 export { ApiError } from './http'
 export { auth, joinWaitlist } from './endpoints/auth'
@@ -30,4 +31,5 @@ export const api = {
   ...marketingApi,
   ...notesApi,
   ...scenesApi,
+  ...suggestionsApi,
 }

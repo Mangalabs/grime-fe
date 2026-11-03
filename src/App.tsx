@@ -77,6 +77,8 @@ import { useActiveTime } from "./features/time/useActiveTime";
 import { saveVersion } from "./features/versions/versions";
 import { VersionsPage } from "./components/versions/VersionsPage";
 import { SuggestionsPage } from "./components/suggestions/SuggestionsPage";
+import { SuggestEditor } from "./components/suggestions/SuggestEditor";
+import { loadSceneDrafts } from "./features/manuscript/loadSceneTexts";
 import { BoardPage } from "./components/board/BoardPage";
 import { PipelinePage } from "./components/pipeline/PipelinePage";
 import { LineBreakRepairModal } from "./components/LineBreakRepairModal";
@@ -203,6 +205,9 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
     { groupId: string | null } | null
   >(null);
   const [isMergeOpen, setIsMergeOpen] = useState(false);
+  // "Sugerir alterações": the open scene's text, read fresh when it opened.
+  const [suggestFor, setSuggestFor] = useState<{ slotId: string; title: string; text: string } | null>(null);
+  const [isOpeningSuggest, setIsOpeningSuggest] = useState(false);
   const dismissToast = useCallback(() => setToast(null), []);
   // Timeline writes run one at a time; the list is reloaded only once the
   // queue is empty, so a reload never overwrites a move still on its way.
@@ -625,6 +630,32 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
     projectKey,
     onSynced: handleGoogleDocSynced,
   });
+
+  const isDocLinked = Boolean(googleDocs.status?.available && googleDocs.link);
+
+  // Suggestions are made on the scene's text as stored: with a linked doc,
+  // synced first, so they land on the doc's current text.
+  async function openSuggest() {
+    if (!projectKey || !selectedSlot || isOpeningSuggest) return;
+    const slot = selectedSlot;
+    setIsOpeningSuggest(true);
+    try {
+      if (isDocLinked) await googleDocs.syncNow();
+      const [draft] = await loadSceneDrafts(projectKey, [slot]);
+      setSuggestFor({ slotId: slot.id, title: titleOf(slot), text: draft?.content ?? "" });
+    } catch (reason) {
+      setToast({ kind: "undone", message: reason instanceof Error ? reason.message : "Não foi possível abrir a cena para sugerir." });
+    } finally {
+      setIsOpeningSuggest(false);
+    }
+  }
+
+  // Accepted suggestions changed these scenes' text (projects without a doc).
+  function handleSuggestionsApplied(slotIds: string[]) {
+    refreshProjectState();
+    const openSlot = slots.find((slot) => slot.id === context.slotId);
+    if (openSlot && slotIds.includes(openSlot.id) && !isEditingScene) selectSlot(openSlot);
+  }
 
   // New or changed scenes from the linked doc. The open scene shows the new
   // text, unless it's being edited: then the author decides.
@@ -1660,8 +1691,10 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
             <SuggestionsPage
               googleDocs={googleDocs}
               projectId={context.projectId}
+              projectKey={projectKey}
               projectTitle={currentProject?.title ?? ""}
               slots={projectSlots}
+              onTextChanged={handleSuggestionsApplied}
             />
           )}
 
@@ -1937,6 +1970,7 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
                     onFocusStyle={focusStyle}
                     nextSceneTitle={mergeTarget ? titleOf(mergeTarget) : null}
                     onRequestMerge={() => setIsMergeOpen(true)}
+                    onSuggest={projectKey && selectedSlot ? () => void openSuggest() : undefined}
                     onShortcutUnavailable={(message) => setToast({ kind: "undone", message })}
                     onSplit={splitScene}
                   />
@@ -2173,6 +2207,24 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
           }}
         />
       )}
+      {suggestFor && projectKey && context.projectId && (
+        <SuggestEditor
+          isLinked={isDocLinked}
+          projectId={context.projectId}
+          projectKey={projectKey}
+          sceneTitle={suggestFor.title}
+          slotId={suggestFor.slotId}
+          text={suggestFor.text}
+          onClose={() => setSuggestFor(null)}
+          onSent={(count) => {
+            setSuggestFor(null);
+            setToast({
+              kind: "undone",
+              message: `${count === 1 ? "1 sugestão enviada" : `${count} sugestões enviadas`}${isDocLinked ? " ao Google Docs" : ""}. Veja em Sugestões.`,
+            });
+          }}
+        />
+      )}
       {isMergeOpen && mergeTarget && (
         <MergeDialog
           nextTitle={titleOf(mergeTarget)}
@@ -2330,6 +2382,21 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
             const summary = `Revisão importada: ${result.updated} ${result.updated === 1 ? "cena atualizada" : "cenas atualizadas"}, ${result.created} ${result.created === 1 ? "nova" : "novas"}.`;
             if (result.changedSlotIds.length === 0) {
               setToast({ kind: "undone", message: "A nova versão é igual ao texto do projeto; nada mudou." });
+              return;
+            }
+            const followed = result.suggestions;
+            if (followed && followed.accepted + followed.changed + followed.gone > 0) {
+              const parts = [
+                followed.accepted && `${followed.accepted} ${followed.accepted === 1 ? "aceita" : "aceitas"} no texto novo`,
+                followed.changed && `${followed.changed} com o trecho reescrito de outro jeito`,
+                followed.gone && `${followed.gone} com o trecho cortado`,
+              ].filter(Boolean);
+              setToast({
+                kind: "action",
+                message: `${summary} Sugestões abertas: ${parts.join(", ")}.`,
+                actionLabel: "Ver sugestões",
+                onAction: () => goTo("suggestions"),
+              });
               return;
             }
             setToast({

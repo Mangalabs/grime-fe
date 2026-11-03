@@ -3,12 +3,48 @@
 
 export interface Suggestion {
   id: string
+  // Every id the decision applies to: a replacement made from Petricor in
+  // Google Docs is a removal and an insertion, decided together.
+  ids?: string[]
   // The passage it would remove, [start, end) in the scene text.
   start: number
   end: number
   // What it would add at `start`.
   inserted: string
+  // Who suggested it; null when unknown (typed in Google Docs).
+  author?: string | null
 }
+
+/**
+ * Joins a removal and an insertion placed right after it, by the same person,
+ * into one replacement: Google keeps them as two suggestions when Petricor
+ * creates them, but they are one change.
+ */
+export function mergeReplacements(suggestions: Suggestion[]): Suggestion[] {
+  const sorted = [...suggestions].sort((a, b) => a.start - b.start || a.end - b.end)
+  const merged: Suggestion[] = []
+  for (const suggestion of sorted) {
+    const last = merged.at(-1)
+    const isRemoval = last && last.end > last.start && last.inserted === ''
+    const isInsertion = suggestion.start === suggestion.end && suggestion.inserted !== ''
+    // Only pairs Petricor made (they carry a name): two neighbouring Docs
+    // suggestions may be from different people.
+    const samePerson = last?.author != null && last.author === suggestion.author
+    if (last && isRemoval && isInsertion && suggestion.start === last.end && samePerson) {
+      merged[merged.length - 1] = {
+        ...last,
+        ids: [...(last.ids ?? [last.id]), ...(suggestion.ids ?? [suggestion.id])],
+        inserted: suggestion.inserted,
+      }
+    } else {
+      merged.push(suggestion)
+    }
+  }
+  return merged
+}
+
+/** The ids a decision on this suggestion applies to. */
+export const decisionIds = (suggestion: Suggestion) => suggestion.ids ?? [suggestion.id]
 
 export type HunkPart = { text: string; change: 'same' | 'removed' | 'added' }
 

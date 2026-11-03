@@ -121,6 +121,8 @@ interface SceneEditorProps {
   onUnanchoredChange: (isUnanchored: boolean) => void;
   onSave: () => void;
   onEdit: () => void;
+  // Opens "Sugerir alterações" for this scene; absent when it can't be used.
+  onSuggest?: () => void;
   onCancelEdit: () => void;
   onRename: () => void;
   onDelete: () => void;
@@ -275,6 +277,7 @@ export function SceneEditor({
   onUnanchoredChange,
   onSave,
   onEdit,
+  onSuggest,
   onCancelEdit,
   onRename,
   onDelete,
@@ -712,6 +715,16 @@ export function SceneEditor({
             >
               Editar cena
             </button>
+            {onSuggest && (
+              <button
+                className="button button-secondary"
+                title="Cada mudança vira uma sugestão para o autor aceitar ou recusar"
+                type="button"
+                onClick={onSuggest}
+              >
+                Sugerir alterações
+              </button>
+            )}
             <div className="scene-menu" ref={menuRef}>
               <button
                 aria-expanded={isMenuOpen}

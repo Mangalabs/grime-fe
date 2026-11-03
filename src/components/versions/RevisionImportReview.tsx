@@ -4,6 +4,7 @@ import { decryptSceneDraft, encryptSceneDraft } from '../../crypto/projectEncryp
 import { matchRevision, type RevisionMatch } from '../../features/versions/compare'
 import { sceneSimilarity } from '../../features/versions/diff'
 import { currentScenes, saveVersion, type VersionScene } from '../../features/versions/versions'
+import { followSuggestions } from '../../features/suggestions/petricorSuggestions'
 
 export interface RevisionResult {
   updated: number
@@ -12,6 +13,9 @@ export interface RevisionResult {
   // Project scenes the new file doesn't have; they stay in the timeline.
   missing: number
   changedSlotIds: string[]
+  // What became of the open suggestions on the changed scenes (projects
+  // without a linked doc); null when there were none to follow.
+  suggestions: { accepted: number; changed: number; gone: number; open: number } | null
 }
 
 interface Props {
@@ -99,13 +103,15 @@ export function RevisionImportReview({ projectId, projectKey, importId, fileName
       if (counts.changed + counts.new === 0 && !renamed) {
         // Nothing to update: the import just closes.
         await api.closeManuscriptImport(projectId, importId)
-        onApplied({ updated: 0, created: 0, unchanged: counts.same, missing: missing.length, changedSlotIds: [] })
+        onApplied({ updated: 0, created: 0, unchanged: counts.same, missing: missing.length, changedSlotIds: [], suggestions: null })
         return
       }
       setApplying('Guardando a versão de antes…')
       await saveVersion(projectId, projectKey, 'IMPORT', `Antes de importar ${fileName}`, current)
 
       const changedSlotIds: string[] = []
+      // The new text of each scene that changed, to follow its suggestions.
+      const newTexts = new Map<string, string>()
       let created = 0
       let previousSlotId: string | null = null
       for (const [index, row] of rows.entries()) {
@@ -126,6 +132,7 @@ export function RevisionImportReview({ projectId, projectKey, importId, fileName
               }),
             )
             changedSlotIds.push(row.target.slotId)
+            newTexts.set(row.target.slotId, row.match.content)
           }
           // Titles follow the file: chapter numbers shift when one is added.
           if (row.match.title.trim() && row.match.title.trim() !== row.target.title.trim()) {
@@ -148,9 +155,18 @@ export function RevisionImportReview({ projectId, projectKey, importId, fileName
         created += 1
         previousSlotId = slot.id
       }
+      setApplying('Conferindo as sugestões abertas…')
+      const suggestions = await followSuggestions(projectId, projectKey, newTexts)
+        .then((found) =>
+          found.ACCEPTED + found.CHANGED + found.GONE + found.OPEN > 0
+            ? { accepted: found.ACCEPTED, changed: found.CHANGED, gone: found.GONE, open: found.OPEN }
+            : null,
+        )
+        // An older backend without suggestions: nothing to follow.
+        .catch(() => null)
       setApplying('Concluindo…')
       await api.closeManuscriptImport(projectId, importId)
-      onApplied({ updated: counts.changed, created, unchanged: counts.same, missing: missing.length, changedSlotIds })
+      onApplied({ updated: counts.changed, created, unchanged: counts.same, missing: missing.length, changedSlotIds, suggestions })
     } catch (reason) {
       setApplying(null)
       setError(

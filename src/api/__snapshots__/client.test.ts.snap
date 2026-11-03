@@ -327,6 +327,21 @@ exports[`api client > api.createRelation sends the same request 1`] = `
 ]
 `;
 
+exports[`api client > api.createSuggestions sends the same request 1`] = `
+[
+  {
+    "body": {
+      "items": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/suggestions",
+  },
+]
+`;
+
 exports[`api client > api.createVersion sends the same request 1`] = `
 [
   {
@@ -421,6 +436,16 @@ exports[`api client > api.deleteProjectSlot sends the same request 1`] = `
     "headers": {},
     "method": "DELETE",
     "url": "/api/v1/projects/arg0/slots/arg1",
+  },
+]
+`;
+
+exports[`api client > api.deleteSuggestion sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/suggestions/arg0",
   },
 ]
 `;
@@ -759,6 +784,16 @@ exports[`api client > api.listSceneCards sends the same request 1`] = `
     "headers": {},
     "method": "GET",
     "url": "/api/v1/projects/arg0/scene-cards",
+  },
+]
+`;
+
+exports[`api client > api.listSuggestions sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/suggestions",
   },
 ]
 `;
@@ -1164,6 +1199,21 @@ exports[`api client > api.updateNote sends the same request 1`] = `
 ]
 `;
 
+exports[`api client > api.updateSuggestions sends the same request 1`] = `
+[
+  {
+    "body": {
+      "updates": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PATCH",
+    "url": "/api/v1/projects/arg0/suggestions",
+  },
+]
+`;
+
 exports[`api client > api.uploadMarketingAsset sends the same request 1`] = `
 [
   {
@@ -1263,6 +1313,7 @@ exports[`api client > exports the same names 2`] = `
     "createProject",
     "createProjectSlot",
     "createRelation",
+    "createSuggestions",
     "createVersion",
     "deleteEntity",
     "deleteEntityPage",
@@ -1272,6 +1323,7 @@ exports[`api client > exports the same names 2`] = `
     "deleteNote",
     "deleteProject",
     "deleteProjectSlot",
+    "deleteSuggestion",
     "deleteTime",
     "deleteVersion",
     "detachAlias",
@@ -1305,6 +1357,7 @@ exports[`api client > exports the same names 2`] = `
     "listProjects",
     "listRegressionAlerts",
     "listSceneCards",
+    "listSuggestions",
     "listTime",
     "listTimelineMoves",
     "listVersions",
@@ -1336,6 +1389,7 @@ exports[`api client > exports the same names 2`] = `
     "undoTimelineMove",
     "updateGroup",
     "updateNote",
+    "updateSuggestions",
     "uploadMarketingAsset",
   ],
   "auth": [
@@ -1345,6 +1399,7 @@ exports[`api client > exports the same names 2`] = `
   ],
   "google": [
     "connect",
+    "createSuggestions",
     "decideSuggestions",
     "disconnect",
     "fetchForSync",
@@ -1370,6 +1425,19 @@ exports[`api client > google.connect sends the same request 1`] = `
     },
     "method": "POST",
     "url": "/api/v1/integrations/google/connect",
+  },
+]
+`;
+
+exports[`api client > google.createSuggestions sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/google-doc/suggestions",
   },
 ]
 `;

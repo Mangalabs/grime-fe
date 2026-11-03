@@ -12,6 +12,7 @@ import { renderReportPdf, reportFileName } from "../features/report/reportPdf";
 import { renderReportDocx, reportDocxFileName } from "../features/report/reportDocx";
 import type { StyleSheet } from "../features/style/styleSheet";
 import { collectReportData, type CollectedReport } from "../features/report/collectReport";
+import { openSuggestionsBySlot, type PlacedSuggestion } from "../features/suggestions/openSuggestions";
 import "./ProjectReviewExportPage.css";
 
 interface ProjectReviewExportPageProps {
@@ -51,6 +52,13 @@ const presets: Array<{ id: ReportPreset; title: string; reader: string; descript
 // Only the annotated manuscript has a Word version: it is the one edited.
 type ExportFormat = "PDF" | "DOCX";
 
+// Open suggestions join their scenes; without them the export still works.
+async function withSuggestions(projectId: string, projectKey: CryptoKey, data: CollectedReport): Promise<CollectedReport> {
+  const texts = new Map(data.scenes.flatMap((scene) => (scene.text === null ? [] : [[scene.slot.id, scene.text] as const])));
+  const bySlot = await openSuggestionsBySlot(projectId, projectKey, texts).catch(() => new Map<string, PlacedSuggestion[]>());
+  return { ...data, scenes: data.scenes.map((scene) => ({ ...scene, suggestions: bySlot.get(scene.slot.id) ?? [] })) };
+}
+
 function download(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -88,6 +96,7 @@ export function ProjectReviewExportPage({
     includeStyle: true,
     includeRhythm: true,
     includeExceptions: false,
+    includeSuggestions: true,
     reviewer: readAuthorName(),
     letter: letterDraft?.text ?? "",
   }));
@@ -106,6 +115,7 @@ export function ProjectReviewExportPage({
     collectReportData(projectId, projectKey, slots, needsNames, (done, total) => {
       if (isCurrent) setProgress({ done, total });
     })
+      .then((data) => withSuggestions(projectId, projectKey, data))
       .then((data) => {
         if (isCurrent) setLoaded({ key, data });
       })
@@ -348,6 +358,7 @@ export function ProjectReviewExportPage({
                   ["includeAlerts", "Continuidade a reler", true],
                   ["includeStyle", isWord ? "Ocorrências da folha de estilo, como comentários" : "Resumo da folha de estilo", true],
                   ["includeExceptions", "Exceções intencionais, com justificativa", true],
+                  ["includeSuggestions", isWord ? "Sugestões de edição abertas, como alterações controladas" : "Sugestões de edição abertas", true],
                 ] as const
               )
                 .filter(([, , available]) => available)

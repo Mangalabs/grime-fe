@@ -49,6 +49,20 @@ export const google = {
   listSuggestions: (projectId: string) =>
     request<{ sections: GoogleDocSuggestionSection[] }>(`/api/v1/projects/${projectId}/google-doc/suggestions`),
 
+  // The reviewer's edits of one scene, made native suggested edits in the doc.
+  createSuggestions: (
+    projectId: string,
+    suggestion: {
+      slotId: string
+      edits: Array<{ start: number; end: number; removed: string; inserted: string }>
+      author: { ciphertext: string; iv: string } | null
+    },
+  ) =>
+    request<{ created: number }>(`/api/v1/projects/${projectId}/google-doc/suggestions`, {
+      method: 'POST',
+      ...jsonBody(suggestion),
+    }),
+
   // Accepts or rejects them in the doc itself; the next sync brings the text.
   decideSuggestions: (projectId: string, decisions: SuggestionDecision[]) =>
     request<{ accepted: number; rejected: number }>(`/api/v1/projects/${projectId}/google-doc/suggestions/decide`, {

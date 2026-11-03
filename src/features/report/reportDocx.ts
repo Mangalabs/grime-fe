@@ -21,8 +21,19 @@ export async function renderReportDocx(
 ): Promise<{ blob: Blob; comments: number }> {
   // Loaded on demand: the library is only needed when someone exports to Word.
   const docx = await import('docx')
-  const { CommentRangeEnd, CommentRangeStart, CommentReference, Document, HeadingLevel, Packer, Paragraph, Tab, TextRun } =
-    docx
+  const {
+    CommentRangeEnd,
+    CommentRangeStart,
+    CommentReference,
+    DeletedTextRun,
+    Document,
+    HeadingLevel,
+    InsertedTextRun,
+    Packer,
+    Paragraph,
+    Tab,
+    TextRun,
+  } = docx
 
   const author = model.options.reviewer.trim() || 'Petricor'
   const initials =
@@ -34,6 +45,9 @@ export async function renderReportDocx(
       .toUpperCase() || 'P'
   const date = new Date()
   const comments: Array<{ id: number; author: string; initials: string; date: Date; children: DocxParagraph[] }> = []
+  // Tracked changes need their own ids, apart from the comments'.
+  let revision = 10_000
+  const revisionDate = date.toISOString()
 
   const addComment = (comment: Comment) => {
     const id = comments.length
@@ -59,6 +73,13 @@ export async function renderReportDocx(
       }),
     ]
   }
+
+  // Text a suggestion adds; a line break in it stays one inside the paragraph.
+  const insertedRuns = (text: string, author: string): ParagraphChild[] =>
+    text.split('\n').map(
+      (part, index) =>
+        new InsertedTextRun({ text: part, ...(index > 0 ? { break: 1 } : {}), id: revision++, author, date: revisionDate }),
+    )
 
   const reference = (id: number): ParagraphChild[] => [
     new CommentRangeEnd(id),
@@ -102,17 +123,39 @@ export async function renderReportDocx(
       markers[at.to.line].push({ at: at.to.at, kind: 'end', id })
     }
 
+    // Open suggestions as Word's own tracked changes: the passage a suggestion
+    // removes is a deletion, its new text an insertion right after, in the
+    // name of whoever suggested it. The author accepts or rejects them in Word.
+    const { deletions, insertions } = trackedChanges(lines, section.suggestions)
+
     lines.forEach((line, index) => {
       // At the same spot, earlier comments close before later ones open.
       const sorted = markers[index].sort((a, b) => a.at - b.at || (a.kind === b.kind ? 0 : a.kind === 'end' ? -1 : 1))
+      const cuts = [
+        ...new Set([
+          0,
+          line.text.length,
+          ...sorted.map((marker) => marker.at),
+          ...deletions[index].flatMap((cut) => [cut.from, cut.to]),
+          ...insertions[index].map((insertion) => insertion.at),
+        ]),
+      ].sort((a, b) => a - b)
       const children: ParagraphChild[] = []
-      let cursor = 0
-      for (const marker of sorted) {
-        if (marker.at > cursor) children.push(...textRuns(line.text.slice(cursor, marker.at)))
-        cursor = Math.max(cursor, marker.at)
-        children.push(...(marker.kind === 'start' ? [new CommentRangeStart(marker.id)] : reference(marker.id)))
-      }
-      if (cursor < line.text.length) children.push(...textRuns(line.text.slice(cursor)))
+      cuts.forEach((at, position) => {
+        // Comments ending here close, then text inserted here, then comments opening.
+        for (const marker of sorted) if (marker.at === at && marker.kind === 'end') children.push(...reference(marker.id))
+        for (const insertion of insertions[index]) if (insertion.at === at) children.push(...insertedRuns(insertion.text, insertion.author))
+        for (const marker of sorted) if (marker.at === at && marker.kind === 'start') children.push(new CommentRangeStart(marker.id))
+        const next = cuts[position + 1]
+        if (next === undefined || next <= at) return
+        const piece = line.text.slice(at, next)
+        const removed = deletions[index].find((cut) => cut.from <= at && next <= cut.to)
+        children.push(
+          ...(removed
+            ? [new DeletedTextRun({ text: piece, id: revision++, author: removed.author, date: revisionDate })]
+            : textRuns(piece)),
+        )
+      })
       body.push(new Paragraph({ children }))
     })
   }
@@ -185,6 +228,32 @@ function itemComment(item: ReportItem): Comment {
 }
 
 type Line = { text: string; start: number }
+
+// What each suggestion removes from each line, and where its new text goes.
+function trackedChanges(lines: Line[], suggestions: SceneSection['suggestions']) {
+  const deletions = lines.map(() => [] as Array<{ from: number; to: number; author: string }>)
+  const insertions = lines.map(() => [] as Array<{ at: number; text: string; author: string }>)
+  for (const suggestion of suggestions) {
+    const author = suggestion.author ?? 'Google Docs'
+    lines.forEach((line, index) => {
+      const from = Math.max(suggestion.start, line.start) - line.start
+      const to = Math.min(suggestion.end, line.start + line.text.length) - line.start
+      if (to > from) deletions[index].push({ from, to, author })
+    })
+    if (!suggestion.inserted) continue
+    // In the line where the removed passage ends (or would be), else the
+    // nearest line before it: text between paragraphs has no line.
+    let line = lines.findIndex((candidate) => candidate.start <= suggestion.end && suggestion.end <= candidate.start + candidate.text.length)
+    let at = line >= 0 ? suggestion.end - lines[line].start : 0
+    if (line < 0) {
+      line = lines.findLastIndex((candidate) => candidate.start + candidate.text.length < suggestion.end)
+      at = line >= 0 ? lines[line].text.length : 0
+      line = Math.max(line, 0)
+    }
+    if (lines[line]) insertions[line].push({ at, text: suggestion.inserted, author })
+  }
+  return { deletions, insertions }
+}
 
 // One Word paragraph per line of the scene; blank lines only separate them.
 function paragraphsOf(text: string): Line[] {
