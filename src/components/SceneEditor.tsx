@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { countWords, formatWords } from "../features/usage/usage";
 import {
   focusModes,
@@ -121,8 +121,11 @@ interface SceneEditorProps {
   onUnanchoredChange: (isUnanchored: boolean) => void;
   onSave: () => void;
   onEdit: () => void;
-  // Opens "Sugerir alterações" for this scene; absent when it can't be used.
+  // Suggesting mode: starting it (absent when it can't be used), and while it
+  // is on, the surface shown in place of the text.
   onSuggest?: () => void;
+  suggestSurface?: ReactNode;
+  onStopSuggesting?: () => void;
   onCancelEdit: () => void;
   onRename: () => void;
   onDelete: () => void;
@@ -278,6 +281,8 @@ export function SceneEditor({
   onSave,
   onEdit,
   onSuggest,
+  suggestSurface,
+  onStopSuggesting,
   onCancelEdit,
   onRename,
   onDelete,
@@ -696,33 +701,39 @@ export function SceneEditor({
         </div>
         {isLocked && !isSubmitting && !isSplitting && (
           <div className="scene-header-actions">
+            {/* How the text is open: to read, to suggest changes, or to edit it. */}
+            <div className="scene-modes" role="group" aria-label="Modo da cena">
+              <button
+                aria-pressed={!suggestSurface}
+                type="button"
+                onClick={() => suggestSurface && onStopSuggesting?.()}
+              >
+                Ler
+              </button>
+              {onSuggest && (
+                <button
+                  aria-pressed={Boolean(suggestSurface)}
+                  title="Escreva no texto: cada mudança vira uma sugestão para o autor aceitar ou recusar"
+                  type="button"
+                  onClick={() => !suggestSurface && onSuggest()}
+                >
+                  Sugerir
+                </button>
+              )}
+              <button disabled={Boolean(suggestSurface)} title={suggestSurface ? "Termine ou descarte as sugestões antes" : undefined} type="button" onClick={onEdit}>
+                Editar
+              </button>
+            </div>
             {onToggleReadingMode && (
               <button
                 aria-keyshortcuts="L"
                 aria-pressed={isReadingMode}
-                className="button button-secondary"
+                className="text-button"
                 title={isReadingMode ? "Voltar ao editor completo (Esc)" : "Só o texto, sem timeline nem diagnósticos (L)"}
                 type="button"
                 onClick={onToggleReadingMode}
               >
                 {isReadingMode ? "Sair da leitura" : "Modo leitura"}
-              </button>
-            )}
-            <button
-              className="button button-secondary"
-              type="button"
-              onClick={onEdit}
-            >
-              Editar cena
-            </button>
-            {onSuggest && (
-              <button
-                className="button button-secondary"
-                title="Cada mudança vira uma sugestão para o autor aceitar ou recusar"
-                type="button"
-                onClick={onSuggest}
-              >
-                Sugerir alterações
               </button>
             )}
             <div className="scene-menu" ref={menuRef}>
@@ -874,6 +885,8 @@ export function SceneEditor({
             )}
           </div>
         </div>
+      ) : isLocked && suggestSurface ? (
+        suggestSurface
       ) : isLocked ? (
         <div className="scene-reading-frame" ref={readingFrameRef}>
         <div

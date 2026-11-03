@@ -77,7 +77,7 @@ import { useActiveTime } from "./features/time/useActiveTime";
 import { saveVersion } from "./features/versions/versions";
 import { VersionsPage } from "./components/versions/VersionsPage";
 import { SuggestionsPage } from "./components/suggestions/SuggestionsPage";
-import { SuggestEditor } from "./components/suggestions/SuggestEditor";
+import { SuggestSurface } from "./components/suggestions/SuggestSurface";
 import { loadSceneDrafts } from "./features/manuscript/loadSceneTexts";
 import { BoardPage } from "./components/board/BoardPage";
 import { PipelinePage } from "./components/pipeline/PipelinePage";
@@ -205,9 +205,11 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
     { groupId: string | null } | null
   >(null);
   const [isMergeOpen, setIsMergeOpen] = useState(false);
-  // "Sugerir alterações": the open scene's text, read fresh when it opened.
+  // Suggesting mode: the open scene's text, read fresh when it started, and
+  // how many changes wait to be sent (leaving asks first).
   const [suggestFor, setSuggestFor] = useState<{ slotId: string; title: string; text: string } | null>(null);
   const [isOpeningSuggest, setIsOpeningSuggest] = useState(false);
+  const suggestPendingRef = useRef(0);
   const dismissToast = useCallback(() => setToast(null), []);
   // Timeline writes run one at a time; the list is reloaded only once the
   // queue is empty, so a reload never overwrites a move still on its way.
@@ -404,8 +406,8 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
 
   function confirmDiscard(): boolean {
     return (
-      !isDirty ||
-      window.confirm("Descartar as alterações não salvas desta cena?")
+      (!isDirty || window.confirm("Descartar as alterações não salvas desta cena?")) &&
+      (suggestPendingRef.current === 0 || window.confirm("Descartar as sugestões ainda não enviadas?"))
     );
   }
 
@@ -648,6 +650,12 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
     } finally {
       setIsOpeningSuggest(false);
     }
+  }
+
+  function stopSuggesting() {
+    if (suggestPendingRef.current > 0 && !window.confirm("Descartar as sugestões ainda não enviadas?")) return;
+    suggestPendingRef.current = 0;
+    setSuggestFor(null);
   }
 
   // Accepted suggestions changed these scenes' text (projects without a doc).
@@ -1971,6 +1979,33 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
                     nextSceneTitle={mergeTarget ? titleOf(mergeTarget) : null}
                     onRequestMerge={() => setIsMergeOpen(true)}
                     onSuggest={projectKey && selectedSlot ? () => void openSuggest() : undefined}
+                    onStopSuggesting={stopSuggesting}
+                    suggestSurface={
+                      suggestFor && suggestFor.slotId === context.slotId && projectKey && context.projectId ? (
+                        <SuggestSurface
+                          isLinked={isDocLinked}
+                          key={suggestFor.slotId}
+                          projectId={context.projectId}
+                          projectKey={projectKey}
+                          slotId={suggestFor.slotId}
+                          text={suggestFor.text}
+                          onPendingChange={(count) => {
+                            suggestPendingRef.current = count;
+                          }}
+                          onDone={(sent) => {
+                            suggestPendingRef.current = 0;
+                            setSuggestFor(null);
+                            if (sent === 0) return;
+                            setToast({
+                              kind: "action",
+                              message: `${sent === 1 ? "1 sugestão enviada" : `${sent} sugestões enviadas`}${isDocLinked ? " ao Google Docs" : ""}.`,
+                              actionLabel: "Ver sugestões",
+                              onAction: () => goTo("suggestions"),
+                            });
+                          }}
+                        />
+                      ) : undefined
+                    }
                     onShortcutUnavailable={(message) => setToast({ kind: "undone", message })}
                     onSplit={splitScene}
                   />
@@ -2204,24 +2239,6 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
           onUpdate={async (groupId, patch) => {
             await api.updateGroup(groupId, patch);
             await reloadGroups();
-          }}
-        />
-      )}
-      {suggestFor && projectKey && context.projectId && (
-        <SuggestEditor
-          isLinked={isDocLinked}
-          projectId={context.projectId}
-          projectKey={projectKey}
-          sceneTitle={suggestFor.title}
-          slotId={suggestFor.slotId}
-          text={suggestFor.text}
-          onClose={() => setSuggestFor(null)}
-          onSent={(count) => {
-            setSuggestFor(null);
-            setToast({
-              kind: "undone",
-              message: `${count === 1 ? "1 sugestão enviada" : `${count} sugestões enviadas`}${isDocLinked ? " ao Google Docs" : ""}. Veja em Sugestões.`,
-            });
           }}
         />
       )}
