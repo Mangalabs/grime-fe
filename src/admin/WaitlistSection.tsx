@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { admin } from "../api/client";
 import type { AdminWaitlistEntry } from "../api/contracts";
-import { formatDate, useAdminData } from "./adminData";
-import { InviteCodeActions, StatusChip } from "./AdminParts";
+import { byStatus, formatDate, useAdminData } from "./adminData";
+import { FilterTabs, InviteCodeActions, StatusChip } from "./AdminParts";
 
 type Filter = "WAITING" | "INVITED" | "REGISTERED" | "ALL";
 
@@ -29,10 +29,8 @@ export function WaitlistSection() {
   // Just invited: stays in view with its code until the filter changes.
   const [justInvited, setJustInvited] = useState<Set<string>>(() => new Set());
 
-  const entries = (data ?? []).filter(
-    (entry) => filter === "ALL" || entry.status === filter || justInvited.has(entry.id),
-  );
-  const countOf = (id: Filter) => (data ?? []).filter((entry) => id === "ALL" || entry.status === id).length;
+  // Just-invited entries stay in view until the tab changes.
+  const entries = (data ?? []).filter((entry) => byStatus(filter)(entry) || justInvited.has(entry.id));
 
   async function invite(entry: AdminWaitlistEntry) {
     setBusyId(entry.id);
@@ -77,22 +75,16 @@ export function WaitlistSection() {
         </p>
       </header>
 
-      <div className="admin-filters" role="tablist" aria-label="Filtrar lista de espera">
-        {filters.map((option) => (
-          <button
-            aria-selected={filter === option.id}
-            key={option.id}
-            role="tab"
-            type="button"
-            onClick={() => {
-              setFilter(option.id);
-              setJustInvited(new Set());
-            }}
-          >
-            {option.label} <span>{countOf(option.id)}</span>
-          </button>
-        ))}
-      </div>
+      <FilterTabs
+        filters={filters}
+        items={data ?? []}
+        label="Filtrar lista de espera"
+        value={filter}
+        onChange={(next) => {
+          setFilter(next);
+          setJustInvited(new Set());
+        }}
+      />
 
       {error && <p className="form-message">{error}</p>}
       {data && entries.length === 0 && <p className="empty-state">Ninguém por aqui.</p>}

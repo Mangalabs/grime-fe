@@ -5,6 +5,21 @@ import { CHARS_PER_LAUDA, costItems, unitLabels, type CostUnit } from './tables'
 const money = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const number = (value: number) => value.toLocaleString('pt-BR')
 
+// A cost line's price in reais; an empty or invalid field counts as zero.
+function PriceInput({ name, value, onChange }: { name: string; value: number; onChange: (price: number) => void }) {
+  return (
+    <input
+      aria-label={`Preço de ${name}`}
+      className="pd-price"
+      min="0"
+      step="0.5"
+      type="number"
+      value={value}
+      onChange={(event) => onChange(Number(event.target.value) || 0)}
+    />
+  )
+}
+
 const levelLabels: Record<PriceLevel, string> = { min: 'Mínimo', medio: 'Médio', max: 'Máximo' }
 
 type Update = (change: (current: ProductionPlan) => ProductionPlan) => void
@@ -118,15 +133,7 @@ export function CostSection({ stats, estimate, plan, update }: { stats: TextStat
                   </th>
                   <td>{quantityLabel(item.unit)}</td>
                   <td>
-                    <input
-                      aria-label={`Preço de ${item.name}`}
-                      className="pd-price"
-                      min="0"
-                      step="0.5"
-                      type="number"
-                      value={line.price}
-                      onChange={(event) => setLine(item.id, { price: Number(event.target.value) || 0 })}
-                    />
+                    <PriceInput name={item.name} value={line.price} onChange={(price) => setLine(item.id, { price })} />
                   </td>
                   <td>{money(subtotal)}</td>
                 </tr>
@@ -155,15 +162,7 @@ export function CostSection({ stats, estimate, plan, update }: { stats: TextStat
                   </th>
                   <td>{quantityLabel(extra.unit)}</td>
                   <td>
-                    <input
-                      aria-label={`Preço de ${extra.name || 'item'}`}
-                      className="pd-price"
-                      min="0"
-                      step="0.5"
-                      type="number"
-                      value={extra.price}
-                      onChange={(event) => setExtra(extra.id, { price: Number(event.target.value) || 0 })}
-                    />
+                    <PriceInput name={extra.name || 'item'} value={extra.price} onChange={(price) => setExtra(extra.id, { price })} />
                   </td>
                   <td>{money(subtotal)}</td>
                 </tr>

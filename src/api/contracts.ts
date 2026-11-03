@@ -549,6 +549,32 @@ export interface GoogleDocSync {
   sectionMap: GoogleDocSectionLink[]
 }
 
+// A suggested edit open in the linked doc, placed in its scene's text.
+export interface GoogleDocSuggestion {
+  // Google's id: what accepting or rejecting acts on.
+  id: string
+  // The passage it would remove, [start, end); start === end when it only adds.
+  start: number
+  end: number
+  // What it would add at `start`.
+  inserted: string
+}
+
+export interface GoogleDocSuggestionSection {
+  key: string
+  title: string
+  // The scene the heading filled at the last sync; null for a heading not synced yet.
+  slotId: string | null
+  // The scene's text in the doc, without any suggestion.
+  text: string
+  suggestions: GoogleDocSuggestion[]
+}
+
+export interface SuggestionDecision {
+  suggestionId: string
+  accept: boolean
+}
+
 // The identity kit as the model drafts it (see the marketing workspace).
 export type QuoteUse = 'TAGLINE' | 'ATMOSPHERE' | 'VOICE' | 'ARTIFACT'
 

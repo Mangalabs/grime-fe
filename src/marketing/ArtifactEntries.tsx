@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { entryLabels, newEntry, type Artifact, type ArtifactEntry } from './identityModel'
 import { EntitySelect, Field } from './identityParts'
-import { spoilerLevelLabels, spoilerLevels, type SpoilerLevel } from './marketingKit'
 import { timeline, type StoryData } from './worldPack'
+import { LevelSelect } from './LevelPicker'
 
 /**
  * What the visitor reads inside an object: the diary's pages, the chat's
@@ -61,11 +61,7 @@ export function ArtifactEntries({
                 </label>
                 <label className="mk-field">
                   <span className="mk-label">Nível</span>
-                  <select value={entry.level} onChange={(event) => update(entry.id, { level: event.target.value as SpoilerLevel })}>
-                    {spoilerLevels.map((level) => (
-                      <option key={level} value={level}>{spoilerLevelLabels[level]}</option>
-                    ))}
-                  </select>
+                  <LevelSelect value={entry.level} onChange={(level) => update(entry.id, { level })} />
                 </label>
               </div>
               <Mentions entry={entry} story={story} onChange={(entityIds) => update(entry.id, { entityIds })} />

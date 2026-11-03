@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
 import './Modal.css'
 import './MoveHistory.css'
 import type { Slot, TimelineMove } from '../api/contracts'
 import { sceneTitle } from '../features/scenes/sceneStatus'
 import { describeMove, formatRelative } from '../features/scenes/timelineMoves'
+import { useCloseOnEscape } from '../features/useCloseOnEscape'
 
 interface MoveHistoryProps {
   moves: TimelineMove[]
@@ -22,13 +22,7 @@ export function MoveHistory({
   onSelectSlot,
   onClose,
 }: MoveHistoryProps) {
-  useEffect(() => {
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', closeOnEscape)
-    return () => document.removeEventListener('keydown', closeOnEscape)
-  }, [onClose])
+  useCloseOnEscape(onClose)
 
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>

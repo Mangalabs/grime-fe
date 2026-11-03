@@ -37,3 +37,9 @@ export function useAdminData<T>(load: () => Promise<T>) {
 
   return { data, setData, error, setError, reload };
 }
+
+/** For a list's status tabs: whether an item belongs under `filter`. */
+export const byStatus =
+  <Status extends string>(filter: Status | "ALL") =>
+  (item: { status: Status }) =>
+    filter === "ALL" || item.status === filter;

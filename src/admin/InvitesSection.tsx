@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { admin } from "../api/client";
 import type { AdminInvite, InviteStatus } from "../api/contracts";
-import { formatDate, inviteStatusLabels, useAdminData } from "./adminData";
-import { InviteCodeActions, StatusChip } from "./AdminParts";
+import { byStatus, formatDate, inviteStatusLabels, useAdminData } from "./adminData";
+import { FilterTabs, InviteCodeActions, StatusChip } from "./AdminParts";
 
 type Filter = InviteStatus | "ALL";
 
@@ -30,8 +30,7 @@ export function InvitesSection() {
   const [created, setCreated] = useState<AdminInvite | null>(null);
   const [confirmingRevoke, setConfirmingRevoke] = useState<string | null>(null);
 
-  const invites = (data ?? []).filter((invite) => filter === "ALL" || invite.status === filter);
-  const countOf = (id: Filter) => (data ?? []).filter((invite) => id === "ALL" || invite.status === id).length;
+  const invites = (data ?? []).filter(byStatus(filter));
 
   async function create(event: FormEvent) {
     event.preventDefault();
@@ -109,19 +108,7 @@ export function InvitesSection() {
         )}
       </form>
 
-      <div className="admin-filters" role="tablist" aria-label="Filtrar convites">
-        {filters.map((option) => (
-          <button
-            aria-selected={filter === option.id}
-            key={option.id}
-            role="tab"
-            type="button"
-            onClick={() => setFilter(option.id)}
-          >
-            {option.label} <span>{countOf(option.id)}</span>
-          </button>
-        ))}
-      </div>
+      <FilterTabs filters={filters} items={data ?? []} label="Filtrar convites" value={filter} onChange={setFilter} />
 
       {error && <p className="form-message">{error}</p>}
       {data && invites.length === 0 && <p className="empty-state">Nenhum convite aqui.</p>}

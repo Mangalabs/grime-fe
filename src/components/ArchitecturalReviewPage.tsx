@@ -21,10 +21,9 @@ import {
   severityLabels,
   timelineDrift,
 } from "../features/architect/architect";
-import { groupRuns } from "../features/scenes/groups";
+import { groupBands } from "../features/scenes/groups";
 import { orderScenes, sceneTitle } from "../features/scenes/sceneStatus";
 import { ArchitectMap, type MapFinding } from "./ArchitectMap";
-import type { StripBand } from "./SceneStrip";
 import "./SceneStrip.css";
 import "./ArchitecturalReviewPage.css";
 
@@ -163,20 +162,7 @@ export function ArchitecturalReviewPage({
   const drift = report ? timelineDrift(report, slots) : null;
   const hasReferences = findings.some(({ cited }) => cited.length > 0);
 
-  const groupById = new Map(groups.map((group) => [group.id, group]));
-  const bands: StripBand[] = groupRuns(scenes)
-    .filter((run) => groupById.has(run.groupId))
-    .map((run) => {
-      const group = groupById.get(run.groupId)!;
-      return {
-        key: group.id,
-        start: run.start,
-        length: run.length,
-        label: group.name,
-        colorClass: `group-${group.color}`,
-        title: group.name,
-      };
-    });
+  const bands = groupBands(scenes, groups);
 
   function selectFinding(key: string) {
     setActiveKey(key);

@@ -8,8 +8,20 @@ import { onSessionExpired, refreshSession } from './session'
 import { forgetAllProjectKeys, setProjectKeyOwner } from '../crypto/projectKeyCache'
 import './AuthPage.css'
 
-const MarketingApp = lazy(() => import('../marketing/MarketingApp'))
-const ProductionApp = lazy(() => import('../production/ProductionApp'))
+const publishingWorkspaces = [
+  {
+    path: '/marketing',
+    name: 'Marketing',
+    App: lazy(() => import('../marketing/MarketingApp')),
+    forbidden: 'O marketing não está liberado para a sua conta. Peça a um admin.',
+  },
+  {
+    path: '/producao',
+    name: 'Produção',
+    App: lazy(() => import('../production/ProductionApp')),
+    forbidden: 'A produção não está liberada para a sua conta. Peça a um admin.',
+  },
+]
 
 type GateState =
   | { status: 'restoring' }
@@ -61,26 +73,18 @@ export function AuthGate() {
     )
   }
 
-  // Marketing has its own shell; its code loads only when it is opened.
-  if (isPath('/marketing')) {
+  // Marketing and production (format, pages, costs) are the publishing side
+  // of the house, for the same accounts. Each has its own shell, whose code
+  // loads only when it is opened.
+  const publishing = publishingWorkspaces.find((workspace) => isPath(workspace.path))
+  if (publishing) {
+    const Workspace = publishing.App
     return state.user.marketingEnabled ? (
       <Suspense fallback={<div className="auth-loading" role="status">Carregando…</div>}>
-        <MarketingApp key={state.user.id} user={state.user} onLogout={() => void logout()} />
+        <Workspace key={state.user.id} user={state.user} onLogout={() => void logout()} />
       </Suspense>
     ) : (
-      <AdminForbidden eyebrow="Marketing" message="O marketing não está liberado para a sua conta. Peça a um admin." />
-    )
-  }
-
-  // Production (format, pages, costs) is for the same accounts as marketing:
-  // both are the publishing side of the house.
-  if (isPath('/producao')) {
-    return state.user.marketingEnabled ? (
-      <Suspense fallback={<div className="auth-loading" role="status">Carregando…</div>}>
-        <ProductionApp key={state.user.id} user={state.user} onLogout={() => void logout()} />
-      </Suspense>
-    ) : (
-      <AdminForbidden eyebrow="Produção" message="A produção não está liberada para a sua conta. Peça a um admin." />
+      <AdminForbidden eyebrow={publishing.name} message={publishing.forbidden} />
     )
   }
 

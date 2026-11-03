@@ -1,6 +1,6 @@
 import type { Note } from '../notes/notes'
 import { locateQuote } from '../scenes/quotes'
-import { diffSequences, diffStats, diffText, setSimilarity, shingleSet, type ParagraphDiff } from './diff'
+import { countWords, diffSequences, diffStats, diffText, setSimilarity, shingleSet, type ParagraphDiff } from './diff'
 import type { VersionScene } from './versions'
 
 /** One scene of a comparison between two versions of the manuscript. */
@@ -16,7 +16,6 @@ export interface SceneChange {
   share: number
 }
 
-const words = (text: string) => text.match(/\S+/g)?.length ?? 0
 // Line endings and trailing spaces aren't a change anyone made.
 const settled = (text: string) => text.replace(/\r\n?/g, '\n').replace(/[^\S\n]+$/gm, '').trim()
 
@@ -36,7 +35,7 @@ export function compareScenes(before: VersionScene[], after: VersionScene[]): Sc
         continue
       }
       if (changes.some((change) => change.slotId === scene.slotId)) continue
-      const total = words(scene.content)
+      const total = countWords(scene.content)
       changes.push({ ...scene, status: 'removed', before: scene.content, after: '', added: 0, removed: total, share: 1 })
     }
   }
@@ -45,7 +44,7 @@ export function compareScenes(before: VersionScene[], after: VersionScene[]): Sc
     removedBefore(scene.slotId)
     const previous = old.get(scene.slotId)
     if (!previous) {
-      const total = words(scene.content)
+      const total = countWords(scene.content)
       changes.push({ ...scene, status: 'added', before: '', after: scene.content, added: total, removed: 0, share: 1 })
       continue
     }
@@ -54,7 +53,7 @@ export function compareScenes(before: VersionScene[], after: VersionScene[]): Sc
       continue
     }
     const { added, removed } = diffStats(diffText(previous.content, scene.content))
-    const share = Math.min(1, (added + removed) / Math.max(words(previous.content) + words(scene.content), 1))
+    const share = Math.min(1, (added + removed) / Math.max(countWords(previous.content) + countWords(scene.content), 1))
     changes.push({ ...scene, status: 'changed', before: previous.content, after: scene.content, added, removed, share })
   }
   removedBefore(null)

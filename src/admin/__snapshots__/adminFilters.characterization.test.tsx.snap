@@ -1,0 +1,41 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`invites tabs (characterization) > counts each status and filters the rows > all 1`] = `
+{
+  "rows": [
+    "AAAQualquer e-mailDisponível30 de set. de 2026Copiar códigoCopiar linkRevogar",
+    "BBBb@x.comUsadopor Bia · 2 de out. de 20261 de out. de 2026",
+    "CCCxQualquer e-mailDisponível3 de out. de 2026Copiar códigoCopiar linkRevogar",
+  ],
+  "tabs": "<div class="admin-filters" role="tablist" aria-label="Filtrar convites"><button aria-selected="false" role="tab" type="button">Disponíveis <span>2</span></button><button aria-selected="false" role="tab" type="button">Usados <span>1</span></button><button aria-selected="false" role="tab" type="button">Revogados <span>0</span></button><button aria-selected="true" role="tab" type="button">Todos <span>3</span></button></div>",
+}
+`;
+
+exports[`invites tabs (characterization) > counts each status and filters the rows > first tab 1`] = `
+{
+  "rows": [
+    "AAAQualquer e-mailDisponível30 de set. de 2026Copiar códigoCopiar linkRevogar",
+    "CCCxQualquer e-mailDisponível3 de out. de 2026Copiar códigoCopiar linkRevogar",
+  ],
+  "tabs": "<div class="admin-filters" role="tablist" aria-label="Filtrar convites"><button aria-selected="true" role="tab" type="button">Disponíveis <span>2</span></button><button aria-selected="false" role="tab" type="button">Usados <span>1</span></button><button aria-selected="false" role="tab" type="button">Revogados <span>0</span></button><button aria-selected="false" role="tab" type="button">Todos <span>3</span></button></div>",
+}
+`;
+
+exports[`waitlist tabs (characterization) > counts each status and filters the rows > all 1`] = `
+{
+  "rows": [
+    "Anaa@x.comAguardandoEntrou em 30 de set. de 2026ConvidarRemover",
+    "Caioc@x.comConvidado“oi”Entrou em 1 de out. de 2026DDDCopiar códigoCopiar linkRemover",
+  ],
+  "tabs": "<div class="admin-filters" role="tablist" aria-label="Filtrar lista de espera"><button aria-selected="false" role="tab" type="button">Aguardando <span>1</span></button><button aria-selected="false" role="tab" type="button">Convidados <span>1</span></button><button aria-selected="false" role="tab" type="button">Cadastrados <span>0</span></button><button aria-selected="true" role="tab" type="button">Todos <span>2</span></button></div>",
+}
+`;
+
+exports[`waitlist tabs (characterization) > counts each status and filters the rows > first tab 1`] = `
+{
+  "rows": [
+    "Anaa@x.comAguardandoEntrou em 30 de set. de 2026ConvidarRemover",
+  ],
+  "tabs": "<div class="admin-filters" role="tablist" aria-label="Filtrar lista de espera"><button aria-selected="true" role="tab" type="button">Aguardando <span>1</span></button><button aria-selected="false" role="tab" type="button">Convidados <span>1</span></button><button aria-selected="false" role="tab" type="button">Cadastrados <span>0</span></button><button aria-selected="false" role="tab" type="button">Todos <span>2</span></button></div>",
+}
+`;

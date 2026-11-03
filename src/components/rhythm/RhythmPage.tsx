@@ -13,9 +13,8 @@ import {
   rangeLabel,
   similarOpenings,
 } from '../../features/rhythm/metrics'
-import { groupRuns } from '../../features/scenes/groups'
+import { groupBands, groupRuns } from '../../features/scenes/groups'
 import { orderScenes, sceneTitle } from '../../features/scenes/sceneStatus'
-import type { StripBand } from '../SceneStrip'
 import '../SceneStrip.css'
 import './RhythmPage.css'
 import { RhythmChart } from './RhythmChart'
@@ -137,19 +136,7 @@ export function RhythmPage({ projectId, projectKey, slots, groups, onOpenScene, 
 
   const runs = groupRuns(scenes)
   const groupById = new Map(groups.map((group) => [group.id, group]))
-  const bands: StripBand[] = runs
-    .filter((run) => groupById.has(run.groupId))
-    .map((run) => {
-      const group = groupById.get(run.groupId)!
-      return {
-        key: group.id,
-        start: run.start,
-        length: run.length,
-        label: group.name,
-        colorClass: `group-${group.color}`,
-        title: group.name,
-      }
-    })
+  const bands = groupBands(scenes, groups)
 
   if (!projectKey) {
     return (

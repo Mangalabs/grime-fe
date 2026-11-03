@@ -1,25 +1,11 @@
 import { ApiError, api } from "../../api/client";
 import type { ArchitectReview, Slot } from "../../api/contracts";
 import { decryptSceneDraft } from "../../crypto/projectEncryption";
+import { mapWithConcurrency } from "../manuscript/concurrency";
 import { orderScenes } from "../scenes/sceneStatus";
 import type { ReportData, SceneData } from "./reportModel";
 
 export type CollectedReport = Omit<ReportData, "notes" | "groups" | "styleSheet">;
-
-async function mapLimit<T, R>(items: T[], limit: number, run: (item: T) => Promise<R>, onDone: () => void) {
-  const results = new Array<R>(items.length);
-  let next = 0;
-  async function worker() {
-    while (next < items.length) {
-      const index = next;
-      next += 1;
-      results[index] = await run(items[index]);
-      onDone();
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
-  return results;
-}
 
 /** Everything the report can use, decrypted here. Nothing leaves the browser. */
 export async function collectReportData(
@@ -43,7 +29,7 @@ export async function collectReportData(
     api.listProjects(),
     reviews,
     needsNames ? api.listProjectEntities(projectId).catch(() => []) : Promise.resolve([]),
-    mapLimit(
+    mapWithConcurrency(
       ordered,
       6,
       async (slot): Promise<SceneData> => {

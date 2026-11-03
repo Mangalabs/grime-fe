@@ -10,6 +10,19 @@ export function LevelChip({ level }: { level: SpoilerLevel }) {
   return <span className={`mk-level-chip is-${level.toLowerCase()}`}>{spoilerLevelLabels[level]}</span>
 }
 
+/** A plain choice of level, for items that always carry their own. */
+export function LevelSelect({ value, onChange }: { value: SpoilerLevel; onChange: (level: SpoilerLevel) => void }) {
+  return (
+    <select value={value} onChange={(event) => onChange(event.target.value as SpoilerLevel)}>
+      {spoilerLevels.map((level) => (
+        <option key={level} value={level}>
+          {spoilerLevelLabels[level]}
+        </option>
+      ))}
+    </select>
+  )
+}
+
 /**
  * Three-way choice of level. Shows whether it follows the default or was
  * chosen; a chosen level can go back to the default.

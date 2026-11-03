@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { entityTypeLabel } from '../features/archive/entityModel'
 import { ArtifactEntries } from './ArtifactEntries'
 import { DraftCard, type DraftState } from './DraftCard'
-import { cutPosition, spoilerLevelLabels, spoilerLevels, type MarketingKit, type SpoilerLevel } from './marketingKit'
+import { cutPosition, type MarketingKit } from './marketingKit'
 import {
   applyPreset,
   artifactKindLabels,
@@ -42,6 +42,7 @@ import { extractColors } from './images'
 import { StyleTile } from './StyleTile'
 import type { MoodboardImages } from './useMoodboardImages'
 import { slotPositions, timeline, type StoryData } from './worldPack'
+import { LevelSelect } from './LevelPicker'
 import './Identity.css'
 
 const allFonts = fontGroups.flatMap((group) => group.fonts)
@@ -434,11 +435,7 @@ function ArtifactsCard({ identity, story, onChange }: { identity: IdentityKit; s
           <div className="mk-row-foot">
             <label className="mk-field mk-inline">
               <span className="mk-label">Nível</span>
-              <select value={artifact.level} onChange={(event) => update(artifact.id, { level: event.target.value as SpoilerLevel })}>
-                {spoilerLevels.map((level) => (
-                  <option key={level} value={level}>{spoilerLevelLabels[level]}</option>
-                ))}
-              </select>
+              <LevelSelect value={artifact.level} onChange={(level) => update(artifact.id, { level })} />
             </label>
             {artifact.entityId && (
               <span className="admin-muted">

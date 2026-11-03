@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import './Timeline.css'
 import type { SceneGroup, Slot } from '../api/contracts'
-import { groupRuns } from '../features/scenes/groups'
+import { groupBands } from '../features/scenes/groups'
 import {
   orderScenes,
   sceneState,
@@ -10,7 +10,7 @@ import {
   type SceneState,
 } from '../features/scenes/sceneStatus'
 import { HistoryIcon, SearchIcon } from './icons'
-import { SceneStrip, type StripBand } from './SceneStrip'
+import { SceneStrip } from './SceneStrip'
 
 interface TimelineProps {
   projectId: string
@@ -76,19 +76,11 @@ export function Timeline({
 
   const scenes = orderScenes(slots).filter((slot) => !slot.isUnanchored)
   const groupById = new Map(groups.map((group) => [group.id, group]))
-  const bands: StripBand[] = groupRuns(scenes)
-    .filter((run) => groupById.has(run.groupId))
-    .map((run) => {
-      const group = groupById.get(run.groupId)!
-      return {
-        key: group.id,
-        start: run.start,
-        length: run.length,
-        label: group.name,
-        colorClass: `group-${group.color}`,
-        title: `${group.name} · ${run.length === 1 ? `cena ${run.start + 1}` : `cenas ${run.start + 1}–${run.start + run.length}`}`,
-      }
-    })
+  const bands = groupBands(
+    scenes,
+    groups,
+    (group, run) => `${group.name} · ${run.length === 1 ? `cena ${run.start + 1}` : `cenas ${run.start + 1}–${run.start + run.length}`}`,
+  )
   const selectedIndex = scenes.findIndex((slot) => slot.id === selectedSlotId)
   const [from, to] = range
     ? [Math.min(range.anchor, range.end), Math.max(range.anchor, range.end)]

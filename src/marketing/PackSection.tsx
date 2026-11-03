@@ -4,6 +4,7 @@ import type { MarketingKit } from './marketingKit'
 import type { BookMetadataHandle } from './useBookMetadata'
 import type { MoodboardImages } from './useMoodboardImages'
 import { bookFile, buildWorldPack, moodboardFile, worldPackJsonSchema, type StoryData, type WorldPack } from './worldPack'
+import { foldText } from '../features/text/fold'
 
 // For whoever (or whatever AI) builds the site from the pack.
 const readme = `# Pacote do mundo (Petricor)
@@ -35,10 +36,7 @@ const download = (text: string, fileName: string) => downloadBlob(new Blob([text
 
 function slug(title: string) {
   return (
-    title
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .toLowerCase()
+    foldText(title)
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '') || 'projeto'
   )

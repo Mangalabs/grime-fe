@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import type { UsageSummary } from '../../api/contracts'
 import {
@@ -10,15 +9,10 @@ import {
 import '../Modal.css'
 import './Usage.css'
 import { UsageMeter } from './UsageMeter'
+import { useCloseOnEscape } from '../../features/useCloseOnEscape'
 
 export function UsageDialog({ usage, onClose }: { usage: UsageSummary; onClose: () => void }) {
-  useEffect(() => {
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', closeOnEscape)
-    return () => document.removeEventListener('keydown', closeOnEscape)
-  }, [onClose])
+  useCloseOnEscape(onClose)
 
   const largest = Math.max(1, ...usageFeatureOrder.map((feature) => usage.byFeature[feature]))
 

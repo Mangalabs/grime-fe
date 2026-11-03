@@ -9,6 +9,7 @@ import {
   templateGroups,
 } from '../features/scenes/groups'
 import { ArrowDownIcon, ArrowUpIcon, CloseIcon } from './icons'
+import { useCloseOnEscape } from '../features/useCloseOnEscape'
 
 interface GroupManagerProps {
   groups: SceneGroup[]
@@ -37,13 +38,7 @@ export function GroupManager({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const close = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', close)
-    return () => document.removeEventListener('keydown', close)
-  }, [onClose])
+  useCloseOnEscape(onClose)
 
   useEffect(() => {
     if (focusGroupId) {

@@ -1,4 +1,5 @@
 import type { Slot } from '../../api/contracts'
+import { foldText } from '../text/fold'
 
 // The single most urgent state of a scene, used for one-colour displays.
 export type SceneState =
@@ -85,11 +86,7 @@ export function sceneTitle(slot: Slot): string {
 
 // Case- and accent-insensitive form used for matching.
 export function normalizeForSearch(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLocaleLowerCase('pt-BR')
-    .trim()
+  return foldText(value).trim()
 }
 
 /**

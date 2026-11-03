@@ -157,6 +157,14 @@ export function SpellCheckIcon() {
   );
 }
 
+export function SuggestIcon() {
+  return (
+    <Icon>
+      <path d="M4 6h7M4 10h4M4 14h5M13 15l1.5-4.5L19 6l1.5 1.5L16 12z" />
+    </Icon>
+  );
+}
+
 export function VersionsIcon() {
   return (
     <Icon>

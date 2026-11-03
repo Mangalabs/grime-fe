@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import './Modal.css'
+import { useCloseOnEscape } from '../features/useCloseOnEscape'
 
 interface MergeDialogProps {
   title: string
@@ -14,13 +15,7 @@ export function MergeDialog({ title, nextTitle, onConfirm, onClose }: MergeDialo
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const close = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !busy) onClose()
-    }
-    document.addEventListener('keydown', close)
-    return () => document.removeEventListener('keydown', close)
-  }, [busy, onClose])
+  useCloseOnEscape(onClose, !busy)
 
   async function confirm() {
     if (!mergedTitle.trim()) return

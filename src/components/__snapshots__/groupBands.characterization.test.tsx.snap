@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`group bands (characterization) > on the architect map 1`] = `
+[
+  "<div class="overview-bands architect-map-track" style="--scene-count: 3;"><span class="overview-band group-amber" style="grid-column: 1 / span 2;" title="Ato I · cenas 1–2"><span>Ato I</span></span><span class="overview-band group-teal" style="grid-column: 3 / span 1;" title="Ato II"><span>Ato II</span></span></div>",
+]
+`;
+
+exports[`group bands (characterization) > on the rhythm chart 1`] = `
+[
+  "<div class="overview-bands rhythm-lane rhythm-lane-bands"><span class="overview-band group-amber" style="grid-column: 1 / span 2;" title="Ato I · cenas 1–2"><span>Ato I</span></span><span class="overview-band group-teal" style="grid-column: 3 / span 1;" title="Ato II"><span>Ato II</span></span></div>",
+]
+`;

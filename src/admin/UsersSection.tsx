@@ -9,6 +9,8 @@ const loadUsers = () => admin.users();
 export function UsersSection() {
   const { data, setData, error, setError } = useAdminData(loadUsers);
   const [query, setQuery] = useState("");
+  const replaceUser = (saved: AdminUser) =>
+    setData((current) => (current ?? []).map((item) => (item.id === saved.id ? saved : item)));
 
   const needle = query.trim().toLocaleLowerCase("pt-BR");
   const users = (data ?? []).filter(
@@ -67,18 +69,14 @@ export function UsersSection() {
                   <td>
                     <LimitEditor
                       user={user}
-                      onSaved={(saved) =>
-                        setData((current) => (current ?? []).map((item) => (item.id === saved.id ? saved : item)))
-                      }
+                      onSaved={replaceUser}
                       onError={setError}
                     />
                   </td>
                   <td>
                     <MarketingToggle
                       user={user}
-                      onSaved={(saved) =>
-                        setData((current) => (current ?? []).map((item) => (item.id === saved.id ? saved : item)))
-                      }
+                      onSaved={replaceUser}
                       onError={setError}
                     />
                   </td>

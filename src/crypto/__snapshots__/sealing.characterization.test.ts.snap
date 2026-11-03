@@ -1,0 +1,38 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`sealing (characterization) > seals a scene draft the same way 1`] = `
+{
+  "ciphertext": "PCC1dKuRp3X5Y62p5YwAGez0qxaXHjEOXUXfp1kbYd9gMoLeya5x7QfpEIntpRIaqRwuyAiX7/gTtVx8apCcgZ4e/EuuiMCt8/K+4M04wJmOcBriyw==",
+  "iv": "AAECAwQFBgcICQoL",
+}
+`;
+
+exports[`sealing (characterization) > seals a scene draft the same way 2`] = `
+{
+  "content": "Texto",
+  "focusMode": "GENERAL",
+  "genre": "Drama",
+  "version": 1,
+}
+`;
+
+exports[`sealing (characterization) > seals a version the same way, and opens it 1`] = `
+{
+  "ciphertext": "80464 chars",
+  "ciphertextHead": "GmFS1SwSFOxMoTeaLb3Gr/sdAFef4VVmGqVOMKXHkAEVx9m5TvX+kiESc2CCODheJ+W86hjjqeKLcXhbL7Mj+5kj9vYADqmP9O5bzUTF+WhCzkLXEWZBPY8B",
+  "ciphertextSha256": "f4d9bfc970b4ecef6c1c400dc999c1b0c927b0250b9f6dd57d1224265cbeac3d",
+  "iv": "AQIDBAUGBwgJCgsM",
+  "kind": "MANUAL",
+  "labelCiphertext": "BmyifrbFpnqtM/L92Jq7zuw6m6/a4UluD63JAoKZt9c+",
+  "labelIv": "AAECAwQFBgcICQoL",
+  "sceneCount": 2,
+  "wordCount": 30004,
+}
+`;
+
+exports[`sealing (characterization) > seals scene text the same way 1`] = `
+{
+  "ciphertext": "Am63O6aNp3ziNLdIEckbDPC3qRSxuPi/mwjEyTMVVJqKQihCVOS6rQNLIA==",
+  "iv": "AAECAwQFBgcICQoL",
+}
+`;

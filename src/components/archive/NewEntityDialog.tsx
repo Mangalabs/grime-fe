@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { factEntityTypes, type FactEntityType } from '../../api/contracts'
 import { entityTypeLabel } from '../../features/archive/entityModel'
 import '../Modal.css'
+import { useCloseOnEscape } from '../../features/useCloseOnEscape'
 
 interface NewEntityDialogProps {
   initialType: FactEntityType
@@ -17,13 +18,7 @@ export function NewEntityDialog({ initialType, onCreate, onClose }: NewEntityDia
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const close = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !busy) onClose()
-    }
-    document.addEventListener('keydown', close)
-    return () => document.removeEventListener('keydown', close)
-  }, [busy, onClose])
+  useCloseOnEscape(onClose, !busy)
 
   async function create() {
     if (!name.trim()) return

@@ -76,6 +76,7 @@ import { usePipeline } from "./features/pipeline/usePipeline";
 import { useActiveTime } from "./features/time/useActiveTime";
 import { saveVersion } from "./features/versions/versions";
 import { VersionsPage } from "./components/versions/VersionsPage";
+import { SuggestionsPage } from "./components/suggestions/SuggestionsPage";
 import { BoardPage } from "./components/board/BoardPage";
 import { PipelinePage } from "./components/pipeline/PipelinePage";
 import { LineBreakRepairModal } from "./components/LineBreakRepairModal";
@@ -116,6 +117,7 @@ import {
   SpellCheckIcon,
   MapIcon,
   BoardIcon,
+  SuggestIcon,
   VersionsIcon,
   SunIcon,
   TrashIcon,
@@ -128,6 +130,7 @@ type Page =
   | "board"
   | "pipeline"
   | "versions"
+  | "suggestions"
   | "review"
   | "archive"
   | "scene-map"
@@ -141,6 +144,7 @@ const pageLabels: Record<Page, string> = {
   board: "Quadro de projetos",
   pipeline: "Etapas do projeto",
   versions: "Versões",
+  suggestions: "Sugestões",
   review: "Editor e timeline",
   archive: "Arquivo",
   "style-sheet": "Folha de estilo",
@@ -1342,7 +1346,16 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
     },
     {
       label: "Escrever",
-      items: [{ page: "review", label: pageLabels.review, icon: <PenIcon /> }],
+      items: [
+        { page: "review", label: pageLabels.review, icon: <PenIcon /> },
+        {
+          page: "suggestions",
+          label: pageLabels.suggestions,
+          icon: <SuggestIcon />,
+          disabled: !hasOpenProject,
+          disabledReason: needsProject,
+        },
+      ],
     },
     {
       label: "Analisar",
@@ -1640,6 +1653,15 @@ function App({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
                 pageAfterUnlockRef.current = "pipeline";
                 setProjectToUnlock(projectId);
               }}
+            />
+          )}
+
+          {page === "suggestions" && context.projectId && (
+            <SuggestionsPage
+              googleDocs={googleDocs}
+              projectId={context.projectId}
+              projectTitle={currentProject?.title ?? ""}
+              slots={projectSlots}
             />
           )}
 

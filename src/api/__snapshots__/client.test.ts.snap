@@ -1,0 +1,1507 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`api client > admin.createInvite sends the same request 1`] = `
+[
+  {
+    "body": "arg0",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/admin/invites",
+  },
+]
+`;
+
+exports[`api client > admin.inviteFromWaitlist sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/admin/waitlist/arg0/invite",
+  },
+]
+`;
+
+exports[`api client > admin.invites sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/admin/invites",
+  },
+]
+`;
+
+exports[`api client > admin.models sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/admin/models",
+  },
+]
+`;
+
+exports[`api client > admin.overview sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/admin/overview",
+  },
+]
+`;
+
+exports[`api client > admin.removeWaitlistEntry sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/admin/waitlist/arg0",
+  },
+]
+`;
+
+exports[`api client > admin.revokeInvite sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/admin/invites/arg0/revoke",
+  },
+]
+`;
+
+exports[`api client > admin.setMarketing sends the same request 1`] = `
+[
+  {
+    "body": {
+      "marketingEnabled": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PATCH",
+    "url": "/api/v1/admin/users/arg0",
+  },
+]
+`;
+
+exports[`api client > admin.setModel sends the same request 1`] = `
+[
+  {
+    "body": {
+      "model": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PUT",
+    "url": "/api/v1/admin/models/arg0",
+  },
+]
+`;
+
+exports[`api client > admin.setWordLimit sends the same request 1`] = `
+[
+  {
+    "body": {
+      "monthlyWordLimit": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PATCH",
+    "url": "/api/v1/admin/users/arg0",
+  },
+]
+`;
+
+exports[`api client > admin.users sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/admin/users",
+  },
+]
+`;
+
+exports[`api client > admin.waitlist sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/admin/waitlist",
+  },
+]
+`;
+
+exports[`api client > api.acknowledgeAlert sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/slots/arg0/regression-alerts/arg1/acknowledge",
+  },
+]
+`;
+
+exports[`api client > api.approveFacts sends the same request 1`] = `
+[
+  {
+    "body": {
+      "facts": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/scenes/arg0/facts/approve",
+  },
+]
+`;
+
+exports[`api client > api.approvePendingFacts sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/facts/approve-pending",
+  },
+]
+`;
+
+exports[`api client > api.assignGroup sends the same request 1`] = `
+[
+  {
+    "body": {
+      "groupId": "arg2",
+      "slotIds": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/groups/assign",
+  },
+]
+`;
+
+exports[`api client > api.closeManuscriptImport sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/manuscript-imports/arg1/close",
+  },
+]
+`;
+
+exports[`api client > api.completeTour sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/auth/tours/arg0/complete",
+  },
+]
+`;
+
+exports[`api client > api.createArchitecturalReview sends the same request 1`] = `
+[
+  {
+    "body": "arg0",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/architectural-reviews",
+  },
+]
+`;
+
+exports[`api client > api.createEntity sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/entities",
+  },
+]
+`;
+
+exports[`api client > api.createGroups sends the same request 1`] = `
+[
+  {
+    "body": {
+      "groups": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/groups",
+  },
+]
+`;
+
+exports[`api client > api.createManuscriptImport sends the same request 1`] = `
+[
+  {
+    "body": {
+      "formData": [
+        [
+          "headingLevel",
+          "arg3",
+        ],
+        [
+          "file",
+          "arg1",
+        ],
+      ],
+    },
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/manuscript-imports",
+  },
+]
+`;
+
+exports[`api client > api.createNote sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/notes",
+  },
+]
+`;
+
+exports[`api client > api.createProject sends the same request 1`] = `
+[
+  {
+    "body": {
+      "encryption": "arg1",
+      "title": "arg0",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects",
+  },
+]
+`;
+
+exports[`api client > api.createProjectSlot sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/slots",
+  },
+]
+`;
+
+exports[`api client > api.createRelation sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/relations",
+  },
+]
+`;
+
+exports[`api client > api.createVersion sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/versions",
+  },
+]
+`;
+
+exports[`api client > api.deleteEntity sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/entities/arg0",
+  },
+]
+`;
+
+exports[`api client > api.deleteEntityPage sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/entities/arg0/page",
+  },
+]
+`;
+
+exports[`api client > api.deleteFact sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/facts/arg0",
+  },
+]
+`;
+
+exports[`api client > api.deleteGroup sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/groups/arg0",
+  },
+]
+`;
+
+exports[`api client > api.deleteMarketingAsset sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/projects/arg0/marketing-assets/arg1",
+  },
+]
+`;
+
+exports[`api client > api.deleteNote sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/notes/arg0",
+  },
+]
+`;
+
+exports[`api client > api.deleteProject sends the same request 1`] = `
+[
+  {
+    "body": {
+      "password": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "DELETE",
+    "url": "/api/v1/projects/arg0",
+  },
+]
+`;
+
+exports[`api client > api.deleteProjectSlot sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/projects/arg0/slots/arg1",
+  },
+]
+`;
+
+exports[`api client > api.deleteTime sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/projects/arg0/time?day=arg1&stageId=arg2",
+  },
+]
+`;
+
+exports[`api client > api.deleteVersion sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/projects/arg0/versions/arg1",
+  },
+]
+`;
+
+exports[`api client > api.detachAlias sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/entities/arg0/detach",
+  },
+]
+`;
+
+exports[`api client > api.dismissDiagnostic sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/slots/arg0/diagnostics/arg1",
+  },
+]
+`;
+
+exports[`api client > api.draftMarketingIdentity sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/marketing/identity-draft",
+  },
+]
+`;
+
+exports[`api client > api.finalizeManuscriptImport sends the same request 1`] = `
+[
+  {
+    "body": {
+      "scenes": "arg2",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/manuscript-imports/arg1/finalize",
+  },
+]
+`;
+
+exports[`api client > api.getCanonSettings sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/canon-settings",
+  },
+]
+`;
+
+exports[`api client > api.getEntityPage sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/entities/arg0/page",
+  },
+]
+`;
+
+exports[`api client > api.getLatestArchitecturalReview sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/architectural-reviews/latest",
+  },
+]
+`;
+
+exports[`api client > api.getManuscriptImport sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/manuscript-imports/arg1",
+  },
+]
+`;
+
+exports[`api client > api.getMarketingAsset sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/marketing-assets/arg1",
+  },
+]
+`;
+
+exports[`api client > api.getMarketingKit sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/marketing-kit",
+  },
+]
+`;
+
+exports[`api client > api.getPendingFacts sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/facts/pending",
+  },
+]
+`;
+
+exports[`api client > api.getPipeline sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/pipeline",
+  },
+]
+`;
+
+exports[`api client > api.getProjectEncryption sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/encryption",
+  },
+]
+`;
+
+exports[`api client > api.getSlotReview sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/slots/arg0/review",
+  },
+]
+`;
+
+exports[`api client > api.getStyleSheet sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/style-sheet",
+  },
+]
+`;
+
+exports[`api client > api.getUsage sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/usage",
+  },
+]
+`;
+
+exports[`api client > api.getVersion sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/versions/arg1",
+  },
+]
+`;
+
+exports[`api client > api.getWikiTemplates sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/wiki-templates",
+  },
+]
+`;
+
+exports[`api client > api.listArchitecturalReviews sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/architectural-reviews",
+  },
+]
+`;
+
+exports[`api client > api.listBoard sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/board",
+  },
+]
+`;
+
+exports[`api client > api.listDeletedEntities sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/entities/deleted",
+  },
+]
+`;
+
+exports[`api client > api.listEntityPages sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/entity-pages",
+  },
+]
+`;
+
+exports[`api client > api.listGroups sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/groups",
+  },
+]
+`;
+
+exports[`api client > api.listNotes sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/notes",
+  },
+]
+`;
+
+exports[`api client > api.listOverrides sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/slots/arg0/overrides",
+  },
+]
+`;
+
+exports[`api client > api.listProjectEntities sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/entities",
+  },
+]
+`;
+
+exports[`api client > api.listProjectFacts sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/facts",
+  },
+]
+`;
+
+exports[`api client > api.listProjectSlots sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/slots",
+  },
+]
+`;
+
+exports[`api client > api.listProjects sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects",
+  },
+]
+`;
+
+exports[`api client > api.listRegressionAlerts sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/slots/arg0/regression-alerts",
+  },
+]
+`;
+
+exports[`api client > api.listSceneCards sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/scene-cards",
+  },
+]
+`;
+
+exports[`api client > api.listTime sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/time",
+  },
+]
+`;
+
+exports[`api client > api.listTimelineMoves sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/timeline/moves",
+  },
+]
+`;
+
+exports[`api client > api.listVersions sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/versions",
+  },
+]
+`;
+
+exports[`api client > api.mergeEntities sends the same request 1`] = `
+[
+  {
+    "body": {
+      "sourceAliasId": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/entities/arg0/merge",
+  },
+]
+`;
+
+exports[`api client > api.mergeWithNext sends the same request 1`] = `
+[
+  {
+    "body": "arg2",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/slots/arg1/merge-next",
+  },
+]
+`;
+
+exports[`api client > api.reassignFact sends the same request 1`] = `
+[
+  {
+    "body": {
+      "targetEntityId": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/facts/arg0/reassign",
+  },
+]
+`;
+
+exports[`api client > api.recordProjectAccess sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/access",
+  },
+]
+`;
+
+exports[`api client > api.recordTime sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/time",
+  },
+]
+`;
+
+exports[`api client > api.rejectFacts sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/scenes/arg0/facts/reject",
+  },
+]
+`;
+
+exports[`api client > api.removeOverride sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/slots/arg0/overrides/arg1",
+  },
+]
+`;
+
+exports[`api client > api.renameEntity sends the same request 1`] = `
+[
+  {
+    "body": {
+      "name": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PATCH",
+    "url": "/api/v1/entities/arg0",
+  },
+]
+`;
+
+exports[`api client > api.renameProjectSlot sends the same request 1`] = `
+[
+  {
+    "body": {
+      "title": "arg2",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PATCH",
+    "url": "/api/v1/projects/arg0/slots/arg1",
+  },
+]
+`;
+
+exports[`api client > api.reorderTimeline sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/timeline/reorder",
+  },
+]
+`;
+
+exports[`api client > api.resetProjectPassword sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/encryption/reset-password",
+  },
+]
+`;
+
+exports[`api client > api.restoreEntity sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/entities/arg0/restore",
+  },
+]
+`;
+
+exports[`api client > api.saveCanonSettings sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PUT",
+    "url": "/api/v1/projects/arg0/canon-settings",
+  },
+]
+`;
+
+exports[`api client > api.saveEntityPage sends the same request 1`] = `
+[
+  {
+    "body": {
+      "expectedVersion": "arg2",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PUT",
+    "url": "/api/v1/entities/arg0/page",
+  },
+]
+`;
+
+exports[`api client > api.saveMarketingKit sends the same request 1`] = `
+[
+  {
+    "body": {
+      "expectedVersion": "arg2",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PUT",
+    "url": "/api/v1/projects/arg0/marketing-kit",
+  },
+]
+`;
+
+exports[`api client > api.saveOverride sends the same request 1`] = `
+[
+  {
+    "body": {
+      "diagnosticSignatureHash": "arg1",
+      "justification": "arg2",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/slots/arg0/overrides",
+  },
+]
+`;
+
+exports[`api client > api.savePipeline sends the same request 1`] = `
+[
+  {
+    "body": {
+      "expectedVersion": "arg2",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PUT",
+    "url": "/api/v1/projects/arg0/pipeline",
+  },
+]
+`;
+
+exports[`api client > api.saveSceneContent sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PUT",
+    "url": "/api/v1/slots/arg0/content",
+  },
+]
+`;
+
+exports[`api client > api.saveStyleSheet sends the same request 1`] = `
+[
+  {
+    "body": {
+      "expectedVersion": "arg2",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PUT",
+    "url": "/api/v1/projects/arg0/style-sheet",
+  },
+]
+`;
+
+exports[`api client > api.saveWikiTemplates sends the same request 1`] = `
+[
+  {
+    "body": {
+      "expectedVersion": "arg2",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PUT",
+    "url": "/api/v1/projects/arg0/wiki-templates",
+  },
+]
+`;
+
+exports[`api client > api.setFactTarget sends the same request 1`] = `
+[
+  {
+    "body": {
+      "targetEntityId": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PATCH",
+    "url": "/api/v1/facts/arg0/target",
+  },
+]
+`;
+
+exports[`api client > api.setPreferredName sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/entities/arg0/preferred",
+  },
+]
+`;
+
+exports[`api client > api.splitEntity sends the same request 1`] = `
+[
+  {
+    "body": {
+      "newEntityNames": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/entities/arg0/split",
+  },
+]
+`;
+
+exports[`api client > api.splitSlot sends the same request 1`] = `
+[
+  {
+    "body": "arg2",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/slots/arg1/split",
+  },
+]
+`;
+
+exports[`api client > api.submitScene sends the same request 1`] = `
+[
+  {
+    "body": "arg0",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/scenes/submit",
+  },
+]
+`;
+
+exports[`api client > api.undoTimelineMove sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/timeline/moves/arg1/undo",
+  },
+]
+`;
+
+exports[`api client > api.updateGroup sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PATCH",
+    "url": "/api/v1/groups/arg0",
+  },
+]
+`;
+
+exports[`api client > api.updateNote sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PATCH",
+    "url": "/api/v1/notes/arg0",
+  },
+]
+`;
+
+exports[`api client > api.uploadMarketingAsset sends the same request 1`] = `
+[
+  {
+    "body": {
+      "formData": [
+        [
+          "file",
+          "[object File]",
+        ],
+      ],
+    },
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/marketing-assets",
+  },
+]
+`;
+
+exports[`api client > auth.login sends the same request 1`] = `
+[
+  {
+    "body": "arg0",
+    "credentials": "include",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/auth/login",
+  },
+]
+`;
+
+exports[`api client > auth.logout sends the same request 1`] = `
+[
+  {
+    "credentials": "include",
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/auth/logout",
+  },
+]
+`;
+
+exports[`api client > auth.register sends the same request 1`] = `
+[
+  {
+    "body": "arg0",
+    "credentials": "include",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/auth/register",
+  },
+]
+`;
+
+exports[`api client > exports the same names 1`] = `
+[
+  "ApiError",
+  "admin",
+  "api",
+  "auth",
+  "google",
+  "joinWaitlist",
+]
+`;
+
+exports[`api client > exports the same names 2`] = `
+{
+  "admin": [
+    "createInvite",
+    "inviteFromWaitlist",
+    "invites",
+    "models",
+    "overview",
+    "removeWaitlistEntry",
+    "revokeInvite",
+    "setMarketing",
+    "setModel",
+    "setWordLimit",
+    "users",
+    "waitlist",
+  ],
+  "api": [
+    "acknowledgeAlert",
+    "approveFacts",
+    "approvePendingFacts",
+    "assignGroup",
+    "closeManuscriptImport",
+    "completeTour",
+    "createArchitecturalReview",
+    "createEntity",
+    "createGroups",
+    "createManuscriptImport",
+    "createNote",
+    "createProject",
+    "createProjectSlot",
+    "createRelation",
+    "createVersion",
+    "deleteEntity",
+    "deleteEntityPage",
+    "deleteFact",
+    "deleteGroup",
+    "deleteMarketingAsset",
+    "deleteNote",
+    "deleteProject",
+    "deleteProjectSlot",
+    "deleteTime",
+    "deleteVersion",
+    "detachAlias",
+    "dismissDiagnostic",
+    "draftMarketingIdentity",
+    "finalizeManuscriptImport",
+    "getCanonSettings",
+    "getEntityPage",
+    "getLatestArchitecturalReview",
+    "getManuscriptImport",
+    "getMarketingAsset",
+    "getMarketingKit",
+    "getPendingFacts",
+    "getPipeline",
+    "getProjectEncryption",
+    "getSlotReview",
+    "getStyleSheet",
+    "getUsage",
+    "getVersion",
+    "getWikiTemplates",
+    "listArchitecturalReviews",
+    "listBoard",
+    "listDeletedEntities",
+    "listEntityPages",
+    "listGroups",
+    "listNotes",
+    "listOverrides",
+    "listProjectEntities",
+    "listProjectFacts",
+    "listProjectSlots",
+    "listProjects",
+    "listRegressionAlerts",
+    "listSceneCards",
+    "listTime",
+    "listTimelineMoves",
+    "listVersions",
+    "mergeEntities",
+    "mergeWithNext",
+    "reassignFact",
+    "recordProjectAccess",
+    "recordTime",
+    "rejectFacts",
+    "removeOverride",
+    "renameEntity",
+    "renameProjectSlot",
+    "reorderTimeline",
+    "resetProjectPassword",
+    "restoreEntity",
+    "saveCanonSettings",
+    "saveEntityPage",
+    "saveMarketingKit",
+    "saveOverride",
+    "savePipeline",
+    "saveSceneContent",
+    "saveStyleSheet",
+    "saveWikiTemplates",
+    "setFactTarget",
+    "setPreferredName",
+    "splitEntity",
+    "splitSlot",
+    "submitScene",
+    "undoTimelineMove",
+    "updateGroup",
+    "updateNote",
+    "uploadMarketingAsset",
+  ],
+  "auth": [
+    "login",
+    "logout",
+    "register",
+  ],
+  "google": [
+    "connect",
+    "decideSuggestions",
+    "disconnect",
+    "fetchForSync",
+    "getLink",
+    "link",
+    "listSuggestions",
+    "publishComments",
+    "recordSync",
+    "status",
+    "unlink",
+  ],
+}
+`;
+
+exports[`api client > google.connect sends the same request 1`] = `
+[
+  {
+    "body": {
+      "permission": "arg0",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/integrations/google/connect",
+  },
+]
+`;
+
+exports[`api client > google.decideSuggestions sends the same request 1`] = `
+[
+  {
+    "body": {
+      "decisions": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/google-doc/suggestions/decide",
+  },
+]
+`;
+
+exports[`api client > google.disconnect sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/integrations/google",
+  },
+]
+`;
+
+exports[`api client > google.fetchForSync sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/google-doc/fetch",
+  },
+]
+`;
+
+exports[`api client > google.getLink sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/google-doc",
+  },
+]
+`;
+
+exports[`api client > google.link sends the same request 1`] = `
+[
+  {
+    "body": {
+      "document": "arg1",
+      "headingLevel": "arg2",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "PUT",
+    "url": "/api/v1/projects/arg0/google-doc",
+  },
+]
+`;
+
+exports[`api client > google.listSuggestions sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/projects/arg0/google-doc/suggestions",
+  },
+]
+`;
+
+exports[`api client > google.publishComments sends the same request 1`] = `
+[
+  {
+    "body": {
+      "items": "arg1",
+    },
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/google-doc/comments",
+  },
+]
+`;
+
+exports[`api client > google.recordSync sends the same request 1`] = `
+[
+  {
+    "body": "arg1",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/projects/arg0/google-doc/synced",
+  },
+]
+`;
+
+exports[`api client > google.status sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "GET",
+    "url": "/api/v1/integrations/google",
+  },
+]
+`;
+
+exports[`api client > google.unlink sends the same request 1`] = `
+[
+  {
+    "headers": {},
+    "method": "DELETE",
+    "url": "/api/v1/projects/arg0/google-doc",
+  },
+]
+`;
+
+exports[`api client > joinWaitlist sends the same request 1`] = `
+[
+  {
+    "body": "arg0",
+    "headers": {
+      "Content-Type": "application/json",
+    },
+    "method": "POST",
+    "url": "/api/v1/waitlist",
+  },
+]
+`;

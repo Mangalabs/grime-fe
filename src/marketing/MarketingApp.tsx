@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import type { AuthUser, Project } from '../api/contracts'
-import { AccountMenu } from '../components/AccountMenu'
-import { ProjectUnlockModal } from '../components/ProjectUnlockModal'
-import { initialTheme } from '../features/theme'
+import { WorkspaceShell } from '../components/WorkspaceShell'
 import { BookSection } from './BookSection'
 import type { DraftState } from './DraftCard'
 import { IdentitySection } from './IdentitySection'
@@ -39,98 +37,28 @@ const assetIds = (kit: MarketingKit | null) =>
 // Its own shell, like /admin: the writing and review screens never show any
 // of this, and nothing here changes the manuscript, the Arquivo or the wiki.
 export default function MarketingApp({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
-  const [projects, setProjects] = useState<Project[] | null>(null)
-  const [error, setError] = useState('')
-  const [toUnlock, setToUnlock] = useState<string | null>(null)
-  const [open, setOpen] = useState<{ project: Project; key: CryptoKey } | null>(null)
-  const [section, setSection] = useState<Section>('book')
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = initialTheme()
-    document.title = 'Petricor · Marketing'
-    api
-      .listProjects()
-      .then(setProjects)
-      .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : 'Não foi possível listar os projetos.'))
-  }, [])
-
   return (
-    <div className="admin-shell">
-      <header className="admin-topbar">
-        <a className="brand" href="/marketing" aria-label="Marketing do Petricor">
-          <span className="brand-mark" aria-hidden="true">P</span>
-          <span>Petricor</span>
-          <span className="admin-badge">Marketing</span>
-        </a>
-        {open && (
-          <nav className="admin-nav" aria-label="Seções do marketing">
-            {(Object.keys(sectionLabels) as Section[]).map((item) => (
-              <button
-                aria-current={section === item ? 'page' : undefined}
-                key={item}
-                type="button"
-                onClick={() => setSection(item)}
-              >
-                {sectionLabels[item]}
-              </button>
-            ))}
-          </nav>
-        )}
-        <div className="admin-topbar-end">
-          {projects && projects.length > 0 && (
-            <select
-              aria-label="Projeto"
-              className="mk-project-select"
-              value={open?.project.id ?? ''}
-              onChange={(event) => {
-                if (event.target.value) setToUnlock(event.target.value)
-              }}
-            >
-              {!open && <option value="">Escolha um projeto</option>}
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.title}
-                </option>
-              ))}
-            </select>
-          )}
-          <a className="text-button admin-back" href="/">
-            Voltar ao Petricor
-          </a>
-          <AccountMenu user={user} onLogout={onLogout} />
-        </div>
-      </header>
-
-      <main className="admin-main">
-        {error && <p className="form-message">{error}</p>}
-        {open ? (
-          <Workspace key={open.project.id} project={open.project} projectKey={open.key} section={section} />
-        ) : (
-          <header className="page-intro admin-intro">
-            <p className="eyebrow">Marketing</p>
-            <h1>Escolha um projeto</h1>
-            <p>
-              Defina o que o público pode saber do livro e exporte o pacote que alimenta o site. O projeto é aberto
-              com a senha dele, como no Petricor: tudo é decifrado aqui no navegador.
-            </p>
-            {projects?.length === 0 && <p className="empty-state">Você ainda não tem projetos.</p>}
-          </header>
-        )}
-      </main>
-
-      {toUnlock && (
-        <ProjectUnlockModal
-          projectId={toUnlock}
-          onClose={() => setToUnlock(null)}
-          onUnlocked={(projectId, key) => {
-            const project = projects?.find((item) => item.id === projectId)
-            if (project) setOpen({ project, key })
-            setSection('book')
-            setToUnlock(null)
-          }}
-        />
-      )}
-    </div>
+    <WorkspaceShell
+      brandLabel="Marketing do Petricor"
+      firstSection="book"
+      home="/marketing"
+      intro={
+        <>
+          <h1>Escolha um projeto</h1>
+          <p>
+            Defina o que o público pode saber do livro e exporte o pacote que alimenta o site. O projeto é aberto
+            com a senha dele, como no Petricor: tudo é decifrado aqui no navegador.
+          </p>
+        </>
+      }
+      name="Marketing"
+      navLabel="Seções do marketing"
+      sections={sectionLabels}
+      user={user}
+      onLogout={onLogout}
+    >
+      {(open, section) => <Workspace key={open.project.id} project={open.project} projectKey={open.key} section={section} />}
+    </WorkspaceShell>
   )
 }
 

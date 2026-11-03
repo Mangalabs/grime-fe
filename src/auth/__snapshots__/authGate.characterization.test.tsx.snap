@@ -1,0 +1,15 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AuthGate (characterization) > / for {} 1`] = `"<div><p>main app</p></div>"`;
+
+exports[`AuthGate (characterization) > /admin for { role: 'ADMIN' } 1`] = `"<div><p>admin app</p></div>"`;
+
+exports[`AuthGate (characterization) > /admin for { role: 'USER' } 1`] = `"<div><p>forbidden - -</p></div>"`;
+
+exports[`AuthGate (characterization) > /marketing for { marketingEnabled: false } 1`] = `"<div><p>forbidden Marketing O marketing não está liberado para a sua conta. Peça a um admin.</p></div>"`;
+
+exports[`AuthGate (characterization) > /marketing for { marketingEnabled: true } 1`] = `"<div><p>marketing app</p></div>"`;
+
+exports[`AuthGate (characterization) > /producao for { marketingEnabled: false } 1`] = `"<div><p>forbidden Produção A produção não está liberada para a sua conta. Peça a um admin.</p></div>"`;
+
+exports[`AuthGate (characterization) > /producao for { marketingEnabled: true } 1`] = `"<div><p>production app</p></div>"`;

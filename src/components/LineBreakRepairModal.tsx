@@ -1,11 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import './Modal.css'
 import './LineBreakRepairModal.css'
 import { api } from '../api/client'
 import type { Slot } from '../api/contracts'
-import { decryptSceneDraft, encryptSceneDraft } from '../crypto/projectEncryption'
-import { orderScenes, sceneNumberLabel, sceneTitle } from '../features/scenes/sceneStatus'
+import { encryptSceneDraft } from '../crypto/projectEncryption'
+import { sceneNumberLabel, sceneTitle } from '../features/scenes/sceneStatus'
 import { findSoftWraps, joinSoftWraps, type SoftWrap } from '../features/scenes/softWraps'
+import { plural } from '../features/text/plural'
+import { ReviewGroup, ReviewItem, ReviewProgress, ReviewSummary } from './review/BatchReview'
+import { useExclusions, useSceneDrafts, type LoadedScene } from './review/useBatchReview'
 
 interface LineBreakRepairModalProps {
   projectKey: CryptoKey
@@ -15,9 +18,7 @@ interface LineBreakRepairModalProps {
   onApplied: (slotIds: string[]) => void
 }
 
-interface SceneWraps {
-  slot: Slot
-  draft: { content: string; genre: string; focusMode: string }
+interface SceneWraps extends LoadedScene {
   wraps: SoftWrap[]
 }
 
@@ -34,7 +35,6 @@ const CONTEXT_CHARS = 70
 const LIST_LIMIT = 150
 
 const keyOf = (slotId: string, wrap: SoftWrap) => `${slotId}:${wrap.start}`
-const plural = (count: number, one: string, many: string) => `${count.toLocaleString('pt-BR')} ${count === 1 ? one : many}`
 
 function context(text: string, wrap: SoftWrap) {
   const before = text.slice(Math.max(0, wrap.start - CONTEXT_CHARS), wrap.start)
@@ -53,52 +53,26 @@ function context(text: string, wrap: SoftWrap) {
  * until the author reviews the list and confirms.
  */
 export function LineBreakRepairModal({ projectKey, slots, onClose, onApplied }: LineBreakRepairModalProps) {
-  // The scenes as they were when the dialog opened; later list updates don't restart the scan.
-  const [scanned] = useState(slots)
-  const [phase, setPhase] = useState<Phase>({ kind: 'loading', done: 0, total: slots.length })
-  const [scenes, setScenes] = useState<SceneWraps[]>([])
-  const [excluded, setExcluded] = useState<Set<string>>(() => new Set())
+  const load = useSceneDrafts(slots, projectKey)
+  // Saving and after; until then the phase follows the loading.
+  const [applying, setApplying] = useState<Extract<Phase, { kind: 'saving' | 'done' | 'error' }> | null>(null)
+  const phase: Phase = applying ?? (load.kind === 'ready' ? { kind: 'review' } : load)
+  const scenes = useMemo<SceneWraps[]>(
+    () =>
+      load.kind === 'ready'
+        ? load.scenes.map((scene) => ({ ...scene, wraps: findSoftWraps(scene.draft.content) })).filter((scene) => scene.wraps.length > 0)
+        : [],
+    [load],
+  )
+  const { excluded, setExcluded, toggle } = useExclusions()
   const [openSceneId, setOpenSceneId] = useState<string | null>(null)
 
-  useEffect(() => {
-    let isCurrent = true
-    const ordered = orderScenes(scanned)
-    const found: Array<SceneWraps | null> = new Array(ordered.length).fill(null)
-    let next = 0
-    let done = 0
-    async function worker() {
-      while (next < ordered.length) {
-        const index = next
-        next += 1
-        const slot = ordered[index]
-        const review = await api.getSlotReview(slot.id)
-        if (review.content) {
-          const draft = await decryptSceneDraft(projectKey, review.content.ciphertext, review.content.iv)
-          const content = draft.content ?? ''
-          const wraps = findSoftWraps(content)
-          if (wraps.length) {
-            found[index] = { slot, draft: { content, genre: draft.genre ?? '', focusMode: draft.focusMode ?? 'GENERAL' }, wraps }
-          }
-        }
-        done += 1
-        if (isCurrent) setPhase({ kind: 'loading', done, total: ordered.length })
-      }
-    }
-    Promise.all(Array.from({ length: Math.min(6, ordered.length) }, worker))
-      .then(() => {
-        if (!isCurrent) return
-        const withWraps = found.filter((scene): scene is SceneWraps => scene !== null)
-        setScenes(withWraps)
-        setOpenSceneId(withWraps[0]?.slot.id ?? null)
-        setPhase({ kind: 'review' })
-      })
-      .catch((reason) => {
-        if (isCurrent) setPhase({ kind: 'error', message: reason instanceof Error ? reason.message : 'Não foi possível ler as cenas.' })
-      })
-    return () => {
-      isCurrent = false
-    }
-  }, [projectKey, scanned])
+  // The first scene starts open, once, when the list first appears.
+  const [seeded, setSeeded] = useState(false)
+  if (!seeded && load.kind === 'ready') {
+    setSeeded(true)
+    setOpenSceneId(scenes[0]?.slot.id ?? null)
+  }
 
   const chosen = useMemo(
     () => scenes.map((scene) => ({ scene, wraps: scene.wraps.filter((wrap) => !excluded.has(keyOf(scene.slot.id, wrap))) })),
@@ -107,30 +81,20 @@ export function LineBreakRepairModal({ projectKey, slots, onClose, onApplied }: 
   const totalChosen = chosen.reduce((sum, item) => sum + item.wraps.length, 0)
   const scenesChosen = chosen.filter((item) => item.wraps.length > 0).length
 
-  const toggle = (keys: string[], include: boolean) =>
-    setExcluded((current) => {
-      const next = new Set(current)
-      for (const key of keys) {
-        if (include) next.delete(key)
-        else next.add(key)
-      }
-      return next
-    })
-
   async function apply() {
     const work = chosen.filter((item) => item.wraps.length > 0)
-    setPhase({ kind: 'saving', done: 0, total: work.length })
+    setApplying({ kind: 'saving', done: 0, total: work.length })
     const saved: string[] = []
     try {
       for (const [index, { scene, wraps }] of work.entries()) {
         const content = joinSoftWraps(scene.draft.content, wraps)
         await api.saveSceneContent(scene.slot.id, await encryptSceneDraft(projectKey, { ...scene.draft, content }))
         saved.push(scene.slot.id)
-        setPhase({ kind: 'saving', done: index + 1, total: work.length })
+        setApplying({ kind: 'saving', done: index + 1, total: work.length })
       }
-      setPhase({ kind: 'done', scenes: saved.length, breaks: totalChosen })
+      setApplying({ kind: 'done', scenes: saved.length, breaks: totalChosen })
     } catch (reason) {
-      setPhase({
+      setApplying({
         kind: 'error',
         message: `${reason instanceof Error ? reason.message : 'Não foi possível salvar.'} ${saved.length ? `${plural(saved.length, 'cena já foi salva', 'cenas já foram salvas')}.` : 'Nada foi alterado.'}`,
       })
@@ -153,14 +117,7 @@ export function LineBreakRepairModal({ projectKey, slots, onClose, onApplied }: 
         </p>
 
         {(phase.kind === 'loading' || phase.kind === 'saving') && (
-          <div className="linebreak-progress" role="status">
-            <span>
-              {phase.kind === 'loading' ? 'Lendo as cenas' : 'Salvando'} · {phase.done} de {phase.total}
-            </span>
-            <div aria-hidden="true">
-              <span style={{ width: `${phase.total ? (phase.done / phase.total) * 100 : 0}%` }} />
-            </div>
-          </div>
+          <ReviewProgress done={phase.done} label={phase.kind === 'loading' ? 'Lendo as cenas' : 'Salvando'} total={phase.total} />
         )}
 
         {phase.kind === 'error' && <p className="form-message">{phase.message}</p>}
@@ -178,73 +135,47 @@ export function LineBreakRepairModal({ projectKey, slots, onClose, onApplied }: 
 
         {phase.kind === 'review' && scenes.length > 0 && (
           <>
-            <div className="linebreak-summary">
-              <strong>
-                {plural(totalChosen, 'quebra marcada', 'quebras marcadas')} em {plural(scenesChosen, 'cena', 'cenas')}
-              </strong>
-              <span>
-                <button className="text-button" type="button" onClick={() => setExcluded(new Set())}>
-                  Marcar todas
-                </button>
-                <button
-                  className="text-button"
-                  type="button"
-                  onClick={() => setExcluded(new Set(scenes.flatMap((scene) => scene.wraps.map((wrap) => keyOf(scene.slot.id, wrap)))))}
-                >
-                  Desmarcar todas
-                </button>
-              </span>
-            </div>
+            <ReviewSummary
+              onAll={() => setExcluded(new Set())}
+              onNone={() => setExcluded(new Set(scenes.flatMap((scene) => scene.wraps.map((wrap) => keyOf(scene.slot.id, wrap)))))}
+            >
+              {plural(totalChosen, 'quebra marcada', 'quebras marcadas')} em {plural(scenesChosen, 'cena', 'cenas')}
+            </ReviewSummary>
             <ul className="linebreak-scenes">
               {chosen.map(({ scene, wraps }) => {
                 const keys = scene.wraps.map((wrap) => keyOf(scene.slot.id, wrap))
                 const isOpen = openSceneId === scene.slot.id
                 return (
-                  <li key={scene.slot.id}>
-                    <div className="linebreak-scene-head">
-                      <input
-                        aria-label={`Juntar as quebras de ${sceneTitle(scene.slot)}`}
-                        checked={wraps.length > 0}
-                        ref={(input) => {
-                          if (input) input.indeterminate = wraps.length > 0 && wraps.length < scene.wraps.length
-                        }}
-                        type="checkbox"
-                        onChange={(event) => toggle(keys, event.target.checked)}
-                      />
-                      <button aria-expanded={isOpen} type="button" onClick={() => setOpenSceneId(isOpen ? null : scene.slot.id)}>
-                        <span className="linebreak-scene-number">{sceneNumberLabel(scene.slot)}</span>
-                        <span className="linebreak-scene-title">{sceneTitle(scene.slot)}</span>
-                        <span className="linebreak-count">
-                          {wraps.length === scene.wraps.length ? scene.wraps.length : `${wraps.length} de ${scene.wraps.length}`}
-                        </span>
-                      </button>
-                    </div>
-                    {isOpen && (
-                      <ol className="linebreak-list">
-                        {scene.wraps.slice(0, LIST_LIMIT).map((wrap) => {
-                          const key = keyOf(scene.slot.id, wrap)
-                          const { before, after } = context(scene.draft.content, wrap)
-                          return (
-                            <li className={excluded.has(key) ? 'is-off' : undefined} key={key}>
-                              <label>
-                                <input checked={!excluded.has(key)} type="checkbox" onChange={(event) => toggle([key], event.target.checked)} />
-                                <span>
-                                  {before}
-                                  <mark aria-label="quebra de linha">↵</mark>
-                                  {after}
-                                </span>
-                              </label>
-                            </li>
-                          )
-                        })}
-                        {scene.wraps.length > LIST_LIMIT && (
-                          <li className="linebreak-more">
-                            e mais {plural(scene.wraps.length - LIST_LIMIT, 'quebra', 'quebras')} nesta cena, que seguem a marcação da cena.
-                          </li>
-                        )}
-                      </ol>
-                    )}
-                  </li>
+                  <ReviewGroup
+                    checkLabel={`Juntar as quebras de ${sceneTitle(scene.slot)}`}
+                    isOpen={isOpen}
+                    key={scene.slot.id}
+                    kicker={sceneNumberLabel(scene.slot)}
+                    on={wraps.length}
+                    title={sceneTitle(scene.slot)}
+                    total={scene.wraps.length}
+                    onCheck={(checked) => toggle(keys, checked)}
+                    onOpen={() => setOpenSceneId(isOpen ? null : scene.slot.id)}
+                  >
+                    <ol className="linebreak-list">
+                      {scene.wraps.slice(0, LIST_LIMIT).map((wrap) => {
+                        const key = keyOf(scene.slot.id, wrap)
+                        const { before, after } = context(scene.draft.content, wrap)
+                        return (
+                          <ReviewItem isOn={!excluded.has(key)} key={key} onCheck={(checked) => toggle([key], checked)}>
+                            {before}
+                            <mark aria-label="quebra de linha">↵</mark>
+                            {after}
+                          </ReviewItem>
+                        )
+                      })}
+                      {scene.wraps.length > LIST_LIMIT && (
+                        <li className="linebreak-more">
+                          e mais {plural(scene.wraps.length - LIST_LIMIT, 'quebra', 'quebras')} nesta cena, que seguem a marcação da cena.
+                        </li>
+                      )}
+                    </ol>
+                  </ReviewGroup>
                 )
               })}
             </ul>

@@ -5,6 +5,7 @@ import { estimateRemaining, type AnalysisState } from '../../features/analysis/u
 import { orderScenes, sceneTitle } from '../../features/scenes/sceneStatus'
 import '../Modal.css'
 import './BackgroundAnalysis.css'
+import { useCloseOnEscape } from '../../features/useCloseOnEscape'
 
 function formatRemaining(ms: number) {
   const minutes = Math.round(ms / 60_000)
@@ -37,13 +38,7 @@ export function AnalysisStartDialog({ slots, preselected, onStart, onClose }: St
   const [concurrency, setConcurrency] = useState(2)
   const chosen = scope === 'changed' ? changed : scope === 'pending' ? pending : ordered
 
-  useEffect(() => {
-    const close = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', close)
-    return () => document.removeEventListener('keydown', close)
-  }, [onClose])
+  useCloseOnEscape(onClose)
 
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>

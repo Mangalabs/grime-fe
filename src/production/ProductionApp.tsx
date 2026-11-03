@@ -1,9 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
-import { api } from '../api/client'
+import { useMemo } from 'react'
 import type { AuthUser, Project } from '../api/contracts'
-import { AccountMenu } from '../components/AccountMenu'
-import { ProjectUnlockModal } from '../components/ProjectUnlockModal'
-import { initialTheme } from '../features/theme'
+import { WorkspaceShell } from '../components/WorkspaceShell'
 import { AffinitySection } from './AffinitySection'
 import { CostSection } from './CostSection'
 import { estimate, rankFormats } from './estimate'
@@ -26,93 +23,28 @@ const sectionLabels: Record<Section, string> = {
 // what producing it costs. Its own shell, like /marketing; nothing here
 // changes the manuscript.
 export default function ProductionApp({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
-  const [projects, setProjects] = useState<Project[] | null>(null)
-  const [error, setError] = useState('')
-  const [toUnlock, setToUnlock] = useState<string | null>(null)
-  const [open, setOpen] = useState<{ project: Project; key: CryptoKey } | null>(null)
-  const [section, setSection] = useState<Section>('format')
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = initialTheme()
-    document.title = 'Petricor · Produção'
-    api
-      .listProjects()
-      .then(setProjects)
-      .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : 'Não foi possível listar os projetos.'))
-  }, [])
-
   return (
-    <div className="admin-shell">
-      <header className="admin-topbar">
-        <a className="brand" href="/producao" aria-label="Produção do Petricor">
-          <span className="brand-mark" aria-hidden="true">P</span>
-          <span>Petricor</span>
-          <span className="admin-badge">Produção</span>
-        </a>
-        {open && (
-          <nav className="admin-nav" aria-label="Seções da produção">
-            {(Object.keys(sectionLabels) as Section[]).map((item) => (
-              <button aria-current={section === item ? 'page' : undefined} key={item} type="button" onClick={() => setSection(item)}>
-                {sectionLabels[item]}
-              </button>
-            ))}
-          </nav>
-        )}
-        <div className="admin-topbar-end">
-          {projects && projects.length > 0 && (
-            <select
-              aria-label="Projeto"
-              className="mk-project-select"
-              value={open?.project.id ?? ''}
-              onChange={(event) => {
-                if (event.target.value) setToUnlock(event.target.value)
-              }}
-            >
-              {!open && <option value="">Escolha um projeto</option>}
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.title}
-                </option>
-              ))}
-            </select>
-          )}
-          <a className="text-button admin-back" href="/">
-            Voltar ao Petricor
-          </a>
-          <AccountMenu user={user} onLogout={onLogout} />
-        </div>
-      </header>
-
-      <main className="admin-main">
-        {error && <p className="form-message">{error}</p>}
-        {open ? (
-          <Workspace key={open.project.id} project={open.project} projectKey={open.key} section={section} />
-        ) : (
-          <header className="page-intro admin-intro">
-            <p className="eyebrow">Produção</p>
-            <h1>Do manuscrito ao livro impresso</h1>
-            <p>
-              Formato, número de páginas, a configuração do documento no Affinity e quanto custa produzir o livro. O texto
-              é lido aqui no navegador, depois de desbloquear o projeto; nada é enviado.
-            </p>
-            {projects?.length === 0 && <p className="empty-state">Você ainda não tem projetos.</p>}
-          </header>
-        )}
-      </main>
-
-      {toUnlock && (
-        <ProjectUnlockModal
-          projectId={toUnlock}
-          onClose={() => setToUnlock(null)}
-          onUnlocked={(projectId, key) => {
-            const project = projects?.find((item) => item.id === projectId)
-            if (project) setOpen({ project, key })
-            setSection('format')
-            setToUnlock(null)
-          }}
-        />
-      )}
-    </div>
+    <WorkspaceShell
+      brandLabel="Produção do Petricor"
+      firstSection="format"
+      home="/producao"
+      intro={
+        <>
+          <h1>Do manuscrito ao livro impresso</h1>
+          <p>
+            Formato, número de páginas, a configuração do documento no Affinity e quanto custa produzir o livro. O texto
+            é lido aqui no navegador, depois de desbloquear o projeto; nada é enviado.
+          </p>
+        </>
+      }
+      name="Produção"
+      navLabel="Seções da produção"
+      sections={sectionLabels}
+      user={user}
+      onLogout={onLogout}
+    >
+      {(open, section) => <Workspace key={open.project.id} project={open.project} projectKey={open.key} section={section} />}
+    </WorkspaceShell>
   )
 }
 

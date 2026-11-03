@@ -1,14 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import '../Modal.css'
 import '../LineBreakRepairModal.css'
 import './CopyeditModal.css'
 import { api } from '../../api/client'
 import type { Slot } from '../../api/contracts'
-import { decryptSceneDraft, encryptSceneDraft } from '../../crypto/projectEncryption'
-import { orderScenes, sceneNumberLabel, sceneTitle } from '../../features/scenes/sceneStatus'
+import { encryptSceneDraft } from '../../crypto/projectEncryption'
+import { sceneNumberLabel, sceneTitle } from '../../features/scenes/sceneStatus'
 import { applyReplacements } from '../../features/style/ptBr'
 import { checkScene, typographyRuleId, type StyleFinding, type StyleSheet } from '../../features/style/styleSheet'
+import { plural } from '../../features/text/plural'
 import { saveVersion } from '../../features/versions/versions'
+import { ReviewGroup, ReviewItem, ReviewProgress, ReviewSummary } from '../review/BatchReview'
+import { useExclusions, useSceneDrafts, type LoadedScene } from '../review/useBatchReview'
 
 interface CopyeditModalProps {
   projectId: string
@@ -22,14 +25,9 @@ interface CopyeditModalProps {
   onApplied: (slotIds: string[]) => void
 }
 
-interface SceneText {
-  slot: Slot
-  draft: { content: string; genre: string; focusMode: string }
-}
-
 interface Occurrence {
   key: string
-  scene: SceneText
+  scene: LoadedScene
   finding: StyleFinding
 }
 
@@ -43,7 +41,6 @@ type Phase =
 // Rules where a person should look at each case before fixing: they start unticked.
 const judgementRules = new Set([typographyRuleId('repeatedWords'), typographyRuleId('porQueEnd')])
 const LIST_LIMIT = 200
-const plural = (count: number, one: string, many: string) => `${count.toLocaleString('pt-BR')} ${count === 1 ? one : many}`
 const visible = (text: string) => (/^\s+$/.test(text) ? text.replace(/ /g, '·') : text)
 
 /** The words around a fix, with the change shown as struck and inserted text. */
@@ -69,48 +66,14 @@ function Change({ text, finding }: { text: string; finding: StyleFinding }) {
  * text is saved first.
  */
 export function CopyeditModal({ projectId, projectKey, slots, sheet, names, onClose, onApplied }: CopyeditModalProps) {
-  const [scanned] = useState(slots)
-  const [phase, setPhase] = useState<Phase>({ kind: 'loading', done: 0, total: slots.length })
-  const [scenes, setScenes] = useState<SceneText[]>([])
-  const [excluded, setExcluded] = useState<Set<string>>(() => new Set())
+  const [isSingleScene] = useState(slots.length === 1)
+  const load = useSceneDrafts(slots, projectKey)
+  // Saving and after; until then the phase follows the loading.
+  const [applying, setApplying] = useState<Extract<Phase, { kind: 'saving' | 'done' | 'error' }> | null>(null)
+  const phase: Phase = applying ?? (load.kind === 'ready' ? { kind: 'review' } : load)
+  const scenes = useMemo(() => (load.kind === 'ready' ? load.scenes : []), [load])
+  const { excluded, setExcluded, toggle } = useExclusions()
   const [openRule, setOpenRule] = useState<string | null>(null)
-
-  useEffect(() => {
-    let isCurrent = true
-    const ordered = orderScenes(scanned)
-    const loaded: Array<SceneText | null> = new Array(ordered.length).fill(null)
-    let next = 0
-    let done = 0
-    async function worker() {
-      while (next < ordered.length) {
-        const index = next
-        next += 1
-        const slot = ordered[index]
-        const review = await api.getSlotReview(slot.id)
-        if (review.content) {
-          const draft = await decryptSceneDraft(projectKey, review.content.ciphertext, review.content.iv)
-          loaded[index] = {
-            slot,
-            draft: { content: draft.content ?? '', genre: draft.genre ?? '', focusMode: draft.focusMode ?? 'GENERAL' },
-          }
-        }
-        done += 1
-        if (isCurrent) setPhase({ kind: 'loading', done, total: ordered.length })
-      }
-    }
-    Promise.all(Array.from({ length: Math.min(6, ordered.length) }, worker))
-      .then(() => {
-        if (!isCurrent) return
-        setScenes(loaded.filter((scene): scene is SceneText => scene !== null))
-        setPhase({ kind: 'review' })
-      })
-      .catch((reason) => {
-        if (isCurrent) setPhase({ kind: 'error', message: reason instanceof Error ? reason.message : 'Não foi possível ler as cenas.' })
-      })
-    return () => {
-      isCurrent = false
-    }
-  }, [projectKey, scanned])
 
   // Findings with an exact fix, by rule; the rest need the reviewer's hand.
   const { groups, manual } = useMemo(() => {
@@ -141,28 +104,18 @@ export function CopyeditModal({ projectId, projectKey, slots, sheet, names, onCl
   const chosen = groups.flatMap(([, group]) => group.items).filter((item) => !excluded.has(item.key))
   const scenesChosen = new Set(chosen.map((item) => item.scene.slot.id)).size
 
-  const toggle = (keys: string[], include: boolean) =>
-    setExcluded((current) => {
-      const next = new Set(current)
-      for (const key of keys) {
-        if (include) next.delete(key)
-        else next.add(key)
-      }
-      return next
-    })
-
   async function apply() {
     const byScene = new Map<string, Occurrence[]>()
     for (const item of chosen) byScene.set(item.scene.slot.id, [...(byScene.get(item.scene.slot.id) ?? []), item])
     const saved: string[] = []
     try {
-      setPhase({ kind: 'saving', step: 'Guardando uma versão do texto de antes…' })
+      setApplying({ kind: 'saving', step: 'Guardando uma versão do texto de antes…' })
       await saveVersion(projectId, projectKey, 'COPYEDIT', 'Antes da revisão ortotipográfica')
       let index = 0
       for (const items of byScene.values()) {
         index += 1
         const scene = items[0].scene
-        setPhase({ kind: 'saving', step: `Corrigindo as cenas: ${index} de ${byScene.size}` })
+        setApplying({ kind: 'saving', step: `Corrigindo as cenas: ${index} de ${byScene.size}` })
         const content = applyReplacements(
           scene.draft.content,
           items.map(({ finding }) => ({ start: finding.start, end: finding.end, replacement: finding.replacement! })),
@@ -170,9 +123,9 @@ export function CopyeditModal({ projectId, projectKey, slots, sheet, names, onCl
         await api.saveSceneContent(scene.slot.id, await encryptSceneDraft(projectKey, { ...scene.draft, content }))
         saved.push(scene.slot.id)
       }
-      setPhase({ kind: 'done', scenes: saved.length, fixes: chosen.length })
+      setApplying({ kind: 'done', scenes: saved.length, fixes: chosen.length })
     } catch (reason) {
-      setPhase({
+      setApplying({
         kind: 'error',
         message: `${reason instanceof Error ? reason.message : 'Não foi possível salvar.'} ${
           saved.length ? `${plural(saved.length, 'cena já foi corrigida', 'cenas já foram corrigidas')}; a versão de antes está em Versões.` : 'Nada foi alterado.'
@@ -182,8 +135,6 @@ export function CopyeditModal({ projectId, projectKey, slots, sheet, names, onCl
       if (saved.length) onApplied(saved)
     }
   }
-
-  const isSingleScene = scanned.length === 1
 
   return (
     <div className="modal-backdrop">
@@ -195,16 +146,7 @@ export function CopyeditModal({ projectId, projectKey, slots, sheet, names, onCl
           está (falas com erro proposital, citações, nomes) e só então corrija. Uma versão do texto é guardada antes.
         </p>
 
-        {phase.kind === 'loading' && (
-          <div className="linebreak-progress" role="status">
-            <span>
-              Lendo as cenas · {phase.done} de {phase.total}
-            </span>
-            <div aria-hidden="true">
-              <span style={{ width: `${phase.total ? (phase.done / phase.total) * 100 : 0}%` }} />
-            </div>
-          </div>
-        )}
+        {phase.kind === 'loading' && <ReviewProgress done={phase.done} label="Lendo as cenas" total={phase.total} />}
         {phase.kind === 'saving' && (
           <p className="linebreak-done" role="status">
             {phase.step}
@@ -227,78 +169,52 @@ export function CopyeditModal({ projectId, projectKey, slots, sheet, names, onCl
 
         {phase.kind === 'review' && groups.length > 0 && (
           <>
-            <div className="linebreak-summary">
-              <strong>
-                {plural(chosen.length, 'correção marcada', 'correções marcadas')} em {plural(scenesChosen, 'cena', 'cenas')}
-              </strong>
-              <span>
-                <button className="text-button" type="button" onClick={() => setExcluded(new Set())}>
-                  Marcar todas
-                </button>
-                <button
-                  className="text-button"
-                  type="button"
-                  onClick={() => setExcluded(new Set(groups.flatMap(([, group]) => group.items.map((item) => item.key))))}
-                >
-                  Desmarcar todas
-                </button>
-              </span>
-            </div>
+            <ReviewSummary
+              onAll={() => setExcluded(new Set())}
+              onNone={() => setExcluded(new Set(groups.flatMap(([, group]) => group.items.map((item) => item.key))))}
+            >
+              {plural(chosen.length, 'correção marcada', 'correções marcadas')} em {plural(scenesChosen, 'cena', 'cenas')}
+            </ReviewSummary>
             <ul className="linebreak-scenes">
               {groups.map(([ruleId, group]) => {
                 const keys = group.items.map((item) => item.key)
                 const on = keys.filter((key) => !excluded.has(key)).length
                 const isOpen = openRule === ruleId
                 return (
-                  <li key={ruleId}>
-                    <div className="linebreak-scene-head">
-                      <input
-                        aria-label={`Corrigir ${group.label}`}
-                        checked={on > 0}
-                        ref={(input) => {
-                          if (input) input.indeterminate = on > 0 && on < keys.length
-                        }}
-                        type="checkbox"
-                        onChange={(event) => toggle(keys, event.target.checked)}
-                      />
-                      <button aria-expanded={isOpen} type="button" onClick={() => setOpenRule(isOpen ? null : ruleId)}>
-                        <span className="linebreak-scene-number">{group.category}</span>
-                        <span className="linebreak-scene-title">
-                          {group.label}
-                          {judgementRules.has(ruleId) && <small className="copyedit-judgement"> · confira um a um</small>}
-                        </span>
-                        <span className="linebreak-count">{on === keys.length ? keys.length : `${on} de ${keys.length}`}</span>
-                      </button>
-                    </div>
-                    {isOpen && (
-                      <ol className="linebreak-list copyedit-list">
-                        {group.items.slice(0, LIST_LIMIT).map((item) => (
-                          <li className={excluded.has(item.key) ? 'is-off' : undefined} key={item.key}>
-                            <label>
-                              <input
-                                checked={!excluded.has(item.key)}
-                                type="checkbox"
-                                onChange={(event) => toggle([item.key], event.target.checked)}
-                              />
-                              <span>
-                                {!isSingleScene && (
-                                  <small className="copyedit-scene">
-                                    {sceneNumberLabel(item.scene.slot)} · {sceneTitle(item.scene.slot)}
-                                  </small>
-                                )}
-                                <Change finding={item.finding} text={item.scene.draft.content} />
-                              </span>
-                            </label>
-                          </li>
-                        ))}
-                        {group.items.length > LIST_LIMIT && (
-                          <li className="linebreak-more">
-                            e mais {plural(group.items.length - LIST_LIMIT, 'ocorrência', 'ocorrências')}, que seguem a marcação da regra.
-                          </li>
-                        )}
-                      </ol>
-                    )}
-                  </li>
+                  <ReviewGroup
+                    checkLabel={`Corrigir ${group.label}`}
+                    isOpen={isOpen}
+                    key={ruleId}
+                    kicker={group.category}
+                    on={on}
+                    title={
+                      <>
+                        {group.label}
+                        {judgementRules.has(ruleId) && <small className="copyedit-judgement"> · confira um a um</small>}
+                      </>
+                    }
+                    total={keys.length}
+                    onCheck={(checked) => toggle(keys, checked)}
+                    onOpen={() => setOpenRule(isOpen ? null : ruleId)}
+                  >
+                    <ol className="linebreak-list copyedit-list">
+                      {group.items.slice(0, LIST_LIMIT).map((item) => (
+                        <ReviewItem isOn={!excluded.has(item.key)} key={item.key} onCheck={(checked) => toggle([item.key], checked)}>
+                          {!isSingleScene && (
+                            <small className="copyedit-scene">
+                              {sceneNumberLabel(item.scene.slot)} · {sceneTitle(item.scene.slot)}
+                            </small>
+                          )}
+                          <Change finding={item.finding} text={item.scene.draft.content} />
+                        </ReviewItem>
+                      ))}
+                      {group.items.length > LIST_LIMIT && (
+                        <li className="linebreak-more">
+                          e mais {plural(group.items.length - LIST_LIMIT, 'ocorrência', 'ocorrências')}, que seguem a marcação da regra.
+                        </li>
+                      )}
+                    </ol>
+                  </ReviewGroup>
                 )
               })}
             </ul>

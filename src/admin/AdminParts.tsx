@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { inviteLink } from "./adminData";
+import { byStatus, inviteLink } from "./adminData";
 
 export function CopyButton({ value, label }: { value: string; label: string }) {
   const [copied, setCopied] = useState(false);
@@ -37,4 +37,35 @@ export function InviteCodeActions({ code, showCode = true }: { code: string; sho
 
 export function StatusChip({ tone, children }: { tone: "neutral" | "good" | "warn" | "muted"; children: string }) {
   return <span className={`admin-chip is-${tone}`}>{children}</span>;
+}
+
+/** Status tabs over a list, each with how many items it holds. */
+export function FilterTabs<Status extends string>({
+  label,
+  filters,
+  value,
+  items,
+  onChange,
+}: {
+  label: string;
+  filters: Array<{ id: Status | "ALL"; label: string }>;
+  value: Status | "ALL";
+  items: Array<{ status: Status }>;
+  onChange: (filter: Status | "ALL") => void;
+}) {
+  return (
+    <div className="admin-filters" role="tablist" aria-label={label}>
+      {filters.map((option) => (
+        <button
+          aria-selected={value === option.id}
+          key={option.id}
+          role="tab"
+          type="button"
+          onClick={() => onChange(option.id)}
+        >
+          {option.label} <span>{items.filter(byStatus(option.id)).length}</span>
+        </button>
+      ))}
+    </div>
+  );
 }

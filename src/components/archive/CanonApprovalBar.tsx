@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../../api/client'
+import { plural } from '../../features/text/plural'
 
 interface CanonApprovalBarProps {
   projectId: string
@@ -8,7 +9,6 @@ interface CanonApprovalBarProps {
   onError: (message: string) => void
 }
 
-const plural = (count: number, one: string, many: string) => `${count.toLocaleString('pt-BR')} ${count === 1 ? one : many}`
 
 /**
  * Whether the Arquivista's facts become canon on their own, and what is still

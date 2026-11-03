@@ -1,0 +1,145 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`marketing shell (characterization) > closes the unlock dialog without opening anything 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/marketing" aria-label="Marketing do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Marketing</span></a><div class="admin-topbar-end"><select aria-label="Projeto" class="mk-project-select"><option value="">Escolha um projeto</option><option value="p1">Livro A</option><option value="p2">Livro B</option></select><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><header class="page-intro admin-intro"><p class="eyebrow">Marketing</p><h1>Escolha um projeto</h1><p>Defina o que o público pode saber do livro e exporte o pacote que alimenta o site. O projeto é aberto com a senha dele, como no Petricor: tudo é decifrado aqui no navegador.</p></header></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Marketing",
+}
+`;
+
+exports[`marketing shell (characterization) > has a generic message for an odd failure 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/marketing" aria-label="Marketing do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Marketing</span></a><div class="admin-topbar-end"><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><p class="form-message">Não foi possível listar os projetos.</p><header class="page-intro admin-intro"><p class="eyebrow">Marketing</p><h1>Escolha um projeto</h1><p>Defina o que o público pode saber do livro e exporte o pacote que alimenta o site. O projeto é aberto com a senha dele, como no Petricor: tudo é decifrado aqui no navegador.</p></header></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Marketing",
+}
+`;
+
+exports[`marketing shell (characterization) > says when there are no projects 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/marketing" aria-label="Marketing do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Marketing</span></a><div class="admin-topbar-end"><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><header class="page-intro admin-intro"><p class="eyebrow">Marketing</p><h1>Escolha um projeto</h1><p>Defina o que o público pode saber do livro e exporte o pacote que alimenta o site. O projeto é aberto com a senha dele, como no Petricor: tudo é decifrado aqui no navegador.</p><p class="empty-state">Você ainda não tem projetos.</p></header></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Marketing",
+}
+`;
+
+exports[`marketing shell (characterization) > shows why projects could not be listed 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/marketing" aria-label="Marketing do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Marketing</span></a><div class="admin-topbar-end"><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><p class="form-message">Sem rede</p><header class="page-intro admin-intro"><p class="eyebrow">Marketing</p><h1>Escolha um projeto</h1><p>Defina o que o público pode saber do livro e exporte o pacote que alimenta o site. O projeto é aberto com a senha dele, como no Petricor: tudo é decifrado aqui no navegador.</p></header></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Marketing",
+}
+`;
+
+exports[`marketing shell (characterization) > walks from choosing a project to switching sections and projects > before choosing 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/marketing" aria-label="Marketing do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Marketing</span></a><div class="admin-topbar-end"><select aria-label="Projeto" class="mk-project-select"><option value="">Escolha um projeto</option><option value="p1">Livro A</option><option value="p2">Livro B</option></select><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><header class="page-intro admin-intro"><p class="eyebrow">Marketing</p><h1>Escolha um projeto</h1><p>Defina o que o público pode saber do livro e exporte o pacote que alimenta o site. O projeto é aberto com a senha dele, como no Petricor: tudo é decifrado aqui no navegador.</p></header></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Marketing",
+}
+`;
+
+exports[`marketing shell (characterization) > walks from choosing a project to switching sections and projects > last section 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/marketing" aria-label="Marketing do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Marketing</span></a><nav class="admin-nav" aria-label="Seções do marketing"><button type="button">Livro</button><button type="button">Metadados</button><button type="button">Identidade</button><button type="button">Spoilers</button><button type="button" aria-current="page">Pacote</button></nav><div class="admin-topbar-end"><select aria-label="Projeto" class="mk-project-select"><option value="p1">Livro A</option><option value="p2">Livro B</option></select><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><p class="admin-muted" role="status">Abrindo o projeto…</p></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Marketing",
+}
+`;
+
+exports[`marketing shell (characterization) > walks from choosing a project to switching sections and projects > opened 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/marketing" aria-label="Marketing do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Marketing</span></a><nav class="admin-nav" aria-label="Seções do marketing"><button aria-current="page" type="button">Livro</button><button type="button">Metadados</button><button type="button">Identidade</button><button type="button">Spoilers</button><button type="button">Pacote</button></nav><div class="admin-topbar-end"><select aria-label="Projeto" class="mk-project-select"><option value="p1">Livro A</option><option value="p2">Livro B</option></select><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><p class="admin-muted" role="status">Abrindo o projeto…</p></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Marketing",
+}
+`;
+
+exports[`marketing shell (characterization) > walks from choosing a project to switching sections and projects > other project, first section again 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/marketing" aria-label="Marketing do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Marketing</span></a><nav class="admin-nav" aria-label="Seções do marketing"><button type="button" aria-current="page">Livro</button><button type="button">Metadados</button><button type="button">Identidade</button><button type="button">Spoilers</button><button type="button">Pacote</button></nav><div class="admin-topbar-end"><select aria-label="Projeto" class="mk-project-select"><option value="p1">Livro A</option><option value="p2">Livro B</option></select><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><p class="admin-muted" role="status">Abrindo o projeto…</p></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Marketing",
+}
+`;
+
+exports[`marketing shell (characterization) > walks from choosing a project to switching sections and projects > unlocking 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/marketing" aria-label="Marketing do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Marketing</span></a><div class="admin-topbar-end"><select aria-label="Projeto" class="mk-project-select"><option value="">Escolha um projeto</option><option value="p1">Livro A</option><option value="p2">Livro B</option></select><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><header class="page-intro admin-intro"><p class="eyebrow">Marketing</p><h1>Escolha um projeto</h1><p>Defina o que o público pode saber do livro e exporte o pacote que alimenta o site. O projeto é aberto com a senha dele, como no Petricor: tudo é decifrado aqui no navegador.</p></header></main><div data-testid="unlock">unlock p1<button type="button">do-unlock</button><button type="button">do-close</button></div></div></div>",
+  "theme": "light",
+  "title": "Petricor · Marketing",
+}
+`;
+
+exports[`production shell (characterization) > closes the unlock dialog without opening anything 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/producao" aria-label="Produção do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Produção</span></a><div class="admin-topbar-end"><select aria-label="Projeto" class="mk-project-select"><option value="">Escolha um projeto</option><option value="p1">Livro A</option><option value="p2">Livro B</option></select><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><header class="page-intro admin-intro"><p class="eyebrow">Produção</p><h1>Do manuscrito ao livro impresso</h1><p>Formato, número de páginas, a configuração do documento no Affinity e quanto custa produzir o livro. O texto é lido aqui no navegador, depois de desbloquear o projeto; nada é enviado.</p></header></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Produção",
+}
+`;
+
+exports[`production shell (characterization) > has a generic message for an odd failure 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/producao" aria-label="Produção do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Produção</span></a><div class="admin-topbar-end"><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><p class="form-message">Não foi possível listar os projetos.</p><header class="page-intro admin-intro"><p class="eyebrow">Produção</p><h1>Do manuscrito ao livro impresso</h1><p>Formato, número de páginas, a configuração do documento no Affinity e quanto custa produzir o livro. O texto é lido aqui no navegador, depois de desbloquear o projeto; nada é enviado.</p></header></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Produção",
+}
+`;
+
+exports[`production shell (characterization) > says when there are no projects 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/producao" aria-label="Produção do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Produção</span></a><div class="admin-topbar-end"><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><header class="page-intro admin-intro"><p class="eyebrow">Produção</p><h1>Do manuscrito ao livro impresso</h1><p>Formato, número de páginas, a configuração do documento no Affinity e quanto custa produzir o livro. O texto é lido aqui no navegador, depois de desbloquear o projeto; nada é enviado.</p><p class="empty-state">Você ainda não tem projetos.</p></header></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Produção",
+}
+`;
+
+exports[`production shell (characterization) > shows why projects could not be listed 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/producao" aria-label="Produção do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Produção</span></a><div class="admin-topbar-end"><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><p class="form-message">Sem rede</p><header class="page-intro admin-intro"><p class="eyebrow">Produção</p><h1>Do manuscrito ao livro impresso</h1><p>Formato, número de páginas, a configuração do documento no Affinity e quanto custa produzir o livro. O texto é lido aqui no navegador, depois de desbloquear o projeto; nada é enviado.</p></header></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Produção",
+}
+`;
+
+exports[`production shell (characterization) > walks from choosing a project to switching sections and projects > before choosing 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/producao" aria-label="Produção do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Produção</span></a><div class="admin-topbar-end"><select aria-label="Projeto" class="mk-project-select"><option value="">Escolha um projeto</option><option value="p1">Livro A</option><option value="p2">Livro B</option></select><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><header class="page-intro admin-intro"><p class="eyebrow">Produção</p><h1>Do manuscrito ao livro impresso</h1><p>Formato, número de páginas, a configuração do documento no Affinity e quanto custa produzir o livro. O texto é lido aqui no navegador, depois de desbloquear o projeto; nada é enviado.</p></header></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Produção",
+}
+`;
+
+exports[`production shell (characterization) > walks from choosing a project to switching sections and projects > last section 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/producao" aria-label="Produção do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Produção</span></a><nav class="admin-nav" aria-label="Seções da produção"><button type="button">Formato e páginas</button><button type="button">Affinity</button><button type="button" aria-current="page">Custos</button></nav><div class="admin-topbar-end"><select aria-label="Projeto" class="mk-project-select"><option value="p1">Livro A</option><option value="p2">Livro B</option></select><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><p class="admin-muted" role="status">Lendo p1…</p></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Produção",
+}
+`;
+
+exports[`production shell (characterization) > walks from choosing a project to switching sections and projects > opened 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/producao" aria-label="Produção do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Produção</span></a><nav class="admin-nav" aria-label="Seções da produção"><button aria-current="page" type="button">Formato e páginas</button><button type="button">Affinity</button><button type="button">Custos</button></nav><div class="admin-topbar-end"><select aria-label="Projeto" class="mk-project-select"><option value="p1">Livro A</option><option value="p2">Livro B</option></select><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><p class="admin-muted" role="status">Lendo p1…</p></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Produção",
+}
+`;
+
+exports[`production shell (characterization) > walks from choosing a project to switching sections and projects > other project, first section again 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/producao" aria-label="Produção do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Produção</span></a><nav class="admin-nav" aria-label="Seções da produção"><button type="button" aria-current="page">Formato e páginas</button><button type="button">Affinity</button><button type="button">Custos</button></nav><div class="admin-topbar-end"><select aria-label="Projeto" class="mk-project-select"><option value="p1">Livro A</option><option value="p2">Livro B</option></select><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><p class="admin-muted" role="status">Lendo p2…</p></main></div></div>",
+  "theme": "light",
+  "title": "Petricor · Produção",
+}
+`;
+
+exports[`production shell (characterization) > walks from choosing a project to switching sections and projects > unlocking 1`] = `
+{
+  "html": "<div><div class="admin-shell"><header class="admin-topbar"><a class="brand" href="/producao" aria-label="Produção do Petricor"><span class="brand-mark" aria-hidden="true">P</span><span>Petricor</span><span class="admin-badge">Produção</span></a><div class="admin-topbar-end"><select aria-label="Projeto" class="mk-project-select"><option value="">Escolha um projeto</option><option value="p1">Livro A</option><option value="p2">Livro B</option></select><a class="text-button admin-back" href="/">Voltar ao Petricor</a><span data-testid="account">Ana</span></div></header><main class="admin-main"><header class="page-intro admin-intro"><p class="eyebrow">Produção</p><h1>Do manuscrito ao livro impresso</h1><p>Formato, número de páginas, a configuração do documento no Affinity e quanto custa produzir o livro. O texto é lido aqui no navegador, depois de desbloquear o projeto; nada é enviado.</p></header></main><div data-testid="unlock">unlock p1<button type="button">do-unlock</button><button type="button">do-close</button></div></div></div>",
+  "theme": "light",
+  "title": "Petricor · Produção",
+}
+`;

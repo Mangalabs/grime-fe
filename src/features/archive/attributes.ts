@@ -1,12 +1,11 @@
+import { foldText } from '../text/fold'
+
 // Attribute keys come from the Arquivista and vary over time (English
 // snake_case in older facts, Portuguese keys now). Synonyms collapse to one
 // canonical key so an entity's history lines up across scenes.
 
 function normalizeKey(attribute: string): string {
-  return attribute
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLocaleLowerCase('pt-BR')
+  return foldText(attribute)
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '')
 }

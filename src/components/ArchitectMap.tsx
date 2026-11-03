@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import type { MacroDiagnostic, Slot } from '../api/contracts'
 import { diagnosticTypes, severityLabels } from '../features/architect/architect'
 import { sceneTitle } from '../features/scenes/sceneStatus'
-import type { StripBand } from './SceneStrip'
+import { GroupBandRow, type StripBand } from './SceneStrip'
 
 export interface MapFinding {
   key: string
@@ -51,18 +51,7 @@ export function ArchitectMap({ scenes, findings, bands, activeKey, onSelectFindi
         {bands.length > 0 && (
           <>
             <span className="architect-map-label architect-map-label-muted">Estrutura</span>
-            <div className="overview-bands architect-map-track" style={style}>
-              {bands.map((band) => (
-                <span
-                  className={`overview-band ${band.colorClass}`}
-                  key={`${band.key}-${band.start}`}
-                  style={{ gridColumn: `${band.start + 1} / span ${band.length}` }}
-                  title={band.title}
-                >
-                  <span>{band.label}</span>
-                </span>
-              ))}
-            </div>
+            <GroupBandRow bands={bands} className="architect-map-track" style={style} />
           </>
         )}
         {findings.map(({ key, diagnostic, positions }) => {

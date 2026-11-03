@@ -105,6 +105,42 @@ export function groupRuns(scenes: Slot[]): GroupRun[] {
   return runs
 }
 
+/** A group drawn as a band over consecutive scenes. */
+export interface StripBand {
+  key: string
+  start: number
+  length: number
+  label: string
+  // A `group-*` class that sets --group-color.
+  colorClass: string
+  title: string
+}
+
+/**
+ * The bands of the scenes' groups, in timeline order. The tooltip is the
+ * group's name, or what `title` makes of the group and its run.
+ */
+export function groupBands(
+  scenes: Slot[],
+  groups: SceneGroup[],
+  title: (group: SceneGroup, run: GroupRun) => string = (group) => group.name,
+): StripBand[] {
+  const groupById = new Map(groups.map((group) => [group.id, group]))
+  return groupRuns(scenes)
+    .filter((run) => groupById.has(run.groupId))
+    .map((run) => {
+      const group = groupById.get(run.groupId)!
+      return {
+        key: group.id,
+        start: run.start,
+        length: run.length,
+        label: group.name,
+        colorClass: `group-${group.color}`,
+        title: title(group, run),
+      }
+    })
+}
+
 /** "cenas 1–4, 7" for the scenes of a group, in timeline order. */
 export function describeGroupScenes(scenes: Slot[], group: SceneGroup): string {
   const runs = groupRuns(scenes).filter((run) => run.groupId === group.id)

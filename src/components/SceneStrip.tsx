@@ -2,6 +2,7 @@ import { useRef, useState, type CSSProperties } from 'react'
 import './SceneStrip.css'
 import type { Slot } from '../api/contracts'
 import { sceneTitle } from '../features/scenes/sceneStatus'
+import type { StripBand } from '../features/scenes/groups'
 
 interface SceneStripProps {
   // Anchored scenes in timeline order.
@@ -21,14 +22,24 @@ interface SceneStripProps {
   onRangeSelect?: (index: number) => void
 }
 
-export interface StripBand {
-  key: string
-  start: number
-  length: number
-  label: string
-  // A `group-*` class that sets --group-color.
-  colorClass: string
-  title: string
+export type { StripBand } from '../features/scenes/groups'
+
+/** Bands that only show the groups (the strip's own bands can be clicked). */
+export function GroupBandRow({ bands, className, style }: { bands: StripBand[]; className: string; style?: CSSProperties }) {
+  return (
+    <div className={`overview-bands ${className}`} style={style}>
+      {bands.map((band) => (
+        <span
+          className={`overview-band ${band.colorClass}`}
+          key={`${band.key}-${band.start}`}
+          style={{ gridColumn: `${band.start + 1} / span ${band.length}` }}
+          title={band.title}
+        >
+          <span>{band.label}</span>
+        </span>
+      ))}
+    </div>
+  )
 }
 
 /**

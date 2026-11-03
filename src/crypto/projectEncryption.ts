@@ -1,3 +1,4 @@
+import { fromBase64, toBase64 } from './base64'
 const iterations = 600_000
 const sceneDraftVersion = 1
 
@@ -19,20 +20,30 @@ export async function createProjectEncryption(password: string, recoveryKey: str
   return {
     projectKey,
     envelope: {
-      passwordSalt: encode(passwordSalt),
-      passwordWrappedKey: encode(new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: passwordWrapIv }, await deriveKey(password, passwordSalt), await crypto.subtle.exportKey('raw', projectKey)))),
-      passwordWrapIv: encode(passwordWrapIv),
-      recoverySalt: encode(recoverySalt),
-      recoveryWrappedKey: encode(new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: recoveryWrapIv }, await deriveKey(recoveryKey, recoverySalt), await crypto.subtle.exportKey('raw', projectKey)))),
-      recoveryWrapIv: encode(recoveryWrapIv),
+      passwordSalt: toBase64(passwordSalt),
+      passwordWrappedKey: toBase64(new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: passwordWrapIv }, await deriveKey(password, passwordSalt), await crypto.subtle.exportKey('raw', projectKey)))),
+      passwordWrapIv: toBase64(passwordWrapIv),
+      recoverySalt: toBase64(recoverySalt),
+      recoveryWrappedKey: toBase64(new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: recoveryWrapIv }, await deriveKey(recoveryKey, recoverySalt), await crypto.subtle.exportKey('raw', projectKey)))),
+      recoveryWrapIv: toBase64(recoveryWrapIv),
     },
   }
 }
 
-export async function encryptScene(projectKey: CryptoKey, plaintext: string) {
+/** Seals bytes with the project key: AES-GCM with a fresh IV, both as base64. */
+export async function sealBytes(projectKey: CryptoKey, bytes: Uint8Array<ArrayBuffer>) {
   const iv = crypto.getRandomValues(new Uint8Array(12))
-  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, projectKey, new TextEncoder().encode(plaintext))
-  return { ciphertext: encode(new Uint8Array(ciphertext)), iv: encode(iv) }
+  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, projectKey, bytes)
+  return { ciphertext: toBase64(new Uint8Array(ciphertext)), iv: toBase64(iv) }
+}
+
+/** Opens what sealBytes sealed. */
+export function openBytes(projectKey: CryptoKey, ciphertext: string, iv: string): Promise<ArrayBuffer> {
+  return crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromBase64(iv) }, projectKey, fromBase64(ciphertext))
+}
+
+export function encryptScene(projectKey: CryptoKey, plaintext: string) {
+  return sealBytes(projectKey, new TextEncoder().encode(plaintext))
 }
 
 /** Binary content (an image): the 12-byte IV followed by the ciphertext. */
@@ -55,9 +66,9 @@ export async function decryptBytes(projectKey: CryptoKey, sealed: ArrayBuffer): 
 
 export async function unlockProjectKey(password: string, envelope: ProjectKeyEnvelope) {
   const rawProjectKey = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: decode(envelope.passwordWrapIv) },
-    await deriveKey(password, decode(envelope.passwordSalt)),
-    decode(envelope.passwordWrappedKey),
+    { name: 'AES-GCM', iv: fromBase64(envelope.passwordWrapIv) },
+    await deriveKey(password, fromBase64(envelope.passwordSalt)),
+    fromBase64(envelope.passwordWrappedKey),
   )
   return crypto.subtle.importKey('raw', rawProjectKey, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt'])
 }
@@ -70,9 +81,9 @@ export async function resetProjectPassword(
   envelope: ProjectKeyEnvelope,
 ) {
   const rawProjectKey = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: decode(envelope.recoveryWrapIv) },
-    await deriveKey(recoveryKey, decode(envelope.recoverySalt)),
-    decode(envelope.recoveryWrappedKey),
+    { name: 'AES-GCM', iv: fromBase64(envelope.recoveryWrapIv) },
+    await deriveKey(recoveryKey, fromBase64(envelope.recoverySalt)),
+    fromBase64(envelope.recoveryWrappedKey),
   )
   const passwordSalt = crypto.getRandomValues(new Uint8Array(16))
   const passwordWrapIv = crypto.getRandomValues(new Uint8Array(12))
@@ -84,20 +95,15 @@ export async function resetProjectPassword(
   return {
     projectKey: await crypto.subtle.importKey('raw', rawProjectKey, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']),
     passwordEncryption: {
-      passwordSalt: encode(passwordSalt),
-      passwordWrappedKey: encode(new Uint8Array(passwordWrappedKey)),
-      passwordWrapIv: encode(passwordWrapIv),
+      passwordSalt: toBase64(passwordSalt),
+      passwordWrappedKey: toBase64(new Uint8Array(passwordWrappedKey)),
+      passwordWrapIv: toBase64(passwordWrapIv),
     },
   }
 }
 
 export async function decryptScene(projectKey: CryptoKey, ciphertext: string, iv: string) {
-  const plaintext = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: decode(iv) },
-    projectKey,
-    decode(ciphertext),
-  )
-  return new TextDecoder().decode(plaintext)
+  return new TextDecoder().decode(await openBytes(projectKey, ciphertext, iv))
 }
 
 export async function encryptSceneDraft(
@@ -173,12 +179,4 @@ export async function decryptNote(
 async function deriveKey(secret: string, salt: Uint8Array) {
   const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), 'PBKDF2', false, ['deriveKey'])
   return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt.buffer as ArrayBuffer, iterations, hash: 'SHA-256' }, material, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt'])
-}
-
-function encode(value: Uint8Array) {
-  return btoa(String.fromCharCode(...value))
-}
-
-function decode(value: string) {
-  return Uint8Array.from(atob(value), (character) => character.charCodeAt(0))
 }

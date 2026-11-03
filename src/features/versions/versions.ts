@@ -1,9 +1,10 @@
 import { gunzipSync, gzipSync, strFromU8, strToU8 } from 'fflate'
 import { api } from '../../api/client'
 import type { Slot, VersionKind, VersionSummary } from '../../api/contracts'
-import { decryptScene, encryptScene } from '../../crypto/projectEncryption'
+import { decryptScene, encryptScene, openBytes, sealBytes } from '../../crypto/projectEncryption'
 import { loadSceneTexts } from '../manuscript/loadSceneTexts'
 import { orderScenes } from '../scenes/sceneStatus'
+import { countWords } from './diff'
 
 /**
  * Versions: frozen copies of the whole manuscript, to compare an author's
@@ -34,38 +35,14 @@ export const versionKindLabels: Record<VersionKind, string> = {
   COPYEDIT: 'Antes de corrigir',
 }
 
-export const countWords = (text: string) => text.match(/\S+/g)?.length ?? 0
-
 // The body can be a whole book: gzip first (text shrinks a lot), then seal
-// the bytes. Sealed bytes travel as base64.
-function toBase64(bytes: Uint8Array) {
-  let binary = ''
-  for (let index = 0; index < bytes.length; index += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000))
-  }
-  return btoa(binary)
-}
-
-function fromBase64(text: string) {
-  const binary = atob(text)
-  const bytes = new Uint8Array(binary.length)
-  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index)
-  return bytes
-}
-
+// the bytes.
 async function sealBody(projectKey: CryptoKey, body: VersionBody) {
-  const iv = crypto.getRandomValues(new Uint8Array(12))
-  const packed = new Uint8Array(gzipSync(strToU8(JSON.stringify(body))))
-  const sealed = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, projectKey, packed)
-  return { ciphertext: toBase64(new Uint8Array(sealed)), iv: toBase64(iv) }
+  return sealBytes(projectKey, new Uint8Array(gzipSync(strToU8(JSON.stringify(body)))))
 }
 
 async function openBody(projectKey: CryptoKey, ciphertext: string, iv: string): Promise<VersionBody> {
-  const packed = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: fromBase64(iv) },
-    projectKey,
-    fromBase64(ciphertext),
-  )
+  const packed = await openBytes(projectKey, ciphertext, iv)
   const body = JSON.parse(strFromU8(gunzipSync(new Uint8Array(packed)))) as Partial<VersionBody>
   return { version: 1, scenes: Array.isArray(body.scenes) ? body.scenes : [] }
 }

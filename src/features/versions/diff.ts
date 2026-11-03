@@ -215,18 +215,20 @@ export function diffText(before: string, after: string): ParagraphDiff[] {
   return result
 }
 
+/** Words in a text, as versions count them: runs of non-space characters. */
+export const countWords = (text: string) => text.match(/\S+/g)?.length ?? 0
+
 /** Words added and removed by a paragraph diff. */
 export function diffStats(paragraphs: ParagraphDiff[]) {
-  const words = (text: string) => text.match(/\S+/g)?.length ?? 0
   let added = 0
   let removed = 0
   for (const paragraph of paragraphs) {
-    if (paragraph.type === 'add') added += words(paragraph.text)
-    else if (paragraph.type === 'del') removed += words(paragraph.text)
+    if (paragraph.type === 'add') added += countWords(paragraph.text)
+    else if (paragraph.type === 'del') removed += countWords(paragraph.text)
     else if (paragraph.type === 'edit') {
       for (const segment of paragraph.segments) {
-        if (segment.type === 'add') added += words(segment.text)
-        else if (segment.type === 'del') removed += words(segment.text)
+        if (segment.type === 'add') added += countWords(segment.text)
+        else if (segment.type === 'del') removed += countWords(segment.text)
       }
     }
   }

@@ -2,7 +2,7 @@ import { useRef, type CSSProperties, type KeyboardEvent } from 'react'
 import type { SceneMetric, Slot } from '../../api/contracts'
 import type { CastRow, SceneTextMetrics } from '../../features/rhythm/metrics'
 import { sceneTitle } from '../../features/scenes/sceneStatus'
-import type { StripBand } from '../SceneStrip'
+import { GroupBandRow, type StripBand } from '../SceneStrip'
 
 interface RhythmChartProps {
   scenes: Slot[]
@@ -172,18 +172,7 @@ export function RhythmChart({
           />
         )}
         {bands.length > 0 && (
-          <div className="overview-bands rhythm-lane rhythm-lane-bands">
-            {bands.map((band) => (
-              <span
-                className={`overview-band ${band.colorClass}`}
-                key={`${band.key}-${band.start}`}
-                style={{ gridColumn: `${band.start + 1} / span ${band.length}` }}
-                title={band.title}
-              >
-                <span>{band.label}</span>
-              </span>
-            ))}
-          </div>
+          <GroupBandRow bands={bands} className="rhythm-lane rhythm-lane-bands" />
         )}
         {tension && <TensionLane count={count} tension={tension} />}
         <BarLane
